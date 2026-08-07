@@ -1,0 +1,28 @@
+# Node & Workspaces
+node_modules/
+.npm
+*.log
+
+# Build Outputs
+/client/.next/
+/client/build/
+/client/dist/
+/server/dist/
+/server/build/
+.out/
+
+# Environment & Secrets
+.env
+.env.local
+.env.*.local
+
+# OS & IDE Files
+.DS_Store
+Thumbs.db
+.vscode/
+!.vscode/settings.json
+.idea/
+
+# Testing & Coverage
+coverage/
+.nyc_output/
