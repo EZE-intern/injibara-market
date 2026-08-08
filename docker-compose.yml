@@ -1,0 +1,57 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: injibara-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${DB_NAME:-injibara_db}
+      MYSQL_USER: ${DB_USER:-injibara_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-injibara_password}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: api.Dockerfile
+    container_name: injibara-api
+    restart: always
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=mysql://${DB_USER:-injibara_user}:${DB_PASSWORD:-injibara_password}@mysql:3306/${DB_NAME:-injibara_db}
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  client:
+    build:
+      context: .
+      dockerfile: client.Dockerfile
+    container_name: injibara-client
+    restart: always
+    ports:
+      - "5173:5173"
+    env_file:
+      - .env
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    depends_on:
+      - api
+
+volumes:
+  mysql_data:
