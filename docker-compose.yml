@@ -9,11 +9,11 @@ services:
       MYSQL_USER: ${DB_USER:-injibara_user}
       MYSQL_PASSWORD: ${DB_PASSWORD:-injibara_password}
     ports:
-      - "3307:3306"
+      - '3307:3306'
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -25,7 +25,7 @@ services:
     container_name: injibara-api
     restart: always
     ports:
-      - "3000:3000"
+      - '3000:3000'
     env_file:
       - .env
     environment:
@@ -44,7 +44,7 @@ services:
     container_name: injibara-client
     restart: always
     ports:
-      - "5173:5173"
+      - '5173:5173'
     env_file:
       - .env
     volumes:
