@@ -5,7 +5,7 @@ const {
   getMyOrders,
   getOrderById,
   createOrder,
-  updateOrderStatus
+  updateOrderStatus,
 } = require('../controllers/orderController');
 
 const { protect, authorize } = require('../middleware/authMiddleware');
@@ -20,7 +20,7 @@ router.get('/', protect, authorize('admin'), getAllOrders);
 //  see order lists by  id
 router.get('/:id', protect, getOrderById);
 
-//   only Admin and Seller change order status 
+//   only Admin and Seller change order status
 router.put('/:id/status', protect, authorize('admin', 'seller'), updateOrderStatus);
 
 module.exports = router;

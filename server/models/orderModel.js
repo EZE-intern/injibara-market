@@ -108,10 +108,7 @@ class OrderModel {
     try {
       await connection.beginTransaction();
 
-      await connection.execute(
-        'UPDATE orders SET status = ? WHERE id = ?',
-        [status, orderId]
-      );
+      await connection.execute('UPDATE orders SET status = ? WHERE id = ?', [status, orderId]);
 
       await connection.execute(
         'INSERT INTO order_status_history (order_id, status, changed_by) VALUES (?, ?, ?)',

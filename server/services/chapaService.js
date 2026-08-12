@@ -1,7 +1,15 @@
 const axios = require('axios');
 
-//  የክፍያ ሊንክ መፍጠር 
-const initializeChapaPayment = async ({ amount, currency = 'ETB', email, first_name, last_name, tx_ref, callback_url }) => {
+//  የክፍያ ሊንክ መፍጠር
+const initializeChapaPayment = async ({
+  amount,
+  currency = 'ETB',
+  email,
+  first_name,
+  last_name,
+  tx_ref,
+  callback_url,
+}) => {
   try {
     const response = await axios.post(
       'https://api.chapa.co/v1/transaction/initialize',
@@ -16,14 +24,14 @@ const initializeChapaPayment = async ({ amount, currency = 'ETB', email, first_n
         return_url: 'http://localhost:3000/payment-success',
         customization: {
           title: 'Payment Test',
-          description: 'Testing transaction'
-        }
+          description: 'Testing transaction',
+        },
       },
       {
         headers: {
           Authorization: `Bearer ${process.env.CHAPA_SECRET_KEY}`,
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
       }
     );
 
@@ -40,14 +48,11 @@ const initializeChapaPayment = async ({ amount, currency = 'ETB', email, first_n
 // Verify Payment
 const verifyChapaPayment = async (tx_ref) => {
   try {
-    const response = await axios.get(
-      `https://api.chapa.co/v1/transaction/verify/${tx_ref}`,
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.CHAPA_SECRET_KEY}`
-        }
-      }
-    );
+    const response = await axios.get(`https://api.chapa.co/v1/transaction/verify/${tx_ref}`, {
+      headers: {
+        Authorization: `Bearer ${process.env.CHAPA_SECRET_KEY}`,
+      },
+    });
 
     return response.data;
   } catch (error) {
@@ -62,5 +67,5 @@ const verifyChapaPayment = async (tx_ref) => {
 // ፋይሉ መጨረሻ ላይ ሁለቱም Export መደረጋቸውን አረጋግጥ
 module.exports = {
   initializeChapaPayment,
-  verifyChapaPayment
+  verifyChapaPayment,
 };

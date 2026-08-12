@@ -32,7 +32,7 @@ const createProduct = async (req, res) => {
     const { name, description, price, stock, category_id, category, store_id, slug } = req.body;
 
     // pictureupload (Multer) ከተጠቀመ ፎቶው በ req.file ውስጥ ይገኛል
-    const imageUrl = req.file ? `/uploads/${req.file.filename}` : (req.body.imageUrl || null);
+    const imageUrl = req.file ? `/uploads/${req.file.filename}` : req.body.imageUrl || null;
 
     if (!name || !price) {
       return res.status(400).json({ message: 'እባክዎ የስም እና የዋጋ መስኮችን ይሙሉ' });

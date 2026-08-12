@@ -1,4 +1,4 @@
-const db = require('../config/db'); 
+const db = require('../config/db');
 
 class FavoriteModel {
   //  Add to Favorites

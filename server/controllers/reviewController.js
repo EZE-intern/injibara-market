@@ -45,7 +45,7 @@ const getProductReviews = async (req, res) => {
     return res.status(200).json({
       averageRating: parseFloat(summary.averageRating).toFixed(1),
       totalReviews: summary.totalReviews,
-      reviews
+      reviews,
     });
   } catch (error) {
     return res.status(500).json({ message: 'Review-ዎችን ማምጣት አልተቻለም።', error: error.message });
@@ -97,5 +97,5 @@ module.exports = {
   addReview,
   getProductReviews,
   updateReview,
-  deleteReview
+  deleteReview,
 };

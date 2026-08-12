@@ -9,18 +9,15 @@ const db = require('./config/db');
 // 1. Routes ማምጣት
 const authRoutes = require('./routes/authRoutes');
 const productRoutes = require('./routes/productRoutes');
-const cartRoute = require('./routes/cartRoutes');  
+const cartRoute = require('./routes/cartRoutes');
 const orderRoute = require('./routes/orderRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
-const paymentRoutes = require('./routes/paymentRoutes'); 
+const paymentRoutes = require('./routes/paymentRoutes');
 const FavoriteRoute = require('./routes/favoriteRoute');
-const webhookRoutes = require('./routes/webhookRoutes'); 
+const webhookRoutes = require('./routes/webhookRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
 const storeRoute = require('./routes/storeRoute');
-const messageRoutes = require('./routes/messageRoutes'); 
-
-
-
+const messageRoutes = require('./routes/messageRoutes');
 
 const app = express();
 
@@ -38,15 +35,12 @@ app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoute);
 app.use('/api/orders', orderRoute);
 app.use('/api/categories', categoryRoutes);
-app.use('/api/payments', paymentRoutes); 
-app.use('/api/favorites', FavoriteRoute); 
+app.use('/api/payments', paymentRoutes);
+app.use('/api/favorites', FavoriteRoute);
 app.use('/api/webhooks', webhookRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/stores', storeRoute);
 app.use('/api/messages', messageRoutes);
-
-
-
 
 // Health Check Route
 app.get('/', (req, res) => {

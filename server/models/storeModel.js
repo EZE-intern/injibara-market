@@ -7,7 +7,14 @@ class StoreModel {
       INSERT INTO stores (seller_id, store_name, description, logo, phone, address)
       VALUES (?, ?, ?, ?, ?, ?);
     `;
-    const [result] = await db.execute(query, [sellerId, storeName, description, logo, phone, address]);
+    const [result] = await db.execute(query, [
+      sellerId,
+      storeName,
+      description,
+      logo,
+      phone,
+      address,
+    ]);
     return result.insertId;
   }
 
@@ -44,7 +51,14 @@ class StoreModel {
       SET store_name = ?, description = ?, logo = ?, phone = ?, address = ?
       WHERE seller_id = ?;
     `;
-    const [result] = await db.execute(query, [storeName, description, logo, phone, address, sellerId]);
+    const [result] = await db.execute(query, [
+      storeName,
+      description,
+      logo,
+      phone,
+      address,
+      sellerId,
+    ]);
     return result.affectedRows > 0;
   }
 

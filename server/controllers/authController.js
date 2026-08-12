@@ -1,17 +1,16 @@
 const bcrypt = require('bcryptjs');
-const { findByEmail, create } = require('../models/userModel'); 
+const { findByEmail, create } = require('../models/userModel');
 const generateToken = require('../utils/generateToken');
 
 // @desc    Register a new user
 const registerUser = async (req, res) => {
   try {
-  
-const { full_name, email, password, phone, role } = req.body;
+    const { full_name, email, password, phone, role } = req.body;
 
-// full_name, email, እና password ብቻ አስፈላጊ (required) እንዲሆኑ ማድረግ
-if (!full_name || !email || !password) {
-  return res.status(400).json({ message: 'እባክዎ ሁሉንም አስፈላጊ መስኮች ይሙሉ' });
-}
+    // full_name, email, እና password ብቻ አስፈላጊ (required) እንዲሆኑ ማድረግ
+    if (!full_name || !email || !password) {
+      return res.status(400).json({ message: 'እባክዎ ሁሉንም አስፈላጊ መስኮች ይሙሉ' });
+    }
 
     const userExists = await findByEmail(email); // 👈 UserModel.findByEmail ሳይሆን ቀጥታ findByEmail
     if (userExists) {
@@ -32,7 +31,7 @@ if (!full_name || !email || !password) {
 
     res.status(201).json({
       id: userId,
-     full_name,
+      full_name,
       email,
       role: userRole,
       token: generateToken(userId, userRole),

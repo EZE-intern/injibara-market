@@ -6,7 +6,7 @@ const {
   getAllStores,
   getStoreById,
   updateStore,
-  deleteStore
+  deleteStore,
 } = require('../controllers/storeController');
 const { protect } = require('../middleware/authMiddleware');
 

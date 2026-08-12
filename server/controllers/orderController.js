@@ -51,12 +51,12 @@ const createOrder = async (req, res) => {
       shipping_address_id,
       total_amount,
       note,
-      items
+      items,
     });
 
     res.status(201).json({
       message: 'ኦርደሩ በተሳካ ሁኔታ ተመዝግቧል!',
-      ...newOrder
+      ...newOrder,
     });
   } catch (error) {
     res.status(500).json({ message: 'ኦርደሩን መመዝገብ አልተቻለም።', error: error.message });
@@ -87,5 +87,5 @@ module.exports = {
   getMyOrders,
   getOrderById,
   createOrder,
-  updateOrderStatus
+  updateOrderStatus,
 };

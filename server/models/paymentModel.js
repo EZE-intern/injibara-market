@@ -9,17 +9,21 @@
 
 // return result.insertId;
 
-
 // }
-
-
 
 const db = require('../config/db');
 
 class PaymentModel {
   // 1. አዲስ ክፍያ መመዝገብ
-  static async create({ order_id, user_id, amount, payment_method, transaction_id, status = 'pending' }) {
-   const query = `
+  static async create({
+    order_id,
+    user_id,
+    amount,
+    payment_method,
+    transaction_id,
+    status = 'pending',
+  }) {
+    const query = `
   INSERT INTO payments (order_id, user_id, amount, payment_method, transaction_id, status)
   VALUES (?, ?, ?, ?, ?, ?)
 `;
@@ -29,7 +33,7 @@ class PaymentModel {
       amount,
       payment_method,
       transaction_id || null,
-      status
+      status,
     ]);
     return result.insertId;
   }

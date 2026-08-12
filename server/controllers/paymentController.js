@@ -13,9 +13,12 @@ const createChapaCheckout = async (req, res) => {
     }
 
     // Email validation to prevent Chapa validation.email error
-    const customerEmail = (email && email.trim() !== '' && email.includes('@')) 
-      ? email 
-      : (req.user?.email && req.user.email.includes('@') ? req.user.email : 'customer@gmail.com');
+    const customerEmail =
+      email && email.trim() !== '' && email.includes('@')
+        ? email
+        : req.user?.email && req.user.email.includes('@')
+          ? req.user.email
+          : 'customer@gmail.com';
 
     const tx_ref = `TX-ORD${order_id}-${Date.now()}`;
 
@@ -24,10 +27,10 @@ const createChapaCheckout = async (req, res) => {
       email: customerEmail,
       first_name: first_name || req.user.first_name || 'Customer',
       last_name: last_name || req.user.last_name || 'User',
-      tx_ref
+      tx_ref,
     });
 
-    console.log("--- CHAPA FULL CHECKOUT URL ---", chapaResponse?.data?.checkout_url);
+    console.log('--- CHAPA FULL CHECKOUT URL ---', chapaResponse?.data?.checkout_url);
 
     if (chapaResponse && chapaResponse.status === 'success') {
       await PaymentModel.create({
@@ -36,21 +39,20 @@ const createChapaCheckout = async (req, res) => {
         amount,
         payment_method: 'chapa',
         transaction_id: tx_ref,
-        status: 'pending'
+        status: 'pending',
       });
 
       return res.status(200).json({
         message: 'የ Chapa ክፍያ ሊንክ በተሳካ ሁኔታ ተፈጥሯል!',
         checkout_url: chapaResponse.data.checkout_url,
-        tx_ref
+        tx_ref,
       });
     }
 
-    return res.status(400).json({ 
-      message: 'የክፍያ ሊንክ ማመንጨት አልተቻለም።', 
-      details: chapaResponse 
+    return res.status(400).json({
+      message: 'የክፍያ ሊንክ ማመንጨት አልተቻለም።',
+      details: chapaResponse,
     });
-
   } catch (error) {
     return res.status(500).json({ message: 'የ Chapa ክፍያ ስህተት', error: error.message });
   }
@@ -63,11 +65,14 @@ const verifyChapa = async (req, res) => {
 
     const verification = await verifyChapaPayment(tx_ref);
 
-    if (verification && verification.status === 'success' && verification.data?.status === 'success') {
+    if (
+      verification &&
+      verification.status === 'success' &&
+      verification.data?.status === 'success'
+    ) {
       const payment = await PaymentModel.getByTxRef(tx_ref);
-      
+
       if (payment) {
-   
         if (payment.status !== 'completed') {
           await PaymentModel.updateStatus(payment.order_id, 'completed', tx_ref);
           await OrderModel.updateStatus(payment.order_id, 'paid');
@@ -76,7 +81,7 @@ const verifyChapa = async (req, res) => {
 
       return res.status(200).json({
         message: 'ክፍያው በተሳካ ሁኔታ ተረጋግጧል!',
-        data: verification.data
+        data: verification.data,
       });
     }
 
@@ -86,7 +91,7 @@ const verifyChapa = async (req, res) => {
   }
 };
 
-// 3. Chapa Webhook / Callback Handler 
+// 3. Chapa Webhook / Callback Handler
 const handleChapaWebhook = async (req, res) => {
   try {
     const event = req.body;
@@ -128,7 +133,8 @@ const processPayment = async (req, res) => {
       return res.status(404).json({ message: 'ኦርደሩ አልተገኘም።' });
     }
 
-    let initialStatus = payment_method === 'cash_on_delivery' ? 'pending' : (transaction_id ? 'completed' : 'pending');
+    let initialStatus =
+      payment_method === 'cash_on_delivery' ? 'pending' : transaction_id ? 'completed' : 'pending';
 
     const paymentId = await PaymentModel.create({
       order_id,
@@ -136,7 +142,7 @@ const processPayment = async (req, res) => {
       amount,
       payment_method,
       transaction_id: transaction_id || null,
-      status: initialStatus
+      status: initialStatus,
     });
 
     if (initialStatus === 'completed') {
@@ -146,7 +152,7 @@ const processPayment = async (req, res) => {
     return res.status(201).json({
       message: `${payment_method.toUpperCase()} ክፍያ በተሳካ ሁኔታ ተመዝግቧል!`,
       paymentId,
-      status: initialStatus
+      status: initialStatus,
     });
   } catch (error) {
     return res.status(500).json({ message: 'የክፍያ ሂደቱን ማካሄድ አልተቻለም።', error: error.message });
@@ -188,5 +194,5 @@ module.exports = {
   handleChapaWebhook,
   processPayment,
   getPaymentByOrder,
-  updatePaymentStatus
+  updatePaymentStatus,
 };

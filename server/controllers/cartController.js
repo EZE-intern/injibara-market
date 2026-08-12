@@ -5,7 +5,7 @@ const addItemToCart = async (req, res) => {
     const { productId, product_id, quantity } = req.body;
 
     // authMiddleware የጫነውን ተጠቃሚ ID መውሰድ
-    const userId = req.user ? (req.user.id || req.user.userId || req.user.user_id) : null;
+    const userId = req.user ? req.user.id || req.user.userId || req.user.user_id : null;
 
     if (!userId) {
       return res.status(401).json({ message: 'Unauthorized, User ID አልተገኘም' });
@@ -31,7 +31,7 @@ const addItemToCart = async (req, res) => {
 
 const getUserCart = async (req, res) => {
   try {
-    const userId = req.user ? (req.user.id || req.user.userId || req.user.user_id) : null;
+    const userId = req.user ? req.user.id || req.user.userId || req.user.user_id : null;
     const items = await CartModel.getByUserId(userId);
     res.json(items);
   } catch (error) {

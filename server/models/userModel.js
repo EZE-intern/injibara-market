@@ -19,13 +19,7 @@ const create = async (userData) => {
   const [result] = await db.query(
     `INSERT INTO users (full_name, email, password, role, phone) 
      VALUES (?, ?, ?, ?, ?)`,
-    [
-      full_name,
-      email,
-      password,
-      role || 'customer',
-      phone || null
-    ]
+    [full_name, email, password, role || 'customer', phone || null]
   );
 
   return result.insertId;
@@ -47,10 +41,7 @@ const update = async (id, userData) => {
 
 // 5. Soft delete user
 const softDelete = async (id) => {
-  const [result] = await db.query(
-    `UPDATE users SET deleted_at = NOW() WHERE id = ?`,
-    [id]
-  );
+  const [result] = await db.query(`UPDATE users SET deleted_at = NOW() WHERE id = ?`, [id]);
   return result.affectedRows > 0;
 };
 

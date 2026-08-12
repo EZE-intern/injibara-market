@@ -3,7 +3,7 @@ const FavoriteModel = require('../models/favoriteModel');
 // 1. ምርትን ወደ Favorite መጨመር (Add to Favorites)
 const addToFavorites = async (req, res) => {
   try {
-    const userId = req.user.id; 
+    const userId = req.user.id;
     const { productId } = req.body;
 
     if (!productId) {
@@ -13,12 +13,12 @@ const addToFavorites = async (req, res) => {
     await FavoriteModel.add(userId, productId);
 
     return res.status(201).json({
-      message: 'ምርቱ ወደ Favorite በተሳካ ሁኔታ ተጨምሯል!'
+      message: 'ምርቱ ወደ Favorite በተሳካ ሁኔታ ተጨምሯል!',
     });
   } catch (error) {
     return res.status(500).json({
       message: 'ምርቱን ወደ Favorite መጨመር አልተቻለም።',
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -33,7 +33,7 @@ const getUserFavorites = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       message: 'የ Favorite መረጃዎችን ማምጣት አልተቻለም።',
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -48,17 +48,17 @@ const removeFromFavorites = async (req, res) => {
 
     if (!isDeleted) {
       return res.status(404).json({
-        message: 'ምርቱ በ Favorite ውስጥ አልተገኘም።'
+        message: 'ምርቱ በ Favorite ውስጥ አልተገኘም።',
       });
     }
 
     return res.status(200).json({
-      message: 'ምርቱ ከ Favorite ተወግዷል!'
+      message: 'ምርቱ ከ Favorite ተወግዷል!',
     });
   } catch (error) {
     return res.status(500).json({
       message: 'ምርቱን ከ Favorite ማስወገድ አልተቻለም።',
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -75,7 +75,7 @@ const checkIsFavorited = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       message: 'የ Favorite ሁኔታን ማረጋገጥ አልተቻለም።',
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -84,5 +84,5 @@ module.exports = {
   addToFavorites,
   getUserFavorites,
   removeFromFavorites,
-  checkIsFavorited
+  checkIsFavorited,
 };

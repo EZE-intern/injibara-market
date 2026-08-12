@@ -36,7 +36,7 @@ const createStore = async (req, res) => {
 
     return res.status(201).json({
       message: 'ሱቅዎ በተሳካ ሁኔታ ተፈጥሯል!',
-      storeId
+      storeId,
     });
   } catch (error) {
     return res.status(500).json({ message: 'ሱቅ መፍጠር አልተቻለም።', error: error.message });
@@ -139,5 +139,5 @@ module.exports = {
   getAllStores,
   getStoreById,
   updateStore,
-  deleteStore
+  deleteStore,
 };

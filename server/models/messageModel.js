@@ -31,10 +31,7 @@ const MessageModel = {
       ORDER BY created_at ASC
     `;
 
-    const [rows] = await db.query(query, [
-      userId, contactId,
-      contactId, userId,
-    ]);
+    const [rows] = await db.query(query, [userId, contactId, contactId, userId]);
 
     return rows;
   },
@@ -73,9 +70,7 @@ const MessageModel = {
       ORDER BY m.created_at DESC
     `;
 
-    const [rows] = await db.query(query, [
-      userId, userId, userId, userId,
-    ]);
+    const [rows] = await db.query(query, [userId, userId, userId, userId]);
 
     return rows;
   },

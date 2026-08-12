@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-// 1. Controller እና Middleware ማስገባት 
+// 1. Controller እና Middleware ማስገባት
 const paymentController = require('../controllers/paymentController');
 const authMiddleware = require('../middleware/authMiddleware');
 
@@ -10,12 +10,8 @@ const protect = authMiddleware.protect;
 const authorize = authMiddleware.authorize;
 
 // 3. ከ Controller የሚወጡ Functions
-const { 
-  processPayment, 
-  getPaymentByOrder, 
-  updatePaymentStatus,
-  handleChapaWebhook 
-} = paymentController;
+const { processPayment, getPaymentByOrder, updatePaymentStatus, handleChapaWebhook } =
+  paymentController;
 
 // POST /api/payments/chapa-checkout
 router.post('/chapa-checkout', protect, paymentController.createChapaCheckout);
@@ -26,10 +22,7 @@ router.get('/verify-chapa/:tx_ref', protect, paymentController.verifyChapa);
 // አዲስ ክፍያ መመዝገብ
 router.post('/process', protect, processPayment);
 
-
-
 router.post('/chapa-webhook', handleChapaWebhook);
-
 
 // በ Order ID የክፍያ መረጃ ማየት
 router.get('/order/:orderId', protect, getPaymentByOrder);

@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { 
-  addToFavorites, 
-  getUserFavorites, 
-  removeFromFavorites, 
-  checkIsFavorited 
+const {
+  addToFavorites,
+  getUserFavorites,
+  removeFromFavorites,
+  checkIsFavorited,
 } = require('../controllers/favoriteController');
 const { protect } = require('../middleware/authMiddleware'); // Authentication check
 

@@ -3,20 +3,14 @@ const db = require('../config/db');
 class CartModel {
   // 1. የተጠቃሚውን Cart ID ማግኘት (ከሌለ አዲስ መፍጠር)
   static async getOrCreateCart(userId) {
-    const [existingCart] = await db.execute(
-      'SELECT id FROM carts WHERE user_id = ?',
-      [userId]
-    );
+    const [existingCart] = await db.execute('SELECT id FROM carts WHERE user_id = ?', [userId]);
 
     if (existingCart.length > 0) {
       return existingCart[0].id;
     }
 
     // Cart ከሌለ አዲስ መፍጠር
-    const [newCart] = await db.execute(
-      'INSERT INTO carts (user_id) VALUES (?)',
-      [userId]
-    );
+    const [newCart] = await db.execute('INSERT INTO carts (user_id) VALUES (?)', [userId]);
     return newCart.insertId;
   }
 
@@ -32,10 +26,10 @@ class CartModel {
 
     if (existingItem.length > 0) {
       const updatedQuantity = existingItem[0].quantity + Number(quantity);
-      await db.execute(
-        'UPDATE cart_items SET quantity = ? WHERE id = ?',
-        [updatedQuantity, existingItem[0].id]
-      );
+      await db.execute('UPDATE cart_items SET quantity = ? WHERE id = ?', [
+        updatedQuantity,
+        existingItem[0].id,
+      ]);
       return { message: 'የዕቃው ብዛት ጨምሯል' };
     }
 
