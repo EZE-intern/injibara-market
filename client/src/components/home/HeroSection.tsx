@@ -1,10 +1,9 @@
-import { Link } from "react-router-dom";
+import { Link } from 'react-router-dom';
 
 function HeroSection() {
   return (
     <section className="bg-white">
       <div className="mx-auto grid min-h-[600px] max-w-7xl items-center gap-12 px-6 py-16 md:grid-cols-2 md:px-12 lg:px-16">
-        
         {/* Left side */}
         <div className="max-w-xl">
           <span className="mb-4 inline-block rounded-full bg-hover:text-brand-60050 px-4 py-2 text-sm font-semibold text-brand-600">
@@ -17,8 +16,8 @@ function HeroSection() {
           </h1>
 
           <p className="mt-6 max-w-lg text-lg leading-8 text-gray-600">
-            Discover products from local sellers in Injibara and connect
-            with your community through one simple marketplace.
+            Discover products from local sellers in Injibara and connect with your community through
+            one simple marketplace.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-4">
@@ -49,16 +48,11 @@ function HeroSection() {
           </div>
 
           <div className="absolute -bottom-6 -left-6 hidden rounded-2xl bg-white p-5 shadow-xl sm:block">
-            <p className="text-sm text-gray-500">
-              Local marketplace
-            </p>
+            <p className="text-sm text-gray-500">Local marketplace</p>
 
-            <p className="mt-1 text-lg font-bold text-gray-900">
-              Made for Injibara
-            </p>
+            <p className="mt-1 text-lg font-bold text-gray-900">Made for Injibara</p>
           </div>
         </div>
-
       </div>
     </section>
   );

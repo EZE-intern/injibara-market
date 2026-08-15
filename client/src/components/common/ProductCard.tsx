@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from 'react-router-dom';
 
 export interface Product {
   id: number;
@@ -26,17 +26,13 @@ function ProductCard({ product }: ProductCardProps) {
 
       {/* Product information */}
       <div className="p-5">
-        <h3 className="truncate text-base font-semibold text-gray-900">
-          {product.name}
-        </h3>
+        <h3 className="truncate text-base font-semibold text-gray-900">{product.name}</h3>
 
         <p className="mt-2 text-lg font-bold text-brand-600">
           {product.price.toLocaleString()} ETB
         </p>
 
-        <p className="mt-1 text-sm text-gray-500">
-          {product.location}
-        </p>
+        <p className="mt-1 text-sm text-gray-500">{product.location}</p>
 
         <Link
           to={`/products/${product.id}`}

@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import MobileNavigation from "./MobileNavigation";
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import MobileNavigation from './MobileNavigation';
 
 function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -17,10 +17,7 @@ function Navbar() {
     <>
       <nav className="flex h-16 w-full items-center justify-between border-b border-gray-200 bg-white px-6 md:px-12">
         {/* Logo */}
-        <Link
-          to="/"
-          className="text-xl font-bold text-gray-900"
-        >
+        <Link to="/" className="text-xl font-bold text-gray-900">
           Injibara Market
         </Link>
 
@@ -60,21 +57,14 @@ function Navbar() {
         <button
           type="button"
           onClick={toggleMobileMenu}
-          aria-label={
-            isMobileMenuOpen
-              ? "Close navigation menu"
-              : "Open navigation menu"
-          }
+          aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
           className="rounded-md p-2 text-gray-700 hover:bg-gray-100 md:hidden"
         >
-          {isMobileMenuOpen ? "✕" : "☰"}
+          {isMobileMenuOpen ? '✕' : '☰'}
         </button>
       </nav>
 
-      <MobileNavigation
-        isOpen={isMobileMenuOpen}
-        onClose={closeMobileMenu}
-      />
+      <MobileNavigation isOpen={isMobileMenuOpen} onClose={closeMobileMenu} />
     </>
   );
 }
