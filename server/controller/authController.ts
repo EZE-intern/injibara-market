@@ -52,9 +52,11 @@ export const registerUser = async (req: Request, res: Response): Promise<Respons
       },
       token,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in registerUser:', error);
-    return res.status(500).json({ message: 'የአገልጋይ ስህተት አጋጥሟል', error: error.message });
+    // Properly assert the error type to satisfy TypeScript
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    return res.status(500).json({ message: 'የአገልጋይ ስህተት አጋጥሟል', error: errorMessage });
   }
 };
 
@@ -95,8 +97,10 @@ export const loginUser = async (req: Request, res: Response): Promise<Response |
       },
       token,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in loginUser:', error);
-    return res.status(500).json({ message: 'የአገልጋይ ስህተት አጋጥሟል', error: error.message });
+    // Properly assert the error type to satisfy TypeScript
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    return res.status(500).json({ message: 'የአገልጋይ ስህተት አጋጥሟል', error: errorMessage });
   }
 };
