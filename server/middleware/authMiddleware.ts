@@ -1,7 +1,19 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-export const protect = (req: any, res: Response, next: NextFunction) => {
+// 1. Explicitly define what is inside the decoded token to avoid 'any'
+export interface UserPayload {
+  id?: string;
+  role?: string;
+  email?: string;
+}
+
+// 2. Extend the Express Request interface safely
+export interface AuthRequest extends Request {
+  user?: UserPayload;
+}
+
+export const protect = (req: AuthRequest, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
   const token = authHeader && authHeader.split(' ')[1];
 
@@ -11,17 +23,18 @@ export const protect = (req: any, res: Response, next: NextFunction) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
-    req.user = decoded;
+    req.user = decoded as UserPayload;
     next();
-  } catch (error) {
+  } catch { // 3. Completely removed the error binding to satisfy the unused-vars rule
     return res.status(403).json({ message: 'Invalid token' });
   }
 };
-//  Export authenticateUser alias for orderRoutes.ts
+
+// Export authenticateUser alias for orderRoutes.ts
 export const authenticateUser = protect;
 
 export const authorize = (...allowedRoles: string[]) => {
-  return (req: any, res: Response, next: NextFunction) => {
+  return (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!req.user || !req.user.role) {
       return res.status(401).json({ message: 'Unauthorized: No user role found' });
     }
