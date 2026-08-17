@@ -16,11 +16,9 @@ export const protect = (req: any, res: Response, next: NextFunction) => {
   } catch (error) {
     return res.status(403).json({ message: 'Invalid token' });
   }
-
 };
 //  Export authenticateUser alias for orderRoutes.ts
 export const authenticateUser = protect;
-
 
 export const authorize = (...allowedRoles: string[]) => {
   return (req: any, res: Response, next: NextFunction) => {

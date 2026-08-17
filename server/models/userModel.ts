@@ -1,4 +1,3 @@
-
 import { RowDataPacket, ResultSetHeader } from 'mysql2/promise';
 import db from '../config/db';
 
