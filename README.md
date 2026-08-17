@@ -1,3 +1,5 @@
+[![CI Pipeline](https://github.com/eyosimak/injibara-market/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/eyosimak/injibara-market/actions)
+
 # Injibara Market እንጂባራ ገበያ.
 
 A full stack marketplace for injibara city

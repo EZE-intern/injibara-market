@@ -69,3 +69,36 @@ jobs:
           # This connects Prisma directly to the CI PostgreSQL container
           DATABASE_URL: postgresql://root:password@localhost:5432/injibara_test_db?schema=public
         run: cd server && npm test
+
+    build:
+      name: Build Project
+      needs: test # Only runs if tests pass
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout Code
+          uses: actions/checkout@v4
+        - name: Setup Node.js
+          uses: actions/setup-node@v4
+          with:
+            node-version: '20'
+            cache: 'npm'
+        - name: Install Root Dependencies
+          run: npm ci
+        - name: Install Client Dependencies
+          run: cd client && npm install
+        - name: Install Server Dependencies
+          run: cd server && npm install
+        - name: Build Frontend
+          run: cd client && npm run build
+        - name: Build Backend
+          run: cd server && npm run build
+
+    docker-build:
+      name: Docker Build
+      needs: build # Only runs if code compiles successfully
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout Code
+          uses: actions/checkout@v4
+        - name: Build API Docker Image
+          run: docker build -f docker/api.Dockerfile -t injibara-api .
