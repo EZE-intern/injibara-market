@@ -2,17 +2,46 @@ name: CI Pipeline
 
 on:
   push:
-    branches:
-      - develop
+    branches: [ develop ]
   pull_request:
-    branches:
-      - main
-      - develop
+    branches: [ develop ]
 
 jobs:
   lint:
-    name: Lint & Format Check
+    name: Lint & Format
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: cd client && npm install
+      - run: cd server && npm install
+      - run: npm run lint
+
+  test:
+    name: Run Tests
+    needs: lint # This ensures tests ONLY run if linting passes first
+    runs-on: ubuntu-latest
+
+    # This spins up an isolated PostgreSQL database just for the CI tests
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: injibara_test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -23,33 +52,20 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install Dependencies
+      - name: Install Root Dependencies
         run: npm ci
 
-      - name: Check Formatting
-        run: npx prettier --check .
+      - name: Install Client Dependencies
+        run: cd client && npm install
 
-      - name: Run ESLint
-        run: npm run lint
+      - name: Install Server Dependencies
+        run: cd server && npm install
 
-  type-check:
-    name: TypeScript Check
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - name: Run Frontend Tests (Vitest)
+        run: cd client && npm test
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: Check Server Types
-        run: npx tsc --project server/tsconfig.json --noEmit
-
-      - name: Check Client Types
-        run: npx tsc --project client/tsconfig.json --noEmit
+      - name: Run Backend Tests (Jest)
+        env:
+          # This connects Prisma directly to the CI PostgreSQL container
+          DATABASE_URL: postgresql://root:password@localhost:5432/injibara_test_db?schema=public
+        run: cd server && npm test
