@@ -70,7 +70,7 @@ jobs:
           DATABASE_URL: postgresql://root:password@localhost:5432/injibara_test_db?schema=public
         run: cd server && npm test
 
-    build:
+  build:
       name: Build Project
       needs: test # Only runs if tests pass
       runs-on: ubuntu-latest
@@ -93,7 +93,7 @@ jobs:
         - name: Build Backend
           run: cd server && npm run build
 
-    docker-build:
+  docker-build:
       name: Docker Build
       needs: build # Only runs if code compiles successfully
       runs-on: ubuntu-latest
