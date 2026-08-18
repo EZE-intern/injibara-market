@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
-import { prisma } from '../lib/prisma';
-import generateToken from '../utils/generateToken';
+import { prisma } from '../lib/prisma.js';
+import generateToken from '../utils/generateToken.js';
 import { users_role } from '@prisma/client';
 
 // @route   POST /api/auth/register
