@@ -1,48 +1,53 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-// 1. Explicitly define what is inside the decoded token to avoid 'any'
-export interface UserPayload {
-  id?: string;
-  role?: string;
-  email?: string;
-}
-
-// 2. Extend the Express Request interface safely
+// Extend the Express Request interface to include our custom user payload
 export interface AuthRequest extends Request {
-  user?: UserPayload;
+  user?: {
+    id: string | number;
+    role: string;
+    email: string;
+  };
 }
 
-export const protect = (req: AuthRequest, res: Response, next: NextFunction) => {
-  const authHeader = req.headers.authorization;
-  const token = authHeader && authHeader.split(' ')[1];
+// 1. Protect routes (Verify JWT)
+export const protect = (req: AuthRequest, res: Response, next: NextFunction): void => {
+  let token;
 
-  if (!token) {
-    return res.status(401).json({ message: 'እባክዎ መጀመሪያ Login ያድርጉ (No token provided)' });
-  }
+  // Check if the authorization header exists and starts with "Bearer"
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    try {
+      // Extract token from "Bearer <token>"
+      token = req.headers.authorization.split(' ')[1];
 
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
-    req.user = decoded as UserPayload;
-    next();
-  } catch { // 3. Completely removed the error binding to satisfy the unused-vars rule
-    return res.status(403).json({ message: 'Invalid token' });
+      // Verify the token using your secret
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'supersecretkey123') as any;
+
+      // Attach the decoded payload (id, role, email) to the request object
+      req.user = {
+        id: decoded.id,
+        role: decoded.role,
+        email: decoded.email,
+      };
+
+      next();
+    } catch (error) {
+      console.error('Token verification failed:', error);
+      res.status(401).json({ message: 'ያልተፈቀደ መዳረሻ፣ ቶከን ልክ አይደለም' }); // Unauthorized, invalid token
+    }
+  } else {
+    res.status(401).json({ message: 'ያልተፈቀደ መዳረሻ፣ ቶከን አልተገኘም' }); // Unauthorized, no token
   }
 };
 
-// Export authenticateUser alias for orderRoutes.ts
-export const authenticateUser = protect;
-
-export const authorize = (...allowedRoles: string[]) => {
-  return (req: AuthRequest, res: Response, next: NextFunction) => {
-    if (!req.user || !req.user.role) {
-      return res.status(401).json({ message: 'Unauthorized: No user role found' });
+// 2. Role Authorization Guard
+export const authorizeRoles = (...roles: string[]) => {
+  return (req: AuthRequest, res: Response, next: NextFunction): void => {
+    // Check if user exists on the request and if their role is in the allowed roles array
+    if (!req.user || !roles.includes(req.user.role)) {
+      res.status(403).json({ message: 'ይህንን ተግባር ለማከናወን ፈቃድ የሎትም' }); // Forbidden
+      return;
     }
-
-    if (!allowedRoles.includes(req.user.role)) {
-      return res.status(403).json({ message: 'Access denied: You do not have permission' });
-    }
-
     next();
   };
 };
