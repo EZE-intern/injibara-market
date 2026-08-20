@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { prisma } from '../lib/prisma';
+import { prisma } from '../lib/prisma.js';
 
 
 
@@ -56,7 +56,7 @@ export const getCategories = async (req: Request, res: Response): Promise<Respon
   try {
     const categories = await prisma.categories.findMany({
       where: {
-        deleted_at: null, 
+        deleted_at: null,
       },
       orderBy: {
         name: 'asc',
@@ -77,7 +77,7 @@ export const getCategories = async (req: Request, res: Response): Promise<Respon
   }
 };
 
-// get one category  Category by ID 
+// get one category  Category by ID
 // @route   GET /api/categories/:id
 export const getCategoryById = async (req: Request, res: Response): Promise<Response | void> => {
   try {
@@ -109,7 +109,7 @@ export const getCategoryById = async (req: Request, res: Response): Promise<Resp
 
 
 
-// update  Category  
+// update  Category
 // @route   PUT /api/categories/:id
 export const updateCategory = async (req: Request, res: Response): Promise<Response | void> => {
   try {
