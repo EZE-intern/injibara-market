@@ -7,7 +7,7 @@ export const getProducts = async (req: Request, res: Response) => {
   try {
     // Later, you will fetch these from Prisma
     res.status(200).json({ message: 'ምርቶች በተሳካ ሁኔታ ተገኝተዋል', products: [] });
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ message: 'የአገልጋይ ስህተት አጋጥሟል' });
   }
 };
@@ -23,7 +23,7 @@ export const createProduct = async (req: AuthRequest, res: Response) => {
       message: 'ምርት በተሳካ ሁኔታ ተፈጥሯል',
       product: { name: 'Test Product', sellerId }
     });
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ message: 'የአገልጋይ ስህተት አጋጥሟል' });
   }
 };

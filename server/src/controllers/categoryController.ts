@@ -41,7 +41,7 @@ export const createCategory = async (req: Request, res: Response): Promise<Respo
       message: 'ምድቡ በተሳካ ሁኔታ ተፈጥሯል',
       data: newCategory,
     });
-  } catch (error: any) {
+  } catch (error: unkown) {
     console.error('Category creation error:', error);
     return res.status(500).json({
       message: 'ምድብ መፍጠር አልተቻለም',
@@ -68,7 +68,7 @@ export const getCategories = async (req: Request, res: Response): Promise<Respon
       count: categories.length,
       data: categories,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching categories:', error);
     return res.status(500).json({
       message: 'የምድብ መረጃዎችን ማምጣት አልተቻለም',
@@ -98,7 +98,7 @@ export const getCategoryById = async (req: Request, res: Response): Promise<Resp
       success: true,
       data: category,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching category:', error);
     return res.status(500).json({
       message: 'የአገልጋይ ስህተት አጋጥሟል',
@@ -144,7 +144,7 @@ export const updateCategory = async (req: Request, res: Response): Promise<Respo
       message: 'ምድቡ በተሳካ ሁኔታ ተሻሽሏል',
       data: updatedCategory,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating category:', error);
     return res.status(500).json({
       message: 'ምድቡን ማሻሻል አልተቻለም',
@@ -177,7 +177,7 @@ export const deleteCategory = async (req: Request, res: Response): Promise<Respo
     return res.status(200).json({
       message: 'ምድቡ በተሳካ ሁኔታ ተሰርዟል',
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error deleting category:', error);
     return res.status(500).json({
       message: 'ምድቡን መሰረዝ አልተቻለም',
