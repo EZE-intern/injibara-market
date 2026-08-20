@@ -1,0 +1,323 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model addresses {
+  id             Int      @id @default(autoincrement())
+  user_id        Int
+  full_name      String?  @db.VarChar(100)
+  phone          String?  @db.VarChar(20)
+  region         String?  @db.VarChar(100)
+  city           String?  @db.VarChar(100)
+  kebele         String?  @db.VarChar(100)
+  street_address String?  @db.Text
+  is_default     Boolean? @default(false)
+  created_at     DateTime @default(now()) @db.Timestamp(0)
+  users          users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
+
+  @@index([user_id])
+}
+
+model cart_items {
+  id         Int      @id @default(autoincrement())
+  cart_id    Int
+  product_id Int
+  quantity   Int      @default(1)
+  created_at DateTime @default(now()) @db.Timestamp(0)
+  carts      carts    @relation(fields: [cart_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  products   products @relation(fields: [product_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
+
+  @@unique([cart_id, product_id])
+  @@index([product_id])
+}
+
+model carts {
+  id         Int          @id @default(autoincrement())
+  user_id    Int?         @unique
+  created_at DateTime     @default(now()) @db.Timestamp(0)
+  updated_at DateTime     @default(now()) @db.Timestamp(0)
+  cart_items cart_items[]
+  users      users?       @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
+}
+
+model categories {
+  id          Int        @id @default(autoincrement())
+  name        String     @db.VarChar(100)
+  slug        String     @unique @db.VarChar(100)
+  description String?    @db.Text
+  image       String?    @db.VarChar(255)
+  created_at  DateTime   @default(now()) @db.Timestamp(0)
+  deleted_at  DateTime?  @db.Timestamp(0)
+  products    products[]
+}
+
+model favorites {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  product_id Int
+  created_at DateTime @default(now()) @db.Timestamp(0)
+  users      users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  products   products @relation(fields: [product_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
+
+  @@unique([user_id, product_id])
+  @@index([product_id])
+  @@index([user_id])
+}
+
+model inventory_logs {
+  id         Int      @id @default(autoincrement())
+  product_id Int
+  change     Int
+  reason     String?  @db.VarChar(255)
+  created_at DateTime @default(now()) @db.Timestamp(0)
+  products   products @relation(fields: [product_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
+
+  @@index([product_id])
+}
+
+model messages {
+  id                                Int       @id @default(autoincrement())
+  sender_id                         Int
+  receiver_id                       Int
+  product_id                        Int?
+  order_id                          Int?
+  message_text                      String    @db.Text
+  is_read                           Boolean?  @default(false)
+  created_at                        DateTime  @default(now()) @db.Timestamp(0)
+  users_messages_sender_idTousers   users     @relation("messages_sender_idTousers", fields: [sender_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  users_messages_receiver_idTousers users     @relation("messages_receiver_idTousers", fields: [receiver_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  products                          products? @relation(fields: [product_id], references: [id], onUpdate: Restrict)
+  orders                            orders?   @relation(fields: [order_id], references: [id], onUpdate: Restrict)
+
+  @@index([order_id])
+  @@index([product_id])
+  @@index([receiver_id])
+  @@index([sender_id])
+}
+
+model order_items {
+  id           Int       @id @default(autoincrement())
+  order_id     Int
+  product_id   Int?
+  product_name String?   @db.VarChar(200)
+  price        Decimal   @db.Decimal(12, 2)
+  quantity     Int
+  orders       orders    @relation(fields: [order_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  products     products? @relation(fields: [product_id], references: [id], onUpdate: Restrict)
+
+  @@index([order_id])
+  @@index([product_id])
+}
+
+model order_status_history {
+  id         Int                         @id @default(autoincrement())
+  order_id   Int
+  status     order_status_history_status
+  changed_by Int?
+  changed_at DateTime                    @default(now()) @db.Timestamp(0)
+  orders     orders                      @relation(fields: [order_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  users      users?                      @relation(fields: [changed_by], references: [id], onUpdate: Restrict)
+
+  @@index([changed_by])
+  @@index([order_id])
+}
+
+model orders {
+  id                   Int                    @id @default(autoincrement())
+  user_id              Int
+  shipping_address_id  Int?
+  order_number         String                 @unique @db.VarChar(50)
+  total_amount         Decimal                @db.Decimal(12, 2)
+  status               orders_status?         @default(pending)
+  payment_method       orders_payment_method? @default(cash_on_delivery)
+  payment_status       orders_payment_status? @default(pending)
+  shipping_address     String?                @db.Text
+  note                 String?                @db.Text
+  created_at           DateTime               @default(now()) @db.Timestamp(0)
+  updated_at           DateTime               @default(now()) @db.Timestamp(0)
+  messages             messages[]
+  order_items          order_items[]
+  order_status_history order_status_history[]
+  users                users                  @relation(fields: [user_id], references: [id], onUpdate: Restrict)
+  payments             payments[]
+
+  @@index([user_id])
+}
+
+model payments {
+  id             Int                     @id @default(autoincrement())
+  order_id       Int
+  user_id        Int
+  transaction_id String?                 @db.VarChar(100)
+  payment_method payments_payment_method
+  amount         Decimal                 @db.Decimal(12, 2)
+  currency       String?                 @default("ETB") @db.VarChar(10)
+  status         payments_status?        @default(pending)
+  provider       String?                 @db.VarChar(50)
+  paid_at        DateTime?               @db.Timestamp(0)
+  created_at     DateTime                @default(now()) @db.Timestamp(0)
+  orders         orders                  @relation(fields: [order_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
+
+  @@index([order_id])
+}
+
+model product_images {
+  id         Int      @id @default(autoincrement())
+  product_id Int
+  image_url  String   @db.VarChar(255)
+  is_primary Boolean? @default(false)
+  sort_order Int?     @default(0)
+  created_at DateTime @default(now()) @db.Timestamp(0)
+  products   products @relation(fields: [product_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
+
+  @@index([product_id])
+}
+
+model products {
+  id             Int              @id @default(autoincrement())
+  store_id       Int?
+  seller_id      Int?
+  category_id    Int?
+  name           String           @db.VarChar(200)
+  slug           String           @db.VarChar(200)
+  description    String?          @db.Text
+  price          Decimal          @db.Decimal(12, 2)
+  discount_price Decimal?         @db.Decimal(12, 2)
+  stock          Int?             @default(0)
+  status         products_status? @default(draft)
+  image          String?          @db.VarChar(255)
+  images         String?          @db.Text
+  is_active      Boolean?         @default(true)
+  created_at     DateTime         @default(now()) @db.Timestamp(0)
+  updated_at     DateTime         @default(now()) @db.Timestamp(0)
+  deleted_at     DateTime?        @db.Timestamp(0)
+  cart_items     cart_items[]
+  favorites      favorites[]
+  inventory_logs inventory_logs[]
+  messages       messages[]
+  order_items    order_items[]
+  product_images product_images[]
+  users          users?           @relation(fields: [seller_id], references: [id], onUpdate: Restrict)
+  categories     categories?      @relation(fields: [category_id], references: [id], onUpdate: Restrict)
+  reviews        reviews[]
+
+  @@index([category_id])
+  @@index([seller_id])
+}
+
+model reviews {
+  id         Int      @id @default(autoincrement())
+  product_id Int
+  user_id    Int
+  rating     Int?     @db.SmallInt
+  comment    String?  @db.Text
+  created_at DateTime @default(now()) @db.Timestamp(0)
+  products   products @relation(fields: [product_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  users      users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
+
+  @@unique([product_id, user_id])
+  @@index([user_id])
+}
+
+model stores {
+  id          Int       @id @default(autoincrement())
+  seller_id   Int
+  store_name  String    @db.VarChar(150)
+  slug        String    @unique @db.VarChar(150)
+  logo        String?   @db.VarChar(255)
+  description String?   @db.Text
+  phone       String?   @db.VarChar(20)
+  address     String?   @db.Text
+  is_active   Boolean?  @default(true)
+  created_at  DateTime  @default(now()) @db.Timestamp(0)
+  updated_at  DateTime  @default(now()) @db.Timestamp(0)
+  deleted_at  DateTime? @db.Timestamp(0)
+  users       users     @relation(fields: [seller_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
+
+  @@index([seller_id])
+}
+
+model users {
+  id                                   Int                    @id @default(autoincrement())
+  full_name                            String                 @db.VarChar(100)
+  email                                String                 @unique @db.VarChar(100)
+  phone                                String?                @unique @db.VarChar(20)
+  password                             String                 @db.VarChar(255)
+  role                                 users_role?            @default(customer)
+  created_at                           DateTime               @default(now()) @db.Timestamp(0)
+  updated_at                           DateTime               @default(now()) @db.Timestamp(0)
+  deleted_at                           DateTime?              @db.Timestamp(0)
+  addresses                            addresses[]
+  carts                                carts?
+  favorites                            favorites[]
+  messages_messages_sender_idTousers   messages[]             @relation("messages_sender_idTousers")
+  messages_messages_receiver_idTousers messages[]             @relation("messages_receiver_idTousers")
+  order_status_history                 order_status_history[]
+  orders                               orders[]
+  products                             products[]
+  reviews                              reviews[]
+  stores                               stores[]
+}
+
+enum order_status_history_status {
+  pending
+  processing
+  shipped
+  delivered
+  cancelled
+}
+
+enum payments_payment_method {
+  telebirr
+  cbe_birr
+  bank_transfer
+  cash_on_delivery
+}
+
+enum orders_status {
+  pending
+  paid
+  processing
+  shipped
+  delivered
+  cancelled
+}
+
+enum users_role {
+  customer
+  admin
+  seller
+}
+
+enum orders_payment_method {
+  telebirr
+  cbe_birr
+  bank_transfer
+  cash_on_delivery
+}
+
+enum orders_payment_status {
+  pending
+  paid
+  failed
+}
+
+enum payments_status {
+  pending
+  successful
+  failed
+  refunded
+}
+
+enum products_status {
+  draft
+  pending
+  approved
+  rejected
+  inactive
+  archived
+}

@@ -1,14 +1,11 @@
-import { Link } from "react-router-dom";
+import { Link } from 'react-router-dom';
 
 interface MobileNavigationProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-function MobileNavigation({
-  isOpen,
-  onClose,
-}: MobileNavigationProps) {
+function MobileNavigation({ isOpen, onClose }: MobileNavigationProps) {
   if (!isOpen) {
     return null;
   }

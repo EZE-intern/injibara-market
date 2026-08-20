@@ -1,20 +1,15 @@
-import { Link } from "react-router-dom";
-import { categories } from "./categoryData";
+import { Link } from 'react-router-dom';
+import { categories } from './categoryData';
 
 function CategoryGrid() {
   return (
     <section className="bg-gray-50 py-16">
       <div className="mx-auto max-w-7xl px-6 md:px-12 lg:px-16">
-
         {/* Section heading */}
         <div className="mb-10 text-center">
-          <p className="text-sm font-semibold uppercase tracking-wide text-brand-600">
-            Explore
-          </p>
+          <p className="text-sm font-semibold uppercase tracking-wide text-brand-600">Explore</p>
 
-          <h2 className="mt-2 text-3xl font-bold text-gray-900">
-            Browse Categories
-          </h2>
+          <h2 className="mt-2 text-3xl font-bold text-gray-900">Browse Categories</h2>
 
           <p className="mx-auto mt-3 max-w-2xl text-gray-600">
             Find what you need from local sellers in Injibara.
@@ -40,13 +35,10 @@ function CategoryGrid() {
               </h3>
 
               {/* Description */}
-              <p className="mt-2 text-xs leading-5 text-gray-500">
-                {category.description}
-              </p>
+              <p className="mt-2 text-xs leading-5 text-gray-500">{category.description}</p>
             </Link>
           ))}
         </div>
-
       </div>
     </section>
   );

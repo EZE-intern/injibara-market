@@ -1,5 +1,25 @@
-# injibara-market
+[![CI Pipeline](https://github.com/eyosimak/injibara-market/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/eyosimak/injibara-market/actions)
 
-this is a repo for the fully functioning injibara e commerce web made by 3 interns
+# Injibara Market እንጂባራ ገበያ.
 
-mainly composed of client(eyob), server(zelie) and docker(me)...
+A full stack marketplace for injibara city
+
+## Getting Started
+
+This project uses Docker Compose to guarantee the frontend, backend, and database run identically on every developer's machine.
+
+### Prerequisites
+
+- Docker & Docker Compose installed
+- Node.js 20+ installed
+- Git installed
+
+### 1. Clone & Install
+
+```bash
+git clone [https://github.com/EZE-intern/injibara-market.git](https://github.com/EZE-intern/injibara-market.git)
+cd injibara-market
+
+# Install root dependencies (Husky/Linting)
+npm install
+```
