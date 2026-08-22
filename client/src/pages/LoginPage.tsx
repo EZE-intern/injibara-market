@@ -1,15 +1,47 @@
 import { FormEvent, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { loginUser } from "../api/authApi";
 
 function LoginPage() {
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    console.log("Email:", email);
-    console.log("Password:", password);
+    setError("");
+    setLoading(true);
+
+    try {
+      const response = await loginUser({
+        email,
+        password,
+      });
+
+      console.log("Login successful:", response);
+
+      // Save authentication data
+      localStorage.setItem("token", response.token);
+      localStorage.setItem("user", JSON.stringify(response.user));
+
+      // Go back to marketplace
+      navigate("/");
+    } catch (error: any) {
+      console.error("Login failed:", error);
+
+      const message =
+        error.response?.data?.message ||
+        "Login failed. Please check your email and password.";
+
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -38,6 +70,13 @@ function LoginPage() {
         <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
 
           <form onSubmit={handleSubmit}>
+
+            {/* Error */}
+            {error && (
+              <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {error}
+              </div>
+            )}
 
             {/* Email */}
             <div>
@@ -100,9 +139,10 @@ function LoginPage() {
             {/* Submit */}
             <button
               type="submit"
-              className="mt-6 w-full rounded-lg bg-brand-600 px-5 py-3 font-semibold text-white transition-colors hover:bg-brand-700"
+              disabled={loading}
+              className="mt-6 w-full rounded-lg bg-brand-600 px-5 py-3 font-semibold text-white transition-colors hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Login
+              {loading ? "Signing in..." : "Login"}
             </button>
 
           </form>

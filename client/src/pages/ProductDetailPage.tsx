@@ -1,300 +1,369 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
+import type { Product } from "../types/Product";
+
+const products: Product[] = [
+  {
+    id: 1,
+    name: "Samsung Galaxy A15",
+    brand: "Samsung",
+    price: 18500,
+    rating: 4.6,
+    reviews: 128,
+    batch: "B2026-08",
+    location: "Injibara",
+    image:
+      "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9",
+    category: "Electronics",
+    subCategory: "Mobile Phones",
+    description:
+      "Samsung Galaxy A15 smartphone with a large display and reliable performance.",
+  },
+
+  {
+    id: 2,
+    name: "Nike Air Max",
+    brand: "Nike",
+    price: 4500,
+    rating: 4.4,
+    reviews: 86,
+    batch: "B2026-07",
+    location: "Injibara",
+    image:
+      "https://images.unsplash.com/photo-1542291026-7eec264c27ff",
+    category: "Fashion",
+    subCategory: "Shoes",
+    description:
+      "Comfortable Nike Air Max shoes suitable for everyday use and casual activities.",
+  },
+
+  {
+    id: 3,
+    name: "Apple iPhone 15",
+    brand: "Apple",
+    price: 72000,
+    rating: 4.8,
+    reviews: 245,
+    batch: "B2026-08",
+    location: "Injibara",
+    image:
+      "https://images.unsplash.com/photo-1591337676887-a217a6970a8a",
+    category: "Electronics",
+    subCategory: "Mobile Phones",
+    description:
+      "Apple iPhone 15 with excellent performance, camera quality, and modern design.",
+  },
+
+  {
+    id: 4,
+    name: "Traditional Handwoven Basket",
+    brand: "Local Artisan",
+    price: 1200,
+    rating: 4.5,
+    reviews: 42,
+    batch: "B2026-07",
+    location: "Injibara",
+    image:
+      "https://images.unsplash.com/photo-1584302179602-e4c3d3fd629d",
+    category: "Home & Living",
+    subCategory: "Handicrafts",
+    description:
+      "Traditional handwoven basket made by local artisans in the Awi area.",
+  },
+
+  {
+    id: 5,
+    name: "Fresh Local Coffee",
+    brand: "Awi Coffee",
+    price: 850,
+    rating: 4.8,
+    reviews: 96,
+    batch: "B2026-08",
+    location: "Awi Zone",
+    image:
+      "https://images.unsplash.com/photo-1447933601403-0c6688de566e",
+    category: "Food",
+    subCategory: "Coffee",
+    description:
+      "Fresh locally produced coffee with a rich aroma and traditional Ethiopian character.",
+  },
+
+  {
+    id: 6,
+    name: "Men's Casual Shirt",
+    brand: "Local Fashion",
+    price: 1800,
+    rating: 4.3,
+    reviews: 31,
+    batch: "B2026-06",
+    location: "Injibara",
+    image:
+      "https://images.unsplash.com/photo-1603252110481-7ba873bf42ab",
+    category: "Fashion",
+    subCategory: "Men's Clothing",
+    description:
+      "Comfortable casual shirt suitable for everyday wear.",
+  },
+];
 
 function ProductDetailPage() {
-  const [selectedImage, setSelectedImage] = useState(0);
-  const [showFullDescription, setShowFullDescription] = useState(false);
+  const { id } = useParams();
 
-  const images = [
-    "https://images.unsplash.com/photo-1542291026-7eec264c27ff",
-    "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77",
-    "https://images.unsplash.com/photo-1495555961986-6d4c1ecb7be3",
-    "https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2",
-    "https://images.unsplash.com/photo-1549298916-b41d501d3772",
-  ];
+  const product = products.find(
+    (item) => item.id === Number(id)
+  );
 
-  const description =
-    "This is a sample product description. The real product description will come from the backend. We can use this area to provide detailed information about the product, its quality, specifications, usage instructions, condition, origin, and other information that customers need before making a purchase.";
+  /*
+   * Product doesn't exist
+   */
+  if (!product) {
+    return (
+      <main className="min-h-screen bg-gray-50 px-4 py-16">
+        <div className="mx-auto max-w-3xl rounded-xl bg-white p-10 text-center shadow-sm">
 
-  return (
-    <div className="min-h-screen bg-gray-50">
+          <div className="text-5xl">
+            🔍
+          </div>
 
-      {/* Header */}
-      <header className="border-b border-gray-200 bg-white">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+          <h1 className="mt-4 text-2xl font-bold text-gray-900">
+            Product not found
+          </h1>
 
-          <Link
-            to="/"
-            className="text-xl font-bold text-gray-900"
-          >
-            Injibara Market
-          </Link>
-
-          <nav className="hidden items-center gap-6 md:flex">
-            <Link
-              to="/"
-              className="text-sm font-medium text-gray-700 transition-colors hover:text-brand-600"
-            >
-              Home
-            </Link>
-
-            <Link
-              to="/products"
-              className="text-sm font-medium text-brand-600"
-            >
-              Products
-            </Link>
-
-            <Link
-              to="/categories"
-              className="text-sm font-medium text-gray-700 transition-colors hover:text-brand-600"
-            >
-              Categories
-            </Link>
-          </nav>
-
-          <Link
-            to="/cart"
-            className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
-          >
-            Cart
-          </Link>
-
-        </div>
-      </header>
-
-
-      {/* Breadcrumb */}
-      <div className="mx-auto max-w-7xl px-6 pt-6">
-        <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500">
-
-          <Link
-            to="/"
-            className="transition-colors hover:text-brand-600"
-          >
-            Home
-          </Link>
-
-          <span>/</span>
+          <p className="mt-2 text-gray-500">
+            The product you are looking for does not exist.
+          </p>
 
           <Link
             to="/products"
-            className="transition-colors hover:text-brand-600"
+            className="mt-6 inline-block rounded-lg bg-brand-600 px-5 py-3 font-semibold text-white hover:bg-brand-700"
           >
-            Products
+            Back to Products
           </Link>
 
-          <span>/</span>
-
-          <span className="text-gray-900">
-            Product
-          </span>
-
         </div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="min-h-screen bg-gray-50">
+
+      {/* =========================
+          BACK NAVIGATION
+      ========================== */}
+
+      <div className="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
+
+        <Link
+          to="/products"
+          className="text-sm font-medium text-gray-500 transition hover:text-brand-600"
+        >
+          ← Back to Products
+        </Link>
+
       </div>
 
 
-      {/* Product */}
-      <main className="mx-auto max-w-7xl px-6 py-8">
+      {/* =========================
+          PRODUCT DETAILS
+      ========================== */}
 
-        <div className="grid gap-10 lg:grid-cols-2">
+      <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
 
+        <div className="overflow-hidden rounded-2xl bg-white shadow-sm">
 
-          {/* =========================
-              IMAGE SECTION
-          ========================= */}
+          <div className="grid lg:grid-cols-2">
 
-          <section>
+            {/* =========================
+                IMAGE
+            ========================== */}
 
-            {/* Main image */}
-            <div className="flex aspect-square items-center justify-center overflow-hidden rounded-2xl border border-gray-200 bg-white">
+            <div className="min-h-[400px] bg-gray-100 lg:min-h-[600px]">
 
               <img
-                src={images[selectedImage]}
-                alt="Product"
-                className="h-full w-full object-cover"
+                src={product.image}
+                alt={product.name}
+                className="h-full min-h-[400px] w-full object-cover lg:min-h-[600px]"
               />
 
             </div>
 
 
-            {/* Thumbnails */}
-            <div className="mt-4 grid grid-cols-5 gap-3">
+            {/* =========================
+                INFORMATION
+            ========================== */}
 
-              {images.map((image, index) => (
+            <div className="p-6 sm:p-10 lg:p-12">
 
-                <button
-                  key={image}
-                  onClick={() => setSelectedImage(index)}
-                  className={`aspect-square overflow-hidden rounded-lg border-2 bg-white ${
-                    selectedImage === index
-                      ? "border-brand-600"
-                      : "border-gray-200"
-                  }`}
-                >
+              {/* Category */}
+              <div className="flex flex-wrap gap-2">
 
-                  <img
-                    src={image}
-                    alt={`Product ${index + 1}`}
-                    className="h-full w-full object-cover"
-                  />
+                <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
+                  {product.category}
+                </span>
 
-                </button>
+                {product.subCategory && (
+                  <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
+                    {product.subCategory}
+                  </span>
+                )}
 
-              ))}
-
-            </div>
-
-          </section>
+              </div>
 
 
-          {/* =========================
-              PRODUCT INFORMATION
-          ========================= */}
-
-          <section>
-
-            {/* Category */}
-            <p className="text-sm font-medium text-brand-600">
-              Electronics / Mobile Phones
-            </p>
+              {/* Brand */}
+              <p className="mt-6 text-sm font-medium uppercase tracking-wide text-gray-500">
+                {product.brand}
+              </p>
 
 
-            {/* Product name */}
-            <h1 className="mt-3 text-3xl font-bold tracking-tight text-gray-900 md:text-4xl">
-              Sample Product Name
-            </h1>
+              {/* Product name */}
+              <h1 className="mt-2 text-3xl font-bold text-gray-900 sm:text-4xl">
+                {product.name}
+              </h1>
 
 
-            {/* Brand */}
-            <p className="mt-3 text-sm text-gray-500">
-              Brand: <span className="font-medium text-gray-900">Example Brand</span>
-            </p>
+              {/* Rating */}
+              <div className="mt-4 flex items-center gap-3">
 
+                <div className="flex items-center gap-1">
 
-            {/* Price */}
-            <div className="mt-6">
-              <span className="text-3xl font-bold text-brand-600">
-                15,000 ETB
-              </span>
-            </div>
+                  <span className="text-xl text-yellow-500">
+                    ★
+                  </span>
 
+                  <span className="font-semibold text-gray-900">
+                    {product.rating.toFixed(1)}
+                  </span>
 
-            {/* Product information */}
-            <div className="mt-8 border-y border-gray-200 py-6">
-
-              <h2 className="text-lg font-semibold text-gray-900">
-                Product Information
-              </h2>
-
-              <dl className="mt-5 space-y-4">
-
-                <div className="flex justify-between gap-6">
-                  <dt className="text-sm text-gray-500">
-                    Category
-                  </dt>
-
-                  <dd className="text-right text-sm font-medium text-gray-900">
-                    Electronics
-                  </dd>
                 </div>
 
+                <span className="text-gray-500">
+                  {product.reviews} reviews
+                </span>
 
-                <div className="flex justify-between gap-6">
-                  <dt className="text-sm text-gray-500">
-                    Subcategory
-                  </dt>
-
-                  <dd className="text-right text-sm font-medium text-gray-900">
-                    Mobile Phones
-                  </dd>
-                </div>
+              </div>
 
 
-                <div className="flex justify-between gap-6">
-                  <dt className="text-sm text-gray-500">
-                    Brand
-                  </dt>
+              {/* Price */}
+              <div className="mt-6">
 
-                  <dd className="text-right text-sm font-medium text-gray-900">
-                    Example Brand
-                  </dd>
-                </div>
+                <span className="text-3xl font-bold text-brand-600">
+                  {product.price.toLocaleString()} ETB
+                </span>
 
-
-                <div className="flex justify-between gap-6">
-                  <dt className="text-sm text-gray-500">
-                    Batch
-                  </dt>
-
-                  <dd className="text-right text-sm font-medium text-gray-900">
-                    2026
-                  </dd>
-                </div>
-
-              </dl>
-
-            </div>
+              </div>
 
 
-            {/* Description */}
-            <div className="mt-8">
+              {/* Divider */}
+              <div className="my-8 border-t border-gray-200" />
 
-              <h2 className="text-lg font-semibold text-gray-900">
-                Description
-              </h2>
 
-              <div className="mt-3">
+              {/* Description */}
+              <div>
 
-                <p
-                  className={`text-sm leading-7 text-gray-600 ${
-                    !showFullDescription ? "line-clamp-3" : ""
-                  }`}
-                >
-                  {description}
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Description
+                </h2>
+
+                <p className="mt-3 leading-7 text-gray-600">
+                  {product.description}
                 </p>
+
+              </div>
+
+
+              {/* Product information */}
+              <div className="mt-8">
+
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Product Information
+                </h2>
+
+                <div className="mt-4 divide-y divide-gray-200 rounded-lg border border-gray-200">
+
+                  <div className="flex justify-between px-4 py-3">
+                    <span className="text-sm text-gray-500">
+                      Category
+                    </span>
+
+                    <span className="text-sm font-medium text-gray-900">
+                      {product.category}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between px-4 py-3">
+                    <span className="text-sm text-gray-500">
+                      Subcategory
+                    </span>
+
+                    <span className="text-sm font-medium text-gray-900">
+                      {product.subCategory || "N/A"}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between px-4 py-3">
+                    <span className="text-sm text-gray-500">
+                      Brand
+                    </span>
+
+                    <span className="text-sm font-medium text-gray-900">
+                      {product.brand}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between px-4 py-3">
+                    <span className="text-sm text-gray-500">
+                      Batch
+                    </span>
+
+                    <span className="text-sm font-medium text-gray-900">
+                      {product.batch}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between px-4 py-3">
+                    <span className="text-sm text-gray-500">
+                      Location
+                    </span>
+
+                    <span className="text-sm font-medium text-gray-900">
+                      {product.location}
+                    </span>
+                  </div>
+
+                </div>
+
+              </div>
+
+
+              {/* Actions */}
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
 
                 <button
                   type="button"
-                  onClick={() =>
-                    setShowFullDescription(!showFullDescription)
-                  }
-                  className="mt-2 text-sm font-semibold text-brand-600 hover:text-brand-700"
+                  className="flex-1 rounded-lg bg-brand-600 px-6 py-3 font-semibold text-white transition hover:bg-brand-700"
                 >
-                  {showFullDescription ? "See less" : "See more"}
+                  Contact Seller
+                </button>
+
+                <button
+                  type="button"
+                  className="rounded-lg border border-gray-300 px-6 py-3 font-semibold text-gray-700 transition hover:bg-gray-50"
+                >
+                  ♡ Save
                 </button>
 
               </div>
 
             </div>
 
-
-            {/* Add to cart */}
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-
-              <button
-                type="button"
-                className="flex-1 rounded-xl bg-brand-600 px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
-              >
-                Add to Cart
-              </button>
-
-              <button
-                type="button"
-                className="rounded-xl border border-gray-300 bg-white px-6 py-3.5 text-sm font-semibold text-gray-900 transition-colors hover:bg-gray-50"
-              >
-                ♡
-              </button>
-
-            </div>
-
-          </section>
+          </div>
 
         </div>
 
-      </main>
+      </section>
 
-    </div>
+    </main>
   );
 }
 
