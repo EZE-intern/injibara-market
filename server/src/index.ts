@@ -25,7 +25,7 @@ app.get('/healthz', (req: Request, res: Response) => {
 
 // Mounted Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/products', productRoutes);
+app.use('/api/products', productRoute);
 
 // Start Server
 app.listen(PORT, () => {
