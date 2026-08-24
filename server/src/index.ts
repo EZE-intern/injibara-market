@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import authRoutes from './routes/authRoutes.js';
 import productRoute from './routes/productRoutes.js';
+import categoryRoutes from './routes/categoryRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -26,6 +27,7 @@ app.get('/healthz', (req: Request, res: Response) => {
 // Mounted Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoute);
+app.use('/api/categories', categoryRoutes);
 
 // Start Server
 app.listen(PORT, () => {
