@@ -1,4 +1,5 @@
-import type { Product } from '../../types/Product';
+import { Link } from "react-router-dom";
+import type { Product } from "../../types/Product";
 
 interface ProductCardProps {
   product: Product;
@@ -55,18 +56,20 @@ function ProductCard({ product }: ProductCardProps) {
           📍 {product.location}
         </p>
 
-        {/* Price */}
+        {/* Price + View */}
         <div className="mt-4 flex items-center justify-between">
+
           <span className="text-xl font-bold text-brand-600">
             {product.price.toLocaleString()} ETB
           </span>
 
-          <button
-            type="button"
+          <Link
+            to={`/products/${product.id}`}
             className="rounded-md bg-brand-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-brand-700"
           >
             View
-          </button>
+          </Link>
+
         </div>
 
       </div>

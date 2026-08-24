@@ -5,9 +5,15 @@ export interface RegisterData {
   email: string;
   password: string;
   phone?: string;
+  role?: string;
 }
 
-export interface RegisterResponse {
+export interface LoginData {
+  email: string;
+  password: string;
+}
+
+export interface AuthResponse {
   message: string;
   user: {
     id: number;
@@ -20,9 +26,20 @@ export interface RegisterResponse {
 
 export const registerUser = async (
   data: RegisterData
-): Promise<RegisterResponse> => {
-  const response = await axiosClient.post<RegisterResponse>(
+): Promise<AuthResponse> => {
+  const response = await axiosClient.post<AuthResponse>(
     "/auth/register",
+    data
+  );
+
+  return response.data;
+};
+
+export const loginUser = async (
+  data: LoginData
+): Promise<AuthResponse> => {
+  const response = await axiosClient.post<AuthResponse>(
+    "/auth/login",
     data
   );
 
