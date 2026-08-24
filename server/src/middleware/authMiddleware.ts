@@ -26,7 +26,7 @@ export const protect = (req: AuthRequest, res: Response, next: NextFunction): vo
       // Attach the decoded payload (id, role, email) to the request object
       req.user = {
         id: decoded.id,
-        role: decoded.role,
+        role: decoded.role as string,
         email: decoded.email,
       };
 
