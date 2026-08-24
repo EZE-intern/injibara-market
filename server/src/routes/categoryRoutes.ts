@@ -6,16 +6,16 @@ import {
   updateCategory,
   deleteCategory,
 } from '../controllers/categoryController.js';
-import { protect } from '../middleware/authMiddleware.js';
+import { protect, authorizeRoles } from '../middleware/authMiddleware.js';
 
 const router: Router = express.Router();
 
 router.get('/', getCategories);
 router.get('/:id', getCategoryById);
 
-//   this end points open only by admines
-router.post('/', protect, createCategory);
-router.put('/:id', protect, updateCategory);
-router.delete('/:id', protect, deleteCategory);
+// these end points are open only by admins
+router.post('/', protect, authorizeRoles('admin'), createCategory);
+router.put('/:id', protect, authorizeRoles('admin'), updateCategory);
+router.delete('/:id', protect, authorizeRoles('admin'), deleteCategory);
 
 export default router;

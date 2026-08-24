@@ -1,23 +1,51 @@
 import { FormEvent, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { registerUser } from "../api/authApi";
 
 function RegisterPage() {
+  const navigate = useNavigate();
+
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    console.log({
-      full_name: fullName,
-      email,
-      phone,
-      password,
-      confirmPassword,
-    });
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    setError("");
+    setLoading(true);
+
+    try {
+      // By default register as a customer; backend might default to this anyway
+      await registerUser({
+        full_name: fullName,
+        email,
+        phone,
+        password,
+        role: "customer",
+      });
+
+      // Redirect to login page on success
+      navigate("/login");
+    } catch (err: any) {
+      console.error("Registration failed:", err);
+      const message =
+        err.response?.data?.message ||
+        "Registration failed. Please try again.";
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -39,6 +67,12 @@ function RegisterPage() {
         <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-200 sm:p-8">
 
           <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Error Message */}
+            {error && (
+              <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {error}
+              </div>
+            )}
 
             {/* Full name */}
             <div>
@@ -142,9 +176,10 @@ function RegisterPage() {
             {/* Submit button */}
             <button
               type="submit"
-              className="w-full rounded-lg bg-brand-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand-700"
+              disabled={loading}
+              className="w-full rounded-lg bg-brand-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Create account
+              {loading ? "Creating account..." : "Create account"}
             </button>
           </form>
 
