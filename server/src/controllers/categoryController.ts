@@ -41,11 +41,11 @@ export const createCategory = async (req: Request, res: Response): Promise<Respo
       message: 'ምድቡ በተሳካ ሁኔታ ተፈጥሯል',
       data: newCategory,
     });
-  } catch (error: unkown) {
+  } catch (error: unknown) {
     console.error('Category creation error:', error);
     return res.status(500).json({
       message: 'ምድብ መፍጠር አልተቻለም',
-      error: error.message,
+      error: errorMessage,
     });
   }
 };
@@ -69,10 +69,12 @@ export const getCategories = async (req: Request, res: Response): Promise<Respon
       data: categories,
     });
   } catch (error: unknown) {
+      const errorMessage = (error as Error).message;
+
     console.error('Error fetching categories:', error);
     return res.status(500).json({
       message: 'የምድብ መረጃዎችን ማምጣት አልተቻለም',
-      error: error.message,
+      error: errorMessage,
     });
   }
 };
@@ -99,10 +101,11 @@ export const getCategoryById = async (req: Request, res: Response): Promise<Resp
       data: category,
     });
   } catch (error: unknown) {
+      const errorMessage = (error as Error).message;
     console.error('Error fetching category:', error);
     return res.status(500).json({
       message: 'የአገልጋይ ስህተት አጋጥሟል',
-      error: error.message,
+      error: errorMessage,
     });
   }
 };
@@ -145,10 +148,12 @@ export const updateCategory = async (req: Request, res: Response): Promise<Respo
       data: updatedCategory,
     });
   } catch (error: unknown) {
+      const errorMessage = (error as Error).message;
+
     console.error('Error updating category:', error);
     return res.status(500).json({
       message: 'ምድቡን ማሻሻል አልተቻለም',
-      error: error.message,
+      error: errorMessage,
     });
   }
 };
@@ -178,10 +183,12 @@ export const deleteCategory = async (req: Request, res: Response): Promise<Respo
       message: 'ምድቡ በተሳካ ሁኔታ ተሰርዟል',
     });
   } catch (error: unknown) {
+      const errorMessage = (error as Error).message;
+
     console.error('Error deleting category:', error);
     return res.status(500).json({
       message: 'ምድቡን መሰረዝ አልተቻለም',
-      error: error.message,
+      error: errorMessage,
     });
   }
 };

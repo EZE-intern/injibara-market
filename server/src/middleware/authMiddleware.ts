@@ -21,7 +21,7 @@ export const protect = (req: AuthRequest, res: Response, next: NextFunction): vo
       token = req.headers.authorization.split(' ')[1];
 
       // Verify the token using your secret
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'supersecretkey123') as unknown;
+      const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as {id: number; role?: string };
 
       // Attach the decoded payload (id, role, email) to the request object
       req.user = {
