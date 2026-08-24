@@ -42,6 +42,8 @@ export const createCategory = async (req: Request, res: Response): Promise<Respo
       data: newCategory,
     });
   } catch (error: unknown) {
+      const errorMessage = (error as Error).message;
+
     console.error('Category creation error:', error);
     return res.status(500).json({
       message: 'ምድብ መፍጠር አልተቻለም',
