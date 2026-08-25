@@ -31,7 +31,7 @@ function LoginPage() {
 
       // Go back to marketplace
       navigate("/");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Login failed:", error);
 
       const message =

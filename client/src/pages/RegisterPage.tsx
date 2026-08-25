@@ -37,7 +37,7 @@ function RegisterPage() {
 
       // Redirect to login page on success
       navigate("/login");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Registration failed:", err);
       const message =
         err.response?.data?.message ||
