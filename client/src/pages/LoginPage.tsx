@@ -1,6 +1,7 @@
 import { FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { loginUser } from "../api/authApi";
+import { saveAuth } from "../utils/authStorage";
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -25,18 +26,23 @@ function LoginPage() {
 
       console.log("Login successful:", response);
 
-      // Save authentication data
-      localStorage.setItem("token", response.token);
-      localStorage.setItem("user", JSON.stringify(response.user));
+      // Save JWT and user information
+      saveAuth(response.token, response.user);
 
-      // Go back to marketplace
-      navigate("/");
+      // Redirect based on role
+      if (response.user.role === "seller") {
+        navigate("/seller");
+      } else if (response.user.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/customer");
+      }
     } catch (error: any) {
       console.error("Login failed:", error);
 
       const message =
-        error.response?.data?.message ||
-        "Login failed. Please check your email and password.";
+        error?.response?.data?.message ||
+        "Unable to login. Please check your email and password.";
 
       setError(message);
     } finally {
@@ -66,17 +72,17 @@ function LoginPage() {
           </p>
         </div>
 
-        {/* Login card */}
+        {/* Login Card */}
         <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
 
-          <form onSubmit={handleSubmit}>
+          {/* Error */}
+          {error && (
+            <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {error}
+            </div>
+          )}
 
-            {/* Error */}
-            {error && (
-              <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                {error}
-              </div>
-            )}
+          <form onSubmit={handleSubmit}>
 
             {/* Email */}
             <div>
@@ -95,7 +101,8 @@ function LoginPage() {
                 placeholder="you@example.com"
                 autoComplete="email"
                 required
-                className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
+                disabled={loading}
+                className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100 disabled:bg-gray-100"
               />
             </div>
 
@@ -116,11 +123,12 @@ function LoginPage() {
                 placeholder="Enter your password"
                 autoComplete="current-password"
                 required
-                className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
+                disabled={loading}
+                className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100 disabled:bg-gray-100"
               />
             </div>
 
-            {/* Remember me */}
+            {/* Remember */}
             <div className="mt-5 flex items-center">
               <input
                 id="remember"
@@ -150,6 +158,7 @@ function LoginPage() {
           {/* Register */}
           <p className="mt-6 text-center text-sm text-gray-600">
             Don't have an account?{" "}
+
             <Link
               to="/register"
               className="font-semibold text-brand-600 hover:text-brand-700"

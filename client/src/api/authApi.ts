@@ -5,23 +5,24 @@ export interface RegisterData {
   email: string;
   password: string;
   phone?: string;
-  role?: string;
+}
+
+export interface User {
+  id: number;
+  full_name: string;
+  email: string;
+  role: string;
+}
+
+export interface AuthResponse {
+  message: string;
+  user: User;
+  token: string;
 }
 
 export interface LoginData {
   email: string;
   password: string;
-}
-
-export interface AuthResponse {
-  message: string;
-  user: {
-    id: number;
-    full_name: string;
-    email: string;
-    role: string;
-  };
-  token: string;
 }
 
 export const registerUser = async (

@@ -4,14 +4,9 @@ import HomePage from "../pages/HomePage";
 import LoginPage from "../pages/LoginPage";
 import RegisterPage from "../pages/RegisterPage";
 import ProductsPage from "../pages/ProductsPage";
-import ProductDetailPage from "../pages/ProductDetailPage";
-
-import CustomerDashboardPage from "../pages/customer/CustomerDashboardPage";
-import CustomerCartPage from "../pages/customer/CustomerCartPage";
-import CustomerOrdersPage from "../pages/customer/CustomerOrdersPage";
-import CustomerSavedPage from "../pages/customer/CustomerSavedPage";
-import CustomerProfilePage from "../pages/customer/CustomerProfilePage";
 import BecomeSellerPage from "../pages/customer/BecomeSellerPage";
+import SellerDashboardPage from "../pages/SellerDashboardPage";
+import CustomerDashboardPage from "../pages/customer/CustomerDashboardPage";
 
 function AppRoutes() {
   return (
@@ -19,50 +14,24 @@ function AppRoutes() {
 
       {/* Public */}
       <Route path="/" element={<HomePage />} />
-
       <Route path="/login" element={<LoginPage />} />
-
       <Route path="/register" element={<RegisterPage />} />
-
-      {/* Marketplace */}
       <Route path="/products" element={<ProductsPage />} />
 
-      <Route
-        path="/products/:id"
-        element={<ProductDetailPage />}
-      />
-
-      {/* Customer */}
-      <Route
-        path="/customer"
-        element={<CustomerDashboardPage />}
-      />
+      {/* Seller */}
+     <Route
+         path="/customer/become-seller"
+               element={<BecomeSellerPage />}
+           />
 
       <Route
-        path="/customer/cart"
-        element={<CustomerCartPage />}
+        path="/seller-dashboard"
+        element={<SellerDashboardPage />}
       />
-
       <Route
-        path="/customer/orders"
-        element={<CustomerOrdersPage />}
-      />
-
-      <Route
-        path="/customer/saved"
-        element={<CustomerSavedPage />}
-      />
-
-      <Route
-        path="/customer/profile"
-        element={<CustomerProfilePage />}
-      />
-
-      {/* Seller application */}
-      <Route
-        path="/customer/become-seller"
-        element={<BecomeSellerPage />}
-      />
+  path="/customer"
+  element={<CustomerDashboardPage />}
+/>
 
     </Routes>
   );
