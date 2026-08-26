@@ -22,6 +22,15 @@ export const registerUser = async (req: Request, res: Response): Promise<Respons
       return res.status(400).json({ message: 'በዚህ ኢሜይል የተመዘገበ ተጠቃሚ አለ' });
     }
 
+    if (phone) {
+      const phoneExists = await prisma.users.findUnique({
+        where: { phone },
+      });
+      if (phoneExists) {
+        return res.status(400).json({ message: 'ይህ ስልክ ቁጥር አስቀድሞ ተመዝግቧል' });
+      }
+    }
+
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
