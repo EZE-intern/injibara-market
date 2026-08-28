@@ -169,6 +169,7 @@ model product_images {
   id         Int      @id @default(autoincrement())
   product_id Int
   image_url  String   @db.VarChar(255)
+  side_angle String?  @db.VarChar(20)
   is_primary Boolean? @default(false)
   sort_order Int?     @default(0)
   created_at DateTime @default(now()) @db.Timestamp(0)
@@ -203,10 +204,12 @@ model products {
   product_images product_images[]
   users          users?           @relation(fields: [seller_id], references: [id], onUpdate: Restrict)
   categories     categories?      @relation(fields: [category_id], references: [id], onUpdate: Restrict)
+  stores          stores?          @relation(fields: [store_id], references: [id], onDelete: SetNull)
   reviews        reviews[]
 
   @@index([category_id])
   @@index([seller_id])
+  @@index([store_id])
 }
 
 model reviews {
@@ -237,6 +240,7 @@ model stores {
   updated_at  DateTime  @default(now()) @db.Timestamp(0)
   deleted_at  DateTime? @db.Timestamp(0)
   users       users     @relation(fields: [seller_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  products    products[]
 
   @@index([seller_id])
 }
