@@ -1,18 +1,36 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import ProductCard from "../components/common/ProductCard";
-import { products } from "../data/productData";
+import { getProducts } from "../api/productApi";
+import type { Product } from "../types/Product";
 
 type SortOption =
   | "default"
-  | "rating"
   | "price-low"
   | "price-high"
-  | "batch";
+  | "newest";
 
 function ProductsPage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortBy, setSortBy] = useState<SortOption>("default");
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const data = await getProducts();
+        setProducts(data);
+      } catch (err) {
+        console.error("Failed to load products from database:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   /*
    * Filter products based on search and category
@@ -20,17 +38,18 @@ function ProductsPage() {
   const filteredProducts = useMemo(() => {
     const normalizedSearch = search.toLowerCase().trim();
 
-    let result = products.filter((product) => {
+    const result = products.filter((product) => {
+      const categoryName = product.categories?.name || product.category || "";
       const matchesSearch =
         normalizedSearch === "" ||
         product.name.toLowerCase().includes(normalizedSearch) ||
-        product.brand.toLowerCase().includes(normalizedSearch) ||
-        product.category?.toLowerCase().includes(normalizedSearch) ||
-        product.subCategory?.toLowerCase().includes(normalizedSearch);
+        categoryName.toLowerCase().includes(normalizedSearch) ||
+        (product.description &&
+          product.description.toLowerCase().includes(normalizedSearch));
 
       const matchesCategory =
         selectedCategory === "All" ||
-        product.category === selectedCategory;
+        categoryName.toLowerCase() === selectedCategory.toLowerCase();
 
       return matchesSearch && matchesCategory;
     });
@@ -38,68 +57,48 @@ function ProductsPage() {
     /*
      * Sorting
      */
-    if (sortBy === "rating") {
-      result = [...result].sort(
-        (a, b) => b.rating - a.rating
-      );
-    }
-
     if (sortBy === "price-low") {
-      result = [...result].sort(
-        (a, b) => a.price - b.price
-      );
-    }
-
-    if (sortBy === "price-high") {
-      result = [...result].sort(
-        (a, b) => b.price - a.price
-      );
-    }
-
-    if (sortBy === "batch") {
-      result = [...result].sort((a, b) =>
-        b.batch.localeCompare(a.batch)
-      );
+      result.sort((a, b) => Number(a.price) - Number(b.price));
+    } else if (sortBy === "price-high") {
+      result.sort((a, b) => Number(b.price) - Number(a.price));
+    } else if (sortBy === "newest") {
+      result.sort((a, b) => b.id - a.id);
     }
 
     return result;
-  }, [search, selectedCategory, sortBy]);
+  }, [products, search, selectedCategory, sortBy]);
+
+  // Extract unique category names from loaded products
+  const categoryOptions = useMemo(() => {
+    const categoriesSet = new Set<string>();
+    products.forEach((p) => {
+      const name = p.categories?.name || p.category;
+      if (name) categoriesSet.add(name);
+    });
+    return Array.from(categoriesSet);
+  }, [products]);
 
   return (
     <main className="min-h-screen bg-gray-50">
-
       {/* =========================
           PAGE HEADER
       ========================== */}
-
       <section className="border-b bg-white">
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-
-          <h1 className="text-3xl font-bold text-gray-900">
-            Products
-          </h1>
-
+          <h1 className="text-3xl font-bold text-gray-900">Products</h1>
           <p className="mt-2 text-gray-600">
-            Discover products from sellers around Injibara
-            and the Awi area.
+            Discover products from sellers around Injibara and the Awi area.
           </p>
-
         </div>
       </section>
-
 
       {/* =========================
           FILTER / SEARCH AREA
       ========================== */}
-
       <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-
         <div className="rounded-xl bg-white p-5 shadow-sm">
-
           <div className="grid gap-4 md:grid-cols-3">
-
             {/* Search */}
-
             <div>
               <label
                 htmlFor="product-search"
@@ -107,22 +106,17 @@ function ProductsPage() {
               >
                 Search products
               </label>
-
               <input
                 id="product-search"
                 type="text"
                 value={search}
-                onChange={(event) =>
-                  setSearch(event.target.value)
-                }
-                placeholder="Search by product or brand..."
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Search by product name or details..."
                 className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
               />
             </div>
 
-
             {/* Category */}
-
             <div>
               <label
                 htmlFor="category"
@@ -130,40 +124,22 @@ function ProductsPage() {
               >
                 Category
               </label>
-
               <select
                 id="category"
                 value={selectedCategory}
-                onChange={(event) =>
-                  setSelectedCategory(event.target.value)
-                }
+                onChange={(event) => setSelectedCategory(event.target.value)}
                 className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
               >
-                <option value="All">
-                  All Categories
-                </option>
-
-                <option value="Electronics">
-                  Electronics
-                </option>
-
-                <option value="Fashion">
-                  Fashion
-                </option>
-
-                <option value="Home & Living">
-                  Home & Living
-                </option>
-
-                <option value="Food">
-                  Food
-                </option>
+                <option value="All">All Categories</option>
+                {categoryOptions.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
               </select>
             </div>
 
-
             {/* Sorting */}
-
             <div>
               <label
                 htmlFor="sort"
@@ -171,68 +147,35 @@ function ProductsPage() {
               >
                 Sort products
               </label>
-
               <select
                 id="sort"
                 value={sortBy}
-                onChange={(event) =>
-                  setSortBy(
-                    event.target.value as SortOption
-                  )
-                }
+                onChange={(event) => setSortBy(event.target.value as SortOption)}
                 className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
               >
-                <option value="default">
-                  Recommended
-                </option>
-
-                <option value="rating">
-                  Highest Rated
-                </option>
-
-                <option value="batch">
-                  Newest Batch
-                </option>
-
-                <option value="price-low">
-                  Price: Low to High
-                </option>
-
-                <option value="price-high">
-                  Price: High to Low
-                </option>
+                <option value="default">Default</option>
+                <option value="newest">Newest Listed</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
               </select>
             </div>
-
           </div>
-
         </div>
-
       </section>
-
 
       {/* =========================
           RESULTS
       ========================== */}
-
       <section className="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
-
-        {/* Result information */}
-
+        {/* Result count & clear button */}
         <div className="mb-5 flex items-center justify-between">
-
           <p className="text-sm text-gray-600">
-
             Showing{" "}
-
             <span className="font-semibold text-gray-900">
               {filteredProducts.length}
             </span>{" "}
-
             products
-
           </p>
-
 
           {search && (
             <button
@@ -243,66 +186,59 @@ function ProductsPage() {
               Clear search
             </button>
           )}
-
         </div>
 
-
-        {/* Product Grid */}
-
-        {filteredProducts.length > 0 ? (
-
+        {/* Product Grid or Skeletons */}
+        {loading ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-
-            {filteredProducts.map((product) => (
-
-              <ProductCard
-                key={product.id}
-                product={product}
-              />
-
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div
+                key={i}
+                className="animate-pulse rounded-2xl border border-gray-200 bg-white"
+              >
+                <div className="aspect-square bg-gray-200" />
+                <div className="space-y-3 p-5">
+                  <div className="h-3 w-16 rounded bg-gray-200" />
+                  <div className="h-5 w-3/4 rounded bg-gray-200" />
+                  <div className="h-6 w-1/2 rounded bg-gray-200" />
+                </div>
+              </div>
             ))}
-
           </div>
-
+        ) : filteredProducts.length > 0 ? (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {filteredProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
         ) : (
-
-          /* =========================
-             NO RESULTS
-          ========================== */
-
+          /* Empty state */
           <div className="rounded-xl bg-white px-6 py-16 text-center shadow-sm">
-
-            <div className="text-5xl">
-              🔍
-            </div>
-
+            <div className="text-5xl">🔍</div>
             <h2 className="mt-4 text-xl font-semibold text-gray-900">
               No products found
             </h2>
-
             <p className="mt-2 text-gray-500">
-              Try searching for another product or
-              changing the category.
+              {products.length === 0
+                ? "No products listed in the marketplace yet. Registered sellers can list new products from their dashboard."
+                : "Try searching for another product or changing the category filter."}
             </p>
-
-            <button
-              type="button"
-              onClick={() => {
-                setSearch("");
-                setSelectedCategory("All");
-                setSortBy("default");
-              }}
-              className="mt-6 rounded-lg bg-brand-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand-700"
-            >
-              Reset Filters
-            </button>
-
+            {products.length > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearch("");
+                  setSelectedCategory("All");
+                  setSortBy("default");
+                }}
+                className="mt-6 rounded-lg bg-brand-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand-700"
+              >
+                Reset Filters
+              </button>
+            )}
           </div>
-
         )}
-
       </section>
-
     </main>
   );
 }

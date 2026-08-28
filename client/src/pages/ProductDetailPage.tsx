@@ -1,347 +1,237 @@
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { getProductById } from "../api/productApi";
 import type { Product } from "../types/Product";
 
-const products: Product[] = [
-  {
-    id: 1,
-    name: "Samsung Galaxy A15",
-    brand: "Samsung",
-    price: 18500,
-    rating: 4.6,
-    reviews: 128,
-    batch: "B2026-08",
-    location: "Injibara",
-    image:
-      "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9",
-    category: "Electronics",
-    subCategory: "Mobile Phones",
-    description:
-      "Samsung Galaxy A15 smartphone with a large display and reliable performance.",
-  },
-
-  {
-    id: 2,
-    name: "Nike Air Max",
-    brand: "Nike",
-    price: 4500,
-    rating: 4.4,
-    reviews: 86,
-    batch: "B2026-07",
-    location: "Injibara",
-    image:
-      "https://images.unsplash.com/photo-1542291026-7eec264c27ff",
-    category: "Fashion",
-    subCategory: "Shoes",
-    description:
-      "Comfortable Nike Air Max shoes suitable for everyday use and casual activities.",
-  },
-
-  {
-    id: 3,
-    name: "Apple iPhone 15",
-    brand: "Apple",
-    price: 72000,
-    rating: 4.8,
-    reviews: 245,
-    batch: "B2026-08",
-    location: "Injibara",
-    image:
-      "https://images.unsplash.com/photo-1591337676887-a217a6970a8a",
-    category: "Electronics",
-    subCategory: "Mobile Phones",
-    description:
-      "Apple iPhone 15 with excellent performance, camera quality, and modern design.",
-  },
-
-  {
-    id: 4,
-    name: "Traditional Handwoven Basket",
-    brand: "Local Artisan",
-    price: 1200,
-    rating: 4.5,
-    reviews: 42,
-    batch: "B2026-07",
-    location: "Injibara",
-    image:
-      "https://images.unsplash.com/photo-1584302179602-e4c3d3fd629d",
-    category: "Home & Living",
-    subCategory: "Handicrafts",
-    description:
-      "Traditional handwoven basket made by local artisans in the Awi area.",
-  },
-
-  {
-    id: 5,
-    name: "Fresh Local Coffee",
-    brand: "Awi Coffee",
-    price: 850,
-    rating: 4.8,
-    reviews: 96,
-    batch: "B2026-08",
-    location: "Awi Zone",
-    image:
-      "https://images.unsplash.com/photo-1447933601403-0c6688de566e",
-    category: "Food",
-    subCategory: "Coffee",
-    description:
-      "Fresh locally produced coffee with a rich aroma and traditional Ethiopian character.",
-  },
-
-  {
-    id: 6,
-    name: "Men's Casual Shirt",
-    brand: "Local Fashion",
-    price: 1800,
-    rating: 4.3,
-    reviews: 31,
-    batch: "B2026-06",
-    location: "Injibara",
-    image:
-      "https://images.unsplash.com/photo-1603252110481-7ba873bf42ab",
-    category: "Fashion",
-    subCategory: "Men's Clothing",
-    description:
-      "Comfortable casual shirt suitable for everyday wear.",
-  },
-];
-
 function ProductDetailPage() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const product = products.find(
-    (item) => item.id === Number(id)
-  );
+  useEffect(() => {
+    const fetchDetail = async () => {
+      if (!id) {
+        setLoading(false);
+        return;
+      }
+      try {
+        setLoading(true);
+        const data = await getProductById(id);
+        setProduct(data);
+        if (data) {
+          const mainImg =
+            data.product_images?.find((img) => img.is_primary)?.image_url ||
+            data.product_images?.[0]?.image_url ||
+            data.image ||
+            null;
+          setSelectedImage(mainImg);
+        }
+      } catch (err) {
+        console.error("Error fetching product detail:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  /*
-   * Product doesn't exist
-   */
-  if (!product) {
+    fetchDetail();
+  }, [id]);
+
+  if (loading) {
     return (
-      <main className="min-h-screen bg-gray-50 px-4 py-16">
-        <div className="mx-auto max-w-3xl rounded-xl bg-white p-10 text-center shadow-sm">
-
-          <div className="text-5xl">
-            🔍
-          </div>
-
-          <h1 className="mt-4 text-2xl font-bold text-gray-900">
-            Product not found
-          </h1>
-
-          <p className="mt-2 text-gray-500">
-            The product you are looking for does not exist.
+      <main className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="inline-block h-10 w-10 animate-spin rounded-full border-4 border-brand-600 border-t-transparent" />
+          <p className="mt-4 text-sm font-medium text-gray-600">
+            Loading product details...
           </p>
-
-          <Link
-            to="/products"
-            className="mt-6 inline-block rounded-lg bg-brand-600 px-5 py-3 font-semibold text-white hover:bg-brand-700"
-          >
-            Back to Products
-          </Link>
-
         </div>
       </main>
     );
   }
 
+  if (!product) {
+    return (
+      <main className="min-h-screen bg-gray-50 px-4 py-16">
+        <div className="mx-auto max-w-3xl rounded-xl bg-white p-10 text-center shadow-sm">
+          <div className="text-5xl">🔍</div>
+          <h1 className="mt-4 text-2xl font-bold text-gray-900">
+            Product not found
+          </h1>
+          <p className="mt-2 text-gray-500">
+            The product you are looking for does not exist or has been removed.
+          </p>
+          <Link
+            to="/products"
+            className="mt-6 inline-block rounded-lg bg-brand-600 px-5 py-3 font-semibold text-white transition hover:bg-brand-700"
+          >
+            Back to Products
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  const categoryName = product.categories?.name || product.category || "General";
+  const price =
+    typeof product.price === "number"
+      ? product.price.toLocaleString()
+      : Number(product.price).toLocaleString();
+
+  const allImages = product.product_images && product.product_images.length > 0
+    ? product.product_images
+    : product.image
+      ? [{ id: 0, image_url: product.image, is_primary: true }]
+      : [];
+
   return (
     <main className="min-h-screen bg-gray-50">
-
-      {/* =========================
-          BACK NAVIGATION
-      ========================== */}
-
+      {/* Back Navigation */}
       <div className="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
-
         <Link
           to="/products"
           className="text-sm font-medium text-gray-500 transition hover:text-brand-600"
         >
           ← Back to Products
         </Link>
-
       </div>
 
-
-      {/* =========================
-          PRODUCT DETAILS
-      ========================== */}
-
+      {/* Product Details */}
       <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-
         <div className="overflow-hidden rounded-2xl bg-white shadow-sm">
-
           <div className="grid lg:grid-cols-2">
+            {/* Media Gallery */}
+            <div className="flex flex-col bg-gray-100 p-6 lg:p-8">
+              {/* Main Active Image */}
+              <div className="flex aspect-square w-full items-center justify-center overflow-hidden rounded-xl bg-white shadow-inner">
+                {selectedImage ? (
+                  <img
+                    src={selectedImage}
+                    alt={product.name}
+                    className="h-full w-full object-contain"
+                  />
+                ) : (
+                  <div className="text-center text-gray-400">
+                    <p className="text-4xl">📷</p>
+                    <p className="mt-2 text-sm">No photo available</p>
+                  </div>
+                )}
+              </div>
 
-            {/* =========================
-                IMAGE
-            ========================== */}
-
-            <div className="min-h-[400px] bg-gray-100 lg:min-h-[600px]">
-
-              <img
-                src={product.image}
-                alt={product.name}
-                className="h-full min-h-[400px] w-full object-cover lg:min-h-[600px]"
-              />
-
+              {/* Multi-angle Thumbnails */}
+              {allImages.length > 1 && (
+                <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
+                  {allImages.map((img, idx) => (
+                    <button
+                      key={img.id || idx}
+                      type="button"
+                      onClick={() => setSelectedImage(img.image_url)}
+                      className={`relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg border-2 bg-white transition ${
+                        selectedImage === img.image_url
+                          ? "border-brand-600 shadow-md"
+                          : "border-gray-200 hover:border-gray-300"
+                      }`}
+                    >
+                      <img
+                        src={img.image_url}
+                        alt={`${product.name} angle`}
+                        className="h-full w-full object-cover"
+                      />
+                      {img.side_angle && (
+                        <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-center text-[10px] font-medium capitalize text-white">
+                          {img.side_angle}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
-
-            {/* =========================
-                INFORMATION
-            ========================== */}
-
+            {/* Information */}
             <div className="p-6 sm:p-10 lg:p-12">
-
               {/* Category */}
               <div className="flex flex-wrap gap-2">
-
-                <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
-                  {product.category}
+                <span className="rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700">
+                  {categoryName}
                 </span>
-
                 {product.subCategory && (
                   <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
                     {product.subCategory}
                   </span>
                 )}
-
               </div>
 
-
-              {/* Brand */}
-              <p className="mt-6 text-sm font-medium uppercase tracking-wide text-gray-500">
-                {product.brand}
-              </p>
-
+              {/* Brand if exists */}
+              {product.brand && (
+                <p className="mt-4 text-sm font-medium uppercase tracking-wide text-gray-500">
+                  {product.brand}
+                </p>
+              )}
 
               {/* Product name */}
               <h1 className="mt-2 text-3xl font-bold text-gray-900 sm:text-4xl">
                 {product.name}
               </h1>
 
-
-              {/* Rating */}
-              <div className="mt-4 flex items-center gap-3">
-
-                <div className="flex items-center gap-1">
-
-                  <span className="text-xl text-yellow-500">
-                    ★
-                  </span>
-
-                  <span className="font-semibold text-gray-900">
-                    {product.rating.toFixed(1)}
-                  </span>
-
-                </div>
-
-                <span className="text-gray-500">
-                  {product.reviews} reviews
-                </span>
-
-              </div>
-
-
               {/* Price */}
               <div className="mt-6">
-
                 <span className="text-3xl font-bold text-brand-600">
-                  {product.price.toLocaleString()} ETB
+                  {price} ETB
                 </span>
-
               </div>
 
-
               {/* Divider */}
-              <div className="my-8 border-t border-gray-200" />
-
+              <div className="my-6 border-t border-gray-200" />
 
               {/* Description */}
               <div>
-
                 <h2 className="text-lg font-semibold text-gray-900">
                   Description
                 </h2>
-
                 <p className="mt-3 leading-7 text-gray-600">
-                  {product.description}
+                  {product.description || "No description provided for this product."}
                 </p>
-
               </div>
 
-
-              {/* Product information */}
+              {/* Product Information Table */}
               <div className="mt-8">
-
                 <h2 className="text-lg font-semibold text-gray-900">
-                  Product Information
+                  Product Details
                 </h2>
 
                 <div className="mt-4 divide-y divide-gray-200 rounded-lg border border-gray-200">
-
                   <div className="flex justify-between px-4 py-3">
-                    <span className="text-sm text-gray-500">
-                      Category
-                    </span>
-
+                    <span className="text-sm text-gray-500">Category</span>
                     <span className="text-sm font-medium text-gray-900">
-                      {product.category}
+                      {categoryName}
                     </span>
                   </div>
 
-                  <div className="flex justify-between px-4 py-3">
-                    <span className="text-sm text-gray-500">
-                      Subcategory
-                    </span>
-
-                    <span className="text-sm font-medium text-gray-900">
-                      {product.subCategory || "N/A"}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between px-4 py-3">
-                    <span className="text-sm text-gray-500">
-                      Brand
-                    </span>
-
-                    <span className="text-sm font-medium text-gray-900">
-                      {product.brand}
-                    </span>
-                  </div>
+                  {product.location && (
+                    <div className="flex justify-between px-4 py-3">
+                      <span className="text-sm text-gray-500">Location</span>
+                      <span className="text-sm font-medium text-gray-900">
+                        📍 {product.location}
+                      </span>
+                    </div>
+                  )}
 
                   <div className="flex justify-between px-4 py-3">
-                    <span className="text-sm text-gray-500">
-                      Batch
-                    </span>
-
+                    <span className="text-sm text-gray-500">Product ID</span>
                     <span className="text-sm font-medium text-gray-900">
-                      {product.batch}
+                      #{product.id}
                     </span>
                   </div>
-
-                  <div className="flex justify-between px-4 py-3">
-                    <span className="text-sm text-gray-500">
-                      Location
-                    </span>
-
-                    <span className="text-sm font-medium text-gray-900">
-                      {product.location}
-                    </span>
-                  </div>
-
                 </div>
-
               </div>
-
 
               {/* Actions */}
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-
                 <button
                   type="button"
-                  className="flex-1 rounded-lg bg-brand-600 px-6 py-3 font-semibold text-white transition hover:bg-brand-700"
+                  onClick={() => alert(`Inquiring about ${product.name}. Direct messaging will be connected shortly!`)}
+                  className="flex-1 rounded-lg bg-brand-600 px-6 py-3 font-semibold text-white transition hover:bg-brand-700 shadow-sm"
                 >
                   Contact Seller
                 </button>
@@ -352,17 +242,11 @@ function ProductDetailPage() {
                 >
                   ♡ Save
                 </button>
-
               </div>
-
             </div>
-
           </div>
-
         </div>
-
       </section>
-
     </main>
   );
 }
