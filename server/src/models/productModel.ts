@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
 
 export type ProductSide = 'front' | 'back' | 'top' | 'bottom' | 'left' | 'right';
@@ -14,7 +15,7 @@ export interface CreateProductInput {
 
 export class ProductModel {
   static async getAll(categoryId?: number) {
-    const where: any = { deleted_at: null, is_active: true };
+    const where: Prisma.productsWhereInput = { deleted_at: null, is_active: true };
     if (categoryId) where.category_id = categoryId;
 
     return await prisma.products.findMany({

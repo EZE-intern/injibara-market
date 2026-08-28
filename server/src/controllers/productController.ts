@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { Prisma } from '@prisma/client';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 import { prisma } from '../lib/prisma.js';
 import { uploadToCloudinary } from '../lib/cloudinary.js';
@@ -8,7 +9,7 @@ import { uploadToCloudinary } from '../lib/cloudinary.js';
 export const getProducts = async (req: Request, res: Response): Promise<Response | void> => {
   try {
     const { category, categoryId } = req.query;
-    const where: any = { deleted_at: null, is_active: true };
+    const where: Prisma.productsWhereInput = { deleted_at: null, is_active: true };
 
     // Support filtering by category ID
     if (categoryId) {
@@ -28,7 +29,7 @@ export const getProducts = async (req: Request, res: Response): Promise<Response
       if (!foundCategory) {
         const allCategories = await prisma.categories.findMany();
         foundCategory = allCategories.find(
-          (item: any) => String(item.name).trim().toLowerCase() === categoryValue
+          (item) => String(item.name).trim().toLowerCase() === categoryValue
         ) || null;
       }
 
@@ -207,7 +208,7 @@ export const updateProduct = async (req: AuthRequest, res: Response): Promise<Re
     const { name, description, price, discount_price, stock, category_id, store_id } = req.body;
 
     // Update the product fields
-    const updatedProduct = await prisma.products.update({
+    await prisma.products.update({
       where: { id },
       data: {
         ...(name !== undefined && { name: String(name).trim() }),
