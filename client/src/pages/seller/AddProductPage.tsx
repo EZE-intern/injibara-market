@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createProduct } from "../../api/productApi";
-import { getCategories, type Category } from "../../api/categoryApi";
+import { getCategories, createCategory, type Category } from "../../api/categoryApi";
 
 const SIDES = [
   { key: "front", label: "Front Angle (ፊት ለፊት)", required: true },
@@ -21,6 +21,11 @@ export default function AddProductPage() {
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Custom Category State
+  const [isCustomCategory, setIsCustomCategory] = useState(false);
+  const [customCategoryName, setCustomCategoryName] = useState("");
+  const [creatingCategory, setCreatingCategory] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -49,18 +54,22 @@ export default function AddProductPage() {
     bottom: null,
   });
 
-  useEffect(() => {
-    const loadCategories = async () => {
-      try {
-        const cats = await getCategories();
-        setCategories(cats);
-      } catch (err) {
-        console.error("Failed to load categories:", err);
-      } finally {
-        setLoadingCategories(false);
+  const loadCategories = async () => {
+    try {
+      setLoadingCategories(true);
+      const cats = await getCategories();
+      setCategories(cats);
+      if (cats.length > 0 && !formData.category_id && !isCustomCategory) {
+        setFormData((prev) => ({ ...prev, category_id: String(cats[0].id) }));
       }
-    };
+    } catch (err) {
+      console.error("Failed to load categories:", err);
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
 
+  useEffect(() => {
     loadCategories();
   }, []);
 
@@ -70,7 +79,17 @@ export default function AddProductPage() {
     >
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === "category_id") {
+      if (value === "NEW_CUSTOM") {
+        setIsCustomCategory(true);
+        setFormData((prev) => ({ ...prev, category_id: "" }));
+      } else {
+        setIsCustomCategory(false);
+        setFormData((prev) => ({ ...prev, [name]: value }));
+      }
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleFileChange = (
@@ -93,6 +112,32 @@ export default function AddProductPage() {
     });
   };
 
+  const handleCreateCustomCategory = async () => {
+    const trimmed = customCategoryName.trim();
+    if (!trimmed) {
+      alert("እባክዎ የምድብ ስም ያስገቡ (Please enter category name)");
+      return;
+    }
+
+    const token = localStorage.getItem("token") || undefined;
+    try {
+      setCreatingCategory(true);
+      const newCat = await createCategory(trimmed, undefined, token);
+      if (newCat) {
+        setCategories((prev) => [...prev, newCat]);
+        setFormData((prev) => ({ ...prev, category_id: String(newCat.id) }));
+        setIsCustomCategory(false);
+        setCustomCategoryName("");
+        alert(`"${newCat.name}" ምድብ በተሳካ ሁኔታ ተፈጥሯል!`);
+      }
+    } catch (err: unknown) {
+      console.error("Failed to create category:", err);
+      alert("ምድብ መፍጠር አልተቻለም። እባክዎ እንደገና ይሞክሩ።");
+    } finally {
+      setCreatingCategory(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -104,8 +149,28 @@ export default function AddProductPage() {
       return;
     }
 
+    let finalCategoryId = formData.category_id;
+
+    // If user has typed a custom category but hasn't clicked create yet, create it now
+    if (isCustomCategory && customCategoryName.trim()) {
+      try {
+        setSubmitting(true);
+        const created = await createCategory(
+          customCategoryName.trim(),
+          undefined,
+          token
+        );
+        if (created) {
+          finalCategoryId = String(created.id);
+        }
+      } catch (err) {
+        console.error("Custom category creation failed:", err);
+      }
+    }
+
     if (!images.front) {
       setError("የፊተኛው ፎቶ (Front Image) ማስገባት ግዴታ ነው");
+      setSubmitting(false);
       return;
     }
 
@@ -116,8 +181,8 @@ export default function AddProductPage() {
       payload.append("discount_price", formData.discount_price.trim());
     }
     payload.append("stock", formData.stock.trim() || "1");
-    if (formData.category_id) {
-      payload.append("category_id", formData.category_id);
+    if (finalCategoryId) {
+      payload.append("category_id", finalCategoryId);
     }
     if (formData.description.trim()) {
       payload.append("description", formData.description.trim());
@@ -185,29 +250,60 @@ export default function AddProductPage() {
           )}
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-8">
-            {/* 1. Category Selection */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-900">
-                1. የምርት ምድብ (Category) <span className="text-brand-600">*</span>
-              </label>
-              <select
-                name="category_id"
-                value={formData.category_id}
-                onChange={handleInputChange}
-                required
-                className="mt-2 w-full rounded-lg border border-gray-300 bg-white p-3 text-sm font-medium text-gray-900 outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
-              >
-                <option value="">-- ምድብ ይምረጡ (Select Category) --</option>
-                {loadingCategories ? (
-                  <option disabled>Loading categories...</option>
-                ) : (
-                  categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </option>
-                  ))
-                )}
-              </select>
+            {/* 1. Category Selection & Creation */}
+            <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-4 sm:p-6">
+              <div className="flex items-center justify-between">
+                <label className="block text-sm font-bold text-gray-900">
+                  1. የምርት ምድብ ይምረጡ ወይም አዲስ ይፍጠሩ (Category) <span className="text-brand-600">*</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setIsCustomCategory(!isCustomCategory)}
+                  className="text-xs font-bold text-brand-600 hover:text-brand-800"
+                >
+                  {isCustomCategory ? "← ዝርዝሩን አሳይ (Show Dropdown)" : "+ አዲስ ምድብ ጨምር (Add New Category)"}
+                </button>
+              </div>
+
+              {!isCustomCategory ? (
+                <select
+                  name="category_id"
+                  value={formData.category_id}
+                  onChange={handleInputChange}
+                  required
+                  className="mt-3 w-full rounded-lg border border-gray-300 bg-white p-3 text-sm font-medium text-gray-900 outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
+                >
+                  <option value="">-- ምድብ ይምረጡ (Select Category) --</option>
+                  {loadingCategories ? (
+                    <option disabled>Loading categories...</option>
+                  ) : (
+                    categories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </option>
+                    ))
+                  )}
+                  <option value="NEW_CUSTOM">➕ + አዲስ ምድብ ጨምር (Create New Category)...</option>
+                </select>
+              ) : (
+                <div className="mt-3 flex flex-col sm:flex-row gap-2">
+                  <input
+                    type="text"
+                    value={customCategoryName}
+                    onChange={(e) => setCustomCategoryName(e.target.value)}
+                    placeholder="አዲስ የምድብ ስም ይጻፉ (e.g. Traditional Honey / የሀገር ባህል ማር)"
+                    className="flex-1 rounded-lg border border-brand-300 bg-white p-3 text-sm outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
+                  />
+                  <button
+                    type="button"
+                    disabled={creatingCategory}
+                    onClick={handleCreateCustomCategory}
+                    className="rounded-lg bg-brand-600 px-5 py-3 text-sm font-bold text-white shadow-sm hover:bg-brand-700 disabled:opacity-50"
+                  >
+                    {creatingCategory ? "እየፈጠረ ነው..." : "ምድቡን ፍጠር (Create)"}
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* 2. Basic Information Grid */}
@@ -222,7 +318,7 @@ export default function AddProductPage() {
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  placeholder="e.g. Samsung Galaxy S24 Ultra / Teff 25kg"
+                  placeholder="ምሳሌ፡ iPhone 14 Pro / ጤፍ 25 ኪ.ግ / Bajaj TVS"
                   required
                   className="mt-2 w-full rounded-lg border border-gray-300 p-3 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
                 />
@@ -240,7 +336,7 @@ export default function AddProductPage() {
                   name="price"
                   value={formData.price}
                   onChange={handleInputChange}
-                  placeholder="e.g. 45000"
+                  placeholder="ምሳሌ፡ 45000"
                   required
                   className="mt-2 w-full rounded-lg border border-gray-300 p-3 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
                 />
@@ -258,7 +354,7 @@ export default function AddProductPage() {
                   name="discount_price"
                   value={formData.discount_price}
                   onChange={handleInputChange}
-                  placeholder="e.g. 42000"
+                  placeholder="ምሳሌ፡ 42000"
                   className="mt-2 w-full rounded-lg border border-gray-300 p-3 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
                 />
               </div>
@@ -290,7 +386,7 @@ export default function AddProductPage() {
                 rows={4}
                 value={formData.description}
                 onChange={handleInputChange}
-                placeholder="Describe product condition, features, warranty, or delivery details..."
+                placeholder="ስለ እቃው ሁኔታ፣ ሞዴል፣ የዋስትና ጊዜ ወይም የማስረከቢያ ቦታ ዝርዝር መረጃ እዚህ ይጻፉ..."
                 className="mt-2 w-full rounded-lg border border-gray-300 p-3 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
               />
             </div>
@@ -302,7 +398,7 @@ export default function AddProductPage() {
                   7. ባለ 6-አቅጣጫ የምርት ፎቶዎች (6-Angle Product Inspection Photos)
                 </h3>
                 <p className="text-xs text-gray-500">
-                  Upload clear photos of your product from different angles. Front photo is required.
+                  የምርቱን ጥራት ለማሳየት ከተለያዩ አቅጣጫዎች የተነሱ ፎቶዎችን ይጫኑ። የፊተኛው ፎቶ (Front) ግዴታ ነው።
                 </p>
               </div>
 
@@ -363,8 +459,8 @@ export default function AddProductPage() {
                 className="flex-1 rounded-xl bg-brand-600 py-3.5 px-6 text-sm font-bold text-white shadow-sm transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {submitting
-                  ? "ምርቱ እየተጫነ ነው... (Uploading to Cloudinary & TiDB...)"
-                  : "ምርቱን መዝግብ (Register & Publish Product)"}
+                  ? "ምርቱ እየተመዘገበ ነው... (Uploading to Cloudinary & Database...)"
+                  : "ምርቱን መዝግብ (Register Product)"}
               </button>
 
               <Link
