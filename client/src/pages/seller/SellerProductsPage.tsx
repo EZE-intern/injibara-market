@@ -56,10 +56,20 @@ export default function SellerProductsPage() {
           <div>
             <div className="flex items-center gap-2">
               <Link
+                to="/"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-gray-500 hover:text-brand-600 transition"
+              >
+                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                Home
+              </Link>
+              <span className="text-gray-300">/</span>
+              <Link
                 to="/seller"
                 className="text-xs font-semibold text-brand-600 hover:text-brand-700"
               >
-                &larr; Seller Dashboard
+                Seller Dashboard
               </Link>
             </div>
             <h1 className="mt-1 text-2xl font-extrabold text-gray-900 sm:text-3xl">
