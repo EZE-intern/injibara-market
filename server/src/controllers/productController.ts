@@ -130,6 +130,16 @@ export const createProduct = async (req: AuthRequest, res: Response): Promise<Re
       },
     });
 
+    // Auto-promote user to 'seller' if they are currently registered as 'customer'
+    if (req.user?.role === 'customer') {
+      await prisma.users
+        .update({
+          where: { id: Number(sellerId) },
+          data: { role: 'seller' },
+        })
+        .catch((err) => console.error('Failed to update user role to seller:', err));
+    }
+
     // 2. Handle Image Uploads if any
     let primaryImageUrl: string | null = null;
     const files = req.files as Express.Multer.File[];

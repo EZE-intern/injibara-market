@@ -13,8 +13,8 @@ const router: Router = express.Router();
 router.get('/', getCategories);
 router.get('/:id', getCategoryById);
 
-// Allow sellers and admins to create categories
-router.post('/', protect, authorizeRoles('seller', 'admin'), createCategory);
+// Allow any authenticated user to create categories
+router.post('/', protect, createCategory);
 router.put('/:id', protect, authorizeRoles('admin'), updateCategory);
 router.delete('/:id', protect, authorizeRoles('admin'), deleteCategory);
 

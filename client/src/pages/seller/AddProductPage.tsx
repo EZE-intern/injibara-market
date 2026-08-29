@@ -203,10 +203,15 @@ export default function AddProductPage() {
       navigate("/seller/products");
     } catch (err: unknown) {
       console.error("Product submission failed:", err);
-      const errMsg =
-        err instanceof Error
-          ? err.message
-          : "ምርቱን መመዝገብ አልተቻለም። እባክዎ እንደገና ይሞክሩ።";
+      let errMsg = "ምርቱን መመዝገብ አልተቻለም። እባክዎ እንደገና ይሞክሩ።";
+      if (err && typeof err === "object" && "response" in err) {
+        const axErr = err as { response?: { data?: { message?: string } } };
+        if (axErr.response?.data?.message) {
+          errMsg = axErr.response.data.message;
+        }
+      } else if (err instanceof Error) {
+        errMsg = err.message;
+      }
       setError(errMsg);
     } finally {
       setSubmitting(false);
