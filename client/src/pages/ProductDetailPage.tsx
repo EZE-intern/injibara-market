@@ -54,7 +54,9 @@ function ProductDetailPage() {
     return (
       <main className="min-h-screen bg-gray-50 px-4 py-16">
         <div className="mx-auto max-w-3xl rounded-xl bg-white p-10 text-center shadow-sm">
-          <div className="text-5xl">🔍</div>
+          <svg className="mx-auto h-12 w-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
           <h1 className="mt-4 text-2xl font-bold text-gray-900">
             Product not found
           </h1>
@@ -92,7 +94,7 @@ function ProductDetailPage() {
           to="/products"
           className="text-sm font-medium text-gray-500 transition hover:text-brand-600"
         >
-          ← Back to Products
+          &larr; Back to Products
         </Link>
       </div>
 
@@ -112,7 +114,9 @@ function ProductDetailPage() {
                   />
                 ) : (
                   <div className="text-center text-gray-400">
-                    <p className="text-4xl">📷</p>
+                    <svg className="mx-auto h-12 w-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
                     <p className="mt-2 text-sm">No photo available</p>
                   </div>
                 )}
@@ -212,7 +216,7 @@ function ProductDetailPage() {
                     <div className="flex justify-between px-4 py-3">
                       <span className="text-sm text-gray-500">Location</span>
                       <span className="text-sm font-medium text-gray-900">
-                        📍 {product.location}
+                        {product.location}
                       </span>
                     </div>
                   )}
@@ -240,7 +244,7 @@ function ProductDetailPage() {
                   type="button"
                   className="rounded-lg border border-gray-300 px-6 py-3 font-semibold text-gray-700 transition hover:bg-gray-50"
                 >
-                  ♡ Save
+                  Save Product
                 </button>
               </div>
             </div>

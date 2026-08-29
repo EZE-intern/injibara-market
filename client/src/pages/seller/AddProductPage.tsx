@@ -222,13 +222,13 @@ export default function AddProductPage() {
             to="/seller"
             className="inline-flex items-center text-sm font-semibold text-brand-600 hover:text-brand-700"
           >
-            ← Back to Seller Dashboard
+            &larr; Back to Seller Dashboard
           </Link>
           <Link
             to="/products"
             className="text-xs text-gray-500 hover:text-gray-700"
           >
-            View Live Marketplace ↗
+            View Live Marketplace &rarr;
           </Link>
         </div>
 
@@ -245,7 +245,7 @@ export default function AddProductPage() {
 
           {error && (
             <div className="mt-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-700">
-              ⚠️ {error}
+              {error}
             </div>
           )}
 
@@ -261,7 +261,7 @@ export default function AddProductPage() {
                   onClick={() => setIsCustomCategory(!isCustomCategory)}
                   className="text-xs font-bold text-brand-600 hover:text-brand-800"
                 >
-                  {isCustomCategory ? "← ዝርዝሩን አሳይ (Show Dropdown)" : "+ አዲስ ምድብ ጨምር (Add New Category)"}
+                  {isCustomCategory ? "&larr; Show Dropdown" : "+ Add New Category"}
                 </button>
               </div>
 
@@ -283,7 +283,7 @@ export default function AddProductPage() {
                       </option>
                     ))
                   )}
-                  <option value="NEW_CUSTOM">➕ + አዲስ ምድብ ጨምር (Create New Category)...</option>
+                  <option value="NEW_CUSTOM">+ አዲስ ምድብ ጨምር (Create New Category)...</option>
                 </select>
               ) : (
                 <div className="mt-3 flex flex-col sm:flex-row gap-2">
@@ -300,7 +300,7 @@ export default function AddProductPage() {
                     onClick={handleCreateCustomCategory}
                     className="rounded-lg bg-brand-600 px-5 py-3 text-sm font-bold text-white shadow-sm hover:bg-brand-700 disabled:opacity-50"
                   >
-                    {creatingCategory ? "እየፈጠረ ነው..." : "ምድቡን ፍጠር (Create)"}
+                    {creatingCategory ? "Creating..." : "Create Category"}
                   </button>
                 </div>
               )}
@@ -418,10 +418,12 @@ export default function AddProductPage() {
                         <button
                           type="button"
                           onClick={() => handleRemoveImage(key)}
-                          className="absolute top-1 right-1 rounded-full bg-red-600 p-1 text-xs text-white shadow hover:bg-red-700"
+                          className="absolute top-1 right-1 rounded-full bg-red-600 p-1 text-white shadow hover:bg-red-700"
                           title="Remove image"
                         >
-                          ✕
+                          <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
                         </button>
                         <span className="absolute bottom-1 left-1 rounded bg-black/60 px-2 py-0.5 text-[10px] font-medium text-white">
                           {key.toUpperCase()}
@@ -429,7 +431,25 @@ export default function AddProductPage() {
                       </div>
                     ) : (
                       <label className="flex flex-col items-center justify-center text-center cursor-pointer p-4 w-full h-full">
-                        <span className="text-2xl">📸</span>
+                        <svg
+                          className="h-8 w-8 text-gray-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                          />
+                        </svg>
                         <span className="mt-2 text-xs font-semibold text-gray-800">
                           {label}
                         </span>
@@ -459,7 +479,7 @@ export default function AddProductPage() {
                 className="flex-1 rounded-xl bg-brand-600 py-3.5 px-6 text-sm font-bold text-white shadow-sm transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {submitting
-                  ? "ምርቱ እየተመዘገበ ነው... (Uploading to Cloudinary & Database...)"
+                  ? "ምርቱ እየተመዘገበ ነው... (Uploading...)"
                   : "ምርቱን መዝግብ (Register Product)"}
               </button>
 

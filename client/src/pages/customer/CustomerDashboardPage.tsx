@@ -252,8 +252,10 @@ function CustomerDashboardPage() {
                 to="/products"
                 className="rounded-xl bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
               >
-                <div className="text-2xl">
-                  🛍
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-50 text-brand-700">
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                  </svg>
                 </div>
 
                 <h3 className="mt-3 font-semibold text-gray-900">
@@ -269,8 +271,10 @@ function CustomerDashboardPage() {
                 to="/customer/cart"
                 className="rounded-xl bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
               >
-                <div className="text-2xl">
-                  🛒
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-700">
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
                 </div>
 
                 <h3 className="mt-3 font-semibold text-gray-900">
@@ -286,8 +290,10 @@ function CustomerDashboardPage() {
                 to="/customer/orders"
                 className="rounded-xl bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
               >
-                <div className="text-2xl">
-                  📦
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-50 text-purple-700">
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                  </svg>
                 </div>
 
                 <h3 className="mt-3 font-semibold text-gray-900">

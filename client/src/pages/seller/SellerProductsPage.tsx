@@ -59,7 +59,7 @@ export default function SellerProductsPage() {
                 to="/seller"
                 className="text-xs font-semibold text-brand-600 hover:text-brand-700"
               >
-                ← Seller Dashboard
+                &larr; Seller Dashboard
               </Link>
             </div>
             <h1 className="mt-1 text-2xl font-extrabold text-gray-900 sm:text-3xl">
@@ -74,7 +74,7 @@ export default function SellerProductsPage() {
             to="/seller/products/new"
             className="inline-flex items-center justify-center rounded-xl bg-brand-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brand-700"
           >
-            ➕ አዲስ ምርት ጨምር (Add Product)
+            + አዲስ ምርት ጨምር (Add Product)
           </Link>
         </div>
 
@@ -132,7 +132,7 @@ export default function SellerProductsPage() {
                         </td>
 
                         <td className="px-6 py-4 text-xs text-gray-500">
-                          📸 {product.product_images?.length || 1} angle(s)
+                          {product.product_images?.length || 1} angle(s)
                         </td>
 
                         <td className="px-6 py-4 text-right">
@@ -141,7 +141,7 @@ export default function SellerProductsPage() {
                               to={`/products/${product.id}`}
                               className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-100 transition"
                             >
-                              View ↗
+                              View &rarr;
                             </Link>
 
                             <button
@@ -162,7 +162,9 @@ export default function SellerProductsPage() {
             </div>
           ) : (
             <div className="p-16 text-center">
-              <div className="text-4xl">📦</div>
+              <svg className="mx-auto h-12 w-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+              </svg>
               <h3 className="mt-3 text-lg font-bold text-gray-900">
                 ምንም የተመዘገበ ምርት የለም (No Products Listed Yet)
               </h3>
@@ -173,7 +175,7 @@ export default function SellerProductsPage() {
                 to="/seller/products/new"
                 className="mt-6 inline-block rounded-xl bg-brand-600 px-5 py-3 text-sm font-bold text-white shadow-sm hover:bg-brand-700"
               >
-                ➕ አዲስ ምርት መዝግብ (Add Product)
+                + አዲስ ምርት መዝግብ (Add Product)
               </Link>
             </div>
           )}

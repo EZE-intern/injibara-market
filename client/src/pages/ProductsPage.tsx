@@ -214,7 +214,19 @@ function ProductsPage() {
         ) : (
           /* Empty state */
           <div className="rounded-xl bg-white px-6 py-16 text-center shadow-sm">
-            <div className="text-5xl">🔍</div>
+            <svg
+              className="mx-auto h-12 w-12 text-gray-300"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
             <h2 className="mt-4 text-xl font-semibold text-gray-900">
               No products found
             </h2>

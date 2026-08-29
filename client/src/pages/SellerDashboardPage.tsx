@@ -39,7 +39,7 @@ export default function SellerDashboardPage() {
           <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <div>
               <p className="text-xs font-bold uppercase tracking-wider text-brand-600">
-                🏪 Injibara Market Seller Hub
+                Injibara Market Seller Hub
               </p>
               <h1 className="mt-1 text-2xl font-extrabold text-gray-900 sm:text-3xl">
                 Welcome back, {userName}!
@@ -54,13 +54,13 @@ export default function SellerDashboardPage() {
                 to="/products"
                 className="rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-center text-sm font-bold text-gray-700 shadow-sm transition hover:bg-gray-50 hover:border-gray-400"
               >
-                🛍️ Browse as Buyer
+                Browse as Buyer &rarr;
               </Link>
               <Link
                 to="/seller/products/new"
                 className="rounded-xl bg-brand-600 px-5 py-2.5 text-center text-sm font-bold text-white shadow-sm transition hover:bg-brand-700"
               >
-                ➕ Add New Product
+                + Add New Product
               </Link>
             </div>
           </div>
@@ -141,8 +141,10 @@ export default function SellerDashboardPage() {
                 to="/seller/products"
                 className="group flex flex-col rounded-xl border border-gray-200 p-5 transition hover:border-brand-300 hover:bg-brand-50/10 hover:shadow-sm"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-2xl text-brand-700 group-hover:bg-brand-100">
-                  📦
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-50 text-brand-700 group-hover:bg-brand-100">
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                  </svg>
                 </div>
                 <h3 className="mt-3 font-bold text-gray-900 group-hover:text-brand-700">
                   የእኔ ምርቶች (My Products)
@@ -156,8 +158,10 @@ export default function SellerDashboardPage() {
                 to="/seller/products/new"
                 className="group flex flex-col rounded-xl border border-gray-200 p-5 transition hover:border-brand-300 hover:bg-brand-50/10 hover:shadow-sm"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-50 text-2xl text-green-700 group-hover:bg-green-100">
-                  ➕
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-50 text-green-700 group-hover:bg-green-100">
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
                 </div>
                 <h3 className="mt-3 font-bold text-gray-900 group-hover:text-green-800">
                   ምርት መመዝገቢያ (Add Product)
@@ -171,8 +175,10 @@ export default function SellerDashboardPage() {
                 to="/products"
                 className="group flex flex-col rounded-xl border border-gray-200 p-5 transition hover:border-brand-300 hover:bg-brand-50/10 hover:shadow-sm"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-2xl text-blue-700 group-hover:bg-blue-100">
-                  🛒
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-700 group-hover:bg-blue-100">
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                  </svg>
                 </div>
                 <h3 className="mt-3 font-bold text-gray-900 group-hover:text-blue-800">
                   ገበያ (Marketplace)
@@ -186,8 +192,10 @@ export default function SellerDashboardPage() {
                 to="/customer/profile"
                 className="group flex flex-col rounded-xl border border-gray-200 p-5 transition hover:border-brand-300 hover:bg-brand-50/10 hover:shadow-sm"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-50 text-2xl text-purple-700 group-hover:bg-purple-100">
-                  ⚙️
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-50 text-purple-700 group-hover:bg-purple-100">
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
                 </div>
                 <h3 className="mt-3 font-bold text-gray-900 group-hover:text-purple-800">
                   መለያ (Account Profile)
@@ -208,7 +216,9 @@ export default function SellerDashboardPage() {
               <div className="mt-4 rounded-xl border border-green-200 bg-green-50 p-4">
                 <div className="flex items-center gap-3">
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-200 text-green-800 font-bold">
-                    ✓
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                    </svg>
                   </div>
                   <div>
                     <p className="text-sm font-bold text-green-900">Active Merchant</p>
@@ -237,7 +247,7 @@ export default function SellerDashboardPage() {
               to="/seller/products/new"
               className="mt-6 block rounded-xl bg-brand-600 py-3 text-center text-sm font-bold text-white shadow-sm transition hover:bg-brand-700"
             >
-              List Another Item 🚀
+              List Another Item &rarr;
             </Link>
           </div>
         </div>

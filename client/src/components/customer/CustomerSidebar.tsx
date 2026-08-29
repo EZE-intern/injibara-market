@@ -15,40 +15,32 @@ function CustomerSidebar({
     {
       name: "Dashboard",
       path: "/customer",
-      icon: "⌂",
     },
     {
       name: "Browse Products",
       path: "/products",
-      icon: "🛍",
     },
     {
       name: "Cart",
       path: "/customer/cart",
-      icon: "🛒",
     },
     {
       name: "My Orders",
       path: "/customer/orders",
-      icon: "📦",
     },
     {
       name: "Saved Products",
       path: "/customer/saved",
-      icon: "♡",
     },
     {
       name: "Profile",
       path: "/customer/profile",
-      icon: "👤",
     },
   ];
 
   const handleLogout = () => {
-    // Authentication will be connected here later.
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-
     navigate("/login");
   };
 
@@ -89,15 +81,11 @@ function CustomerSidebar({
               className={({ isActive }) =>
                 `flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition ${
                   isActive
-                    ? "bg-brand-50 text-brand-700"
+                    ? "bg-brand-50 text-brand-700 font-semibold"
                     : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                 }`
               }
             >
-              <span className="w-6 text-center text-lg">
-                {item.icon}
-              </span>
-
               {item.name}
             </NavLink>
           ))}
@@ -117,10 +105,6 @@ function CustomerSidebar({
               }`
             }
           >
-            <span className="w-6 text-center text-lg">
-              🏪
-            </span>
-
             Become a Seller
           </NavLink>
         </nav>
@@ -132,10 +116,6 @@ function CustomerSidebar({
             onClick={handleLogout}
             className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-gray-600 transition hover:bg-red-50 hover:text-red-600"
           >
-            <span className="w-6 text-center">
-              🚪
-            </span>
-
             Logout
           </button>
         </div>

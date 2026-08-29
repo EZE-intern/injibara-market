@@ -20,8 +20,11 @@ function TrustBanner() {
         <div className="mt-10 grid gap-6 md:grid-cols-3">
           {/* Local */}
           <div className="rounded-2xl bg-white p-6 text-center shadow-sm">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-brand-100 text-xl">
-              📍
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-brand-100 text-brand-700">
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
             </div>
 
             <h3 className="mt-4 font-semibold text-gray-900">Local Marketplace</h3>
@@ -33,8 +36,10 @@ function TrustBanner() {
 
           {/* Sellers */}
           <div className="rounded-2xl bg-white p-6 text-center shadow-sm">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-brand-100 text-xl">
-              🤝
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-brand-100 text-brand-700">
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
             </div>
 
             <h3 className="mt-4 font-semibold text-gray-900">Support Local Sellers</h3>
@@ -46,8 +51,10 @@ function TrustBanner() {
 
           {/* Convenience */}
           <div className="rounded-2xl bg-white p-6 text-center shadow-sm">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-brand-100 text-xl">
-              🛍️
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-brand-100 text-brand-700">
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+              </svg>
             </div>
 
             <h3 className="mt-4 font-semibold text-gray-900">Easy Shopping</h3>

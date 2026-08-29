@@ -31,7 +31,7 @@ function Navbar() {
     <>
       <nav className="flex h-16 w-full items-center justify-between border-b border-gray-200 bg-white px-6 md:px-12">
         {/* Logo */}
-        <Link to="/" className="text-xl font-bold text-gray-900">
+        <Link to="/" className="text-xl font-bold text-gray-900 tracking-tight">
           Injibara Market
         </Link>
 
@@ -55,7 +55,7 @@ function Navbar() {
             to="/seller"
             className="text-sm font-semibold text-brand-600 transition-colors hover:text-brand-700"
           >
-            🏪 Seller Dashboard
+            Seller Dashboard
           </Link>
         </div>
 
@@ -96,7 +96,15 @@ function Navbar() {
           }
           className="rounded-md p-2 text-gray-700 hover:bg-gray-100 md:hidden"
         >
-          {isMobileMenuOpen ? "✕" : "☰"}
+          {isMobileMenuOpen ? (
+            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          ) : (
+            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          )}
         </button>
       </nav>
 
