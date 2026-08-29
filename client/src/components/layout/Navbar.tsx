@@ -1,9 +1,16 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import MobileNavigation from './MobileNavigation';
+import { useEffect, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import MobileNavigation from "./MobileNavigation";
 
 function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const location = useLocation();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    setIsLoggedIn(Boolean(token));
+  }, [location]);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen((currentState) => !currentState);
@@ -11,6 +18,13 @@ function Navbar() {
 
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setIsLoggedIn(false);
+    window.location.href = "/";
   };
 
   return (
@@ -38,33 +52,60 @@ function Navbar() {
           </Link>
 
           <Link
-            to="/categories"
-            className="text-sm font-medium text-gray-700 transition-colors hover:text-brand-600"
+            to="/seller"
+            className="text-sm font-semibold text-brand-600 transition-colors hover:text-brand-700"
           >
-            Categories
+            🏪 Seller Dashboard
           </Link>
         </div>
 
-        {/* Desktop login */}
-        <Link
-          to="/login"
-          className="hidden rounded-md bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700 md:block"
-        >
-          Login
-        </Link>
+        {/* Desktop auth buttons */}
+        <div className="hidden items-center gap-3 md:flex">
+          {isLoggedIn ? (
+            <>
+              <Link
+                to="/seller/products/new"
+                className="rounded-lg bg-brand-600 px-4 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-brand-700"
+              >
+                + Add Product
+              </Link>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <Link
+              to="/login"
+              className="rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
+            >
+              Login
+            </Link>
+          )}
+        </div>
 
         {/* Mobile menu button */}
         <button
           type="button"
           onClick={toggleMobileMenu}
-          aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+          aria-label={
+            isMobileMenuOpen ? "Close navigation menu" : "Open navigation menu"
+          }
           className="rounded-md p-2 text-gray-700 hover:bg-gray-100 md:hidden"
         >
-          {isMobileMenuOpen ? '✕' : '☰'}
+          {isMobileMenuOpen ? "✕" : "☰"}
         </button>
       </nav>
 
-      <MobileNavigation isOpen={isMobileMenuOpen} onClose={closeMobileMenu} />
+      <MobileNavigation
+        isOpen={isMobileMenuOpen}
+        onClose={closeMobileMenu}
+        isLoggedIn={isLoggedIn}
+        onLogout={handleLogout}
+      />
     </>
   );
 }
