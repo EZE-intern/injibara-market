@@ -50,13 +50,6 @@ function Navbar() {
           >
             Products
           </Link>
-
-          <Link
-            to="/seller"
-            className="text-sm font-semibold text-brand-600 transition-colors hover:text-brand-700"
-          >
-            Seller Dashboard
-          </Link>
         </div>
 
         {/* Desktop auth buttons */}

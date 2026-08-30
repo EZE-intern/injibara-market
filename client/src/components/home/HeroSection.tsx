@@ -6,7 +6,7 @@ function HeroSection() {
       <div className="mx-auto grid min-h-[600px] max-w-7xl items-center gap-12 px-6 py-16 md:grid-cols-2 md:px-12 lg:px-16">
         {/* Left side */}
         <div className="max-w-xl">
-          <span className="mb-4 inline-block rounded-full bg-hover:text-brand-60050 px-4 py-2 text-sm font-semibold text-brand-600">
+          <span className="mb-4 inline-block rounded-full bg-brand-50 px-4 py-2 text-sm font-semibold text-brand-600">
             Injibara's Local Marketplace
           </span>
 
@@ -29,7 +29,7 @@ function HeroSection() {
             </Link>
 
             <Link
-              to="/login"
+              to="/seller"
               className="rounded-lg border border-gray-300 px-6 py-3 font-semibold text-gray-800 transition hover:border-brand-600 hover:text-brand-600"
             >
               Start Selling

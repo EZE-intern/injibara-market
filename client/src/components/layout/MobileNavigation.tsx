@@ -36,14 +36,6 @@ function MobileNavigation({
           Products
         </Link>
 
-        <Link
-          to="/seller"
-          onClick={onClose}
-          className="border-b border-gray-100 py-3 text-sm font-bold text-brand-600"
-        >
-          Seller Dashboard
-        </Link>
-
         {isLoggedIn ? (
           <div className="mt-4 flex flex-col gap-2">
             <Link
