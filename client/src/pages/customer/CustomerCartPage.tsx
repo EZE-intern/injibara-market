@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { ShoppingCart } from "lucide-react";
 
 function CustomerCartPage() {
   return (
@@ -6,7 +7,7 @@ function CustomerCartPage() {
       <div className="mx-auto max-w-5xl">
         <Link
           to="/customer"
-          className="text-sm text-gray-500 hover:text-brand-600"
+          className="text-sm text-gray-500 hover:text-brand-600 transition"
         >
           &larr; Dashboard
         </Link>
@@ -15,22 +16,22 @@ function CustomerCartPage() {
           My Cart
         </h1>
 
-        <div className="mt-8 rounded-xl bg-white p-10 text-center shadow-sm">
-          <svg className="mx-auto h-12 w-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-          </svg>
+        <div className="mt-8 rounded-xl bg-white p-12 text-center shadow-sm border border-gray-100">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 text-gray-400">
+            <ShoppingCart size={32} />
+          </div>
 
           <h2 className="mt-4 text-xl font-semibold text-gray-900">
             Your cart is empty
           </h2>
 
-          <p className="mt-2 text-gray-500">
-            Browse products and add something to your cart.
+          <p className="mt-2 text-sm text-gray-500 max-w-md mx-auto">
+            Browse products from local sellers in Injibara and add items to your cart.
           </p>
 
           <Link
             to="/products"
-            className="mt-6 inline-block rounded-lg bg-brand-600 px-5 py-3 font-semibold text-white hover:bg-brand-700"
+            className="mt-6 inline-block rounded-lg bg-brand-600 px-6 py-3 font-semibold text-white hover:bg-brand-700 transition shadow-sm"
           >
             Browse Products
           </Link>

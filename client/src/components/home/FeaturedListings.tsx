@@ -1,10 +1,8 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import axios from 'axios';
-import ProductCard from '../common/ProductCard';
-import type { Product } from '../common/ProductCard';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import ProductCard from "../common/ProductCard";
+import { getProducts } from "../../api/productApi";
+import type { Product } from "../../types/Product";
 
 function FeaturedListings() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -14,12 +12,10 @@ function FeaturedListings() {
     const fetchFeaturedProducts = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`${API_BASE}/products`);
-        const items = response.data?.data || [];
-        // Show the first 8 products as "featured"
-        setProducts(items.slice(0, 8));
+        const data = await getProducts();
+        setProducts(data.slice(0, 8));
       } catch (error) {
-        console.error('Failed to load featured products:', error);
+        console.error("Failed to load featured products:", error);
       } finally {
         setLoading(false);
       }
@@ -34,29 +30,30 @@ function FeaturedListings() {
         {/* Heading */}
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-wide text-brand-600">
+            <p className="text-xs font-bold uppercase tracking-widest text-brand-600">
               Local Marketplace
             </p>
 
-            <h2 className="mt-2 text-3xl font-bold text-gray-900">Featured Listings</h2>
+            <h2 className="mt-2 text-3xl font-bold text-gray-900 tracking-tight">
+              Featured Listings
+            </h2>
 
-            <p className="mt-3 max-w-2xl text-gray-600">
-              Discover products recently listed by local sellers.
+            <p className="mt-2 text-sm text-gray-600">
+              Discover authentic products recently listed by local sellers in Injibara.
             </p>
           </div>
 
           <Link
             to="/products"
-            className="text-sm font-semibold text-brand-600 transition-colors hover:text-brand-700"
+            className="text-sm font-semibold text-brand-600 transition-colors hover:text-brand-700 flex items-center gap-1"
           >
-            View all products →
+            View all products <span>&rarr;</span>
           </Link>
         </div>
 
         {/* Products */}
-        <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {loading ? (
-            // Loading skeleton placeholders
             Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="animate-pulse rounded-2xl border border-gray-200 bg-white">
                 <div className="aspect-square bg-gray-200" />
@@ -72,9 +69,15 @@ function FeaturedListings() {
               <ProductCard key={product.id} product={product} />
             ))
           ) : (
-            <p className="col-span-full text-center text-gray-500">
-              No products listed yet. Be the first seller!
-            </p>
+            <div className="col-span-full rounded-2xl border border-dashed border-gray-200 p-12 text-center text-gray-500">
+              <p className="text-sm font-medium">No products listed yet.</p>
+              <Link
+                to="/seller"
+                className="mt-4 inline-block rounded-lg bg-brand-600 px-5 py-2.5 text-xs font-bold text-white transition hover:bg-brand-700"
+              >
+                + Add First Product
+              </Link>
+            </div>
           )}
         </div>
       </div>

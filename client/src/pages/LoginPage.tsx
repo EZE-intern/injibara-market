@@ -1,6 +1,7 @@
 import { FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { loginUser } from "../api/authApi";
+import { saveAuth } from "../utils/authStorage";
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -23,21 +24,21 @@ function LoginPage() {
         password,
       });
 
-      console.log("Login successful:", response);
+      // Save authentication session
+      saveAuth(response.token, response.user);
 
-      // Save authentication data
-      localStorage.setItem("token", response.token);
-      localStorage.setItem("user", JSON.stringify(response.user));
-
-      // Go back to marketplace
-      navigate("/");
-    } catch (error: unknown) {
-      console.error("Login failed:", error);
-
+      // Route to dashboard or home
+      if (response.user.role === "seller") {
+        navigate("/seller");
+      } else {
+        navigate("/customer");
+      }
+    } catch (err: unknown) {
+      console.error("Login failed:", err);
+      const errorObj = err as { response?: { data?: { message?: string } } };
       const message =
-        error.response?.data?.message ||
+        errorObj.response?.data?.message ||
         "Login failed. Please check your email and password.";
-
       setError(message);
     } finally {
       setLoading(false);
@@ -47,12 +48,11 @@ function LoginPage() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-gray-50 px-6 py-12">
       <div className="w-full max-w-md">
-
         {/* Brand */}
         <div className="mb-8 text-center">
           <Link
             to="/"
-            className="text-2xl font-bold text-gray-900"
+            className="text-2xl font-bold text-gray-900 tracking-tight"
           >
             Injibara Market
           </Link>
@@ -61,16 +61,14 @@ function LoginPage() {
             Welcome back
           </h1>
 
-          <p className="mt-2 text-gray-600">
+          <p className="mt-2 text-sm text-gray-600">
             Sign in to your account to continue.
           </p>
         </div>
 
         {/* Login card */}
         <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
-
           <form onSubmit={handleSubmit}>
-
             {/* Error */}
             {error && (
               <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -120,34 +118,17 @@ function LoginPage() {
               />
             </div>
 
-            {/* Remember me */}
-            <div className="mt-5 flex items-center">
-              <input
-                id="remember"
-                type="checkbox"
-                className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-600"
-              />
-
-              <label
-                htmlFor="remember"
-                className="ml-2 text-sm text-gray-600"
-              >
-                Remember me
-              </label>
-            </div>
-
             {/* Submit */}
             <button
               type="submit"
               disabled={loading}
-              className="mt-6 w-full rounded-lg bg-brand-600 px-5 py-3 font-semibold text-white transition-colors hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60"
+              className="mt-6 w-full rounded-lg bg-brand-600 px-5 py-3 font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60 shadow-sm"
             >
-              {loading ? "Signing in..." : "Login"}
+              {loading ? "Signing in..." : "Sign In"}
             </button>
-
           </form>
 
-          {/* Register */}
+          {/* Register link */}
           <p className="mt-6 text-center text-sm text-gray-600">
             Don't have an account?{" "}
             <Link
@@ -165,10 +146,9 @@ function LoginPage() {
             to="/"
             className="text-sm text-gray-500 transition-colors hover:text-brand-600"
           >
-            ← Back to marketplace
+            &larr; Back to marketplace
           </Link>
         </div>
-
       </div>
     </main>
   );

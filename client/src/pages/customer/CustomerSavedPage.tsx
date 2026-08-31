@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { Heart } from "lucide-react";
 
 function CustomerSavedPage() {
   return (
@@ -6,7 +7,7 @@ function CustomerSavedPage() {
       <div className="mx-auto max-w-5xl">
         <Link
           to="/customer"
-          className="text-sm text-gray-500 hover:text-brand-600"
+          className="text-sm text-gray-500 hover:text-brand-600 transition"
         >
           &larr; Dashboard
         </Link>
@@ -15,22 +16,22 @@ function CustomerSavedPage() {
           Saved Products
         </h1>
 
-        <div className="mt-8 rounded-xl bg-white p-10 text-center shadow-sm">
-          <svg className="mx-auto h-12 w-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-          </svg>
+        <div className="mt-8 rounded-xl bg-white p-12 text-center shadow-sm border border-gray-100">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 text-gray-400">
+            <Heart size={32} />
+          </div>
 
           <h2 className="mt-4 text-xl font-semibold text-gray-900">
             No saved products yet
           </h2>
 
-          <p className="mt-2 text-gray-500">
-            Save products you are interested in so you can find them later.
+          <p className="mt-2 text-sm text-gray-500 max-w-md mx-auto">
+            Save products you are interested in so you can find and purchase them later.
           </p>
 
           <Link
             to="/products"
-            className="mt-6 inline-block rounded-lg bg-brand-600 px-5 py-3 font-semibold text-white hover:bg-brand-700"
+            className="mt-6 inline-block rounded-lg bg-brand-600 px-6 py-3 font-semibold text-white hover:bg-brand-700 transition shadow-sm"
           >
             Browse Products
           </Link>

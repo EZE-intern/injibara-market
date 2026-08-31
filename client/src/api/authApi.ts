@@ -8,20 +8,23 @@ export interface RegisterData {
   role?: string;
 }
 
-export interface LoginData {
+export interface AuthUser {
+  id: number;
+  full_name: string;
   email: string;
-  password: string;
+  role: string;
+  phone?: string | null;
 }
 
 export interface AuthResponse {
   message: string;
-  user: {
-    id: number;
-    full_name: string;
-    email: string;
-    role: string;
-  };
+  user: AuthUser;
   token: string;
+}
+
+export interface LoginData {
+  email: string;
+  password: string;
 }
 
 export const registerUser = async (
@@ -31,7 +34,6 @@ export const registerUser = async (
     "/auth/register",
     data
   );
-
   return response.data;
 };
 
@@ -42,6 +44,5 @@ export const loginUser = async (
     "/auth/login",
     data
   );
-
   return response.data;
 };
