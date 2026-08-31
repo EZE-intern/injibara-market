@@ -1,7 +1,13 @@
 import { FormEvent, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
+import { isAuthenticated } from "../../utils/authStorage";
 
 function BecomeSellerPage() {
+  const authenticated = isAuthenticated();
+
+  if (!authenticated) {
+    return <Navigate to="/login" replace />;
+  }
   const [phone, setPhone] = useState("");
   const [finNumber, setFinNumber] = useState("");
   const [businessName, setBusinessName] = useState("");

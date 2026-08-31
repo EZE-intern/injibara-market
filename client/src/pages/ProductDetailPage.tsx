@@ -116,9 +116,7 @@ function ProductDetailPage() {
       ? discountPrice
       : price;
 
-  const image =
-    product.image ||
-    'https://images.unsplash.com/photo-1523275335684-37898b6baf30';
+  const image = product.image;
 
   const isInStock =
     product.stock === undefined ||
@@ -168,14 +166,16 @@ function ProductDetailPage() {
         <div className="grid gap-10 rounded-2xl bg-white p-6 shadow-sm lg:grid-cols-2 lg:p-10">
 
           {/* Image */}
-          <div className="overflow-hidden rounded-xl bg-gray-100">
-
-            <img
-              src={image}
-              alt={product.name}
-              className="h-full max-h-[600px] w-full object-cover"
-            />
-
+          <div className="overflow-hidden rounded-xl bg-gray-100 flex items-center justify-center min-h-[300px]">
+            {image ? (
+              <img
+                src={image}
+                alt={product.name}
+                className="h-full max-h-[600px] w-full object-cover"
+              />
+            ) : (
+              <span className="text-gray-400 text-sm">No image available</span>
+            )}
           </div>
 
 
