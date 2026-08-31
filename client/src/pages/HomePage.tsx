@@ -1,23 +1,23 @@
-import Navbar from '../components/layout/Navbar';
-import Footer from '../components/layout/Footer';
-import HeroSection from '../components/home/HeroSection';
-import CategoryGrid from '../components/home/CategoryGrid';
-import FeaturedListings from '../components/home/FeaturedListings';
-import TrustBanner from '../components/home/TrustBanner';
+import CustomerNavbar from '../components/customer/CustomerNavbar';
+import CustomerFooter from '../components/customer/CustomerFooter';
+import CustomerHeroSection from '../components/customer/CustomerHeroSection';
+import CustomerCategoryGrid from '../components/customer/CustomerCategoryGrid';
+import CustomerFeaturedListings from '../components/customer/CustomerFeaturedListings';
+import CustomerTrustBanner from '../components/customer/CustomerTrustBanner';
 
 function HomePage() {
   return (
-    <div className="min-h-screen">
-      <Navbar />
+    <div className="min-h-screen bg-white">
+      <CustomerNavbar />
 
       <main>
-        <HeroSection />
-        <CategoryGrid />
-        <FeaturedListings />
-        <TrustBanner />
+        <CustomerHeroSection />
+        <CustomerCategoryGrid />
+        <CustomerFeaturedListings />
+        <CustomerTrustBanner />
       </main>
 
-      <Footer />
+      <CustomerFooter />
     </div>
   );
 }
