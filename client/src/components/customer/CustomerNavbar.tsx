@@ -70,7 +70,7 @@ function CustomerNavbar() {
             to="/products"
             className="text-sm font-medium text-gray-700 transition-colors hover:text-brand-600"
           >
-            Categories
+            Browse
           </Link>
 
           <button
@@ -86,13 +86,6 @@ function CustomerNavbar() {
             className="text-sm font-medium text-gray-700 transition-colors hover:text-brand-600"
           >
             Orders
-          </Link>
-
-          <Link
-            to="/products"
-            className="text-sm font-medium text-gray-700 transition-colors hover:text-brand-600"
-          >
-            Browse
           </Link>
         </div>
 

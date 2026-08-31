@@ -45,7 +45,7 @@ function CustomerMobileNavigation({ isOpen, onClose }: MobileNavigationProps) {
           onClick={onClose}
           className="border-b border-gray-100 py-3 text-sm font-medium text-gray-700 hover:text-brand-600"
         >
-          Categories
+          Browse Products
         </Link>
 
         <button
@@ -62,14 +62,6 @@ function CustomerMobileNavigation({ isOpen, onClose }: MobileNavigationProps) {
           className="border-b border-gray-100 py-3 text-sm font-medium text-gray-700 hover:text-brand-600"
         >
           My Orders
-        </Link>
-
-        <Link
-          to="/products"
-          onClick={onClose}
-          className="border-b border-gray-100 py-3 text-sm font-medium text-gray-700 hover:text-brand-600"
-        >
-          Browse Products
         </Link>
 
         {authenticated && (
