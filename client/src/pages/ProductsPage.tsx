@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import ProductCard from "../components/common/ProductCard";
 import CustomerNavbar from "../components/customer/CustomerNavbar";
 import CustomerFooter from "../components/customer/CustomerFooter";
 import { getProducts } from "../api/productApi";
+import { getCategories } from "../api/categoryApi";
 import type { Product } from "../types/Product";
+import type { Category } from "../api/categoryApi";
 
 type SortOption =
   | "default"
@@ -12,33 +15,78 @@ type SortOption =
   | "newest";
 
 function ProductsPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Read URL query parameters
+  const initialCategory = searchParams.get("category") || searchParams.get("categoryId") || "All";
+  const initialSearch = searchParams.get("search") || "";
+
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [search, setSearch] = useState(initialSearch);
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [sortBy, setSortBy] = useState<SortOption>("default");
 
+  // Keep state synchronized whenever URL search parameters change
   useEffect(() => {
-    const fetchProducts = async () => {
+    const urlCat = searchParams.get("category") || searchParams.get("categoryId") || "All";
+    const urlSearch = searchParams.get("search") || "";
+    setSelectedCategory(urlCat);
+    setSearch(urlSearch);
+  }, [searchParams]);
+
+  // Load products and all categories from backend
+  useEffect(() => {
+    const loadData = async () => {
       try {
         setLoading(true);
-        const data = await getProducts();
-        setProducts(data);
+        const [productsData, categoriesData] = await Promise.all([
+          getProducts(),
+          getCategories().catch(() => []),
+        ]);
+        setProducts(productsData);
+        setCategories(categoriesData);
       } catch (err) {
-        console.error("Failed to load products from database:", err);
+        console.error("Failed to load products or categories from database:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProducts();
+    loadData();
   }, []);
 
+  // Update URL params when user selects another category or searches
+  const handleCategoryChange = (newCategory: string) => {
+    setSelectedCategory(newCategory);
+    const newParams = new URLSearchParams(searchParams);
+    if (newCategory === "All") {
+      newParams.delete("category");
+      newParams.delete("categoryId");
+    } else {
+      newParams.set("category", newCategory);
+    }
+    setSearchParams(newParams);
+  };
+
+  const handleSearchChange = (newSearch: string) => {
+    setSearch(newSearch);
+    const newParams = new URLSearchParams(searchParams);
+    if (!newSearch.trim()) {
+      newParams.delete("search");
+    } else {
+      newParams.set("search", newSearch);
+    }
+    setSearchParams(newParams);
+  };
+
   /*
-   * Filter products based on search and category
+   * Robust filtering by search and category
    */
   const filteredProducts = useMemo(() => {
     const normalizedSearch = search.toLowerCase().trim();
+    const normalizedSelectedCat = selectedCategory.toLowerCase().trim();
 
     const result = products.filter((product) => {
       const categoryName =
@@ -46,6 +94,12 @@ function ProductsPage() {
           ? product.category.name
           : product.categories?.name || (typeof product.category === "string" ? product.category : "");
 
+      const categorySlug =
+        typeof product.category === "object" && product.category !== null
+          ? product.category.slug || ""
+          : product.categories?.slug || "";
+
+      // 1. Check Search Match
       const matchesSearch =
         normalizedSearch === "" ||
         product.name.toLowerCase().includes(normalizedSearch) ||
@@ -53,9 +107,21 @@ function ProductsPage() {
         (product.description &&
           product.description.toLowerCase().includes(normalizedSearch));
 
-      const matchesCategory =
-        selectedCategory === "All" ||
-        categoryName.toLowerCase() === selectedCategory.toLowerCase();
+      // 2. Check Category Match
+      let matchesCategory = true;
+      if (normalizedSelectedCat !== "all" && normalizedSelectedCat !== "") {
+        const isExactId = String(product.category_id) === normalizedSelectedCat;
+        const isNameMatch = categoryName.toLowerCase() === normalizedSelectedCat;
+        const isSlugMatch = categorySlug.toLowerCase() === normalizedSelectedCat;
+        const isPartialMatch =
+          categoryName.toLowerCase().includes(normalizedSelectedCat) ||
+          normalizedSelectedCat.includes(categoryName.toLowerCase()) ||
+          (normalizedSelectedCat.split(/[\s(&,-]+/)[0] &&
+            normalizedSelectedCat.split(/[\s(&,-]+/)[0].length > 2 &&
+            categoryName.toLowerCase().includes(normalizedSelectedCat.split(/[\s(&,-]+/)[0]));
+
+        matchesCategory = Boolean(isExactId || isNameMatch || isSlugMatch || isPartialMatch);
+      }
 
       return matchesSearch && matchesCategory;
     });
@@ -74,18 +140,28 @@ function ProductsPage() {
     return result;
   }, [products, search, selectedCategory, sortBy]);
 
-  // Extract unique category names from loaded products
+  // Combine categories loaded from backend with any unique product categories
   const categoryOptions = useMemo(() => {
-    const categoriesSet = new Set<string>();
+    const list: string[] = [];
+    categories.forEach((cat) => {
+      if (cat.name && !list.includes(cat.name)) {
+        list.push(cat.name);
+      }
+    });
+
+    // Fallback: add categories found on product records if not in list
     products.forEach((p) => {
       const name =
         typeof p.category === "object" && p.category !== null
           ? p.category.name
           : p.categories?.name || (typeof p.category === "string" ? p.category : null);
-      if (name) categoriesSet.add(name);
+      if (name && !list.includes(name)) {
+        list.push(name);
+      }
     });
-    return Array.from(categoriesSet);
-  }, [products]);
+
+    return list;
+  }, [categories, products]);
 
   return (
     <div className="min-h-screen bg-white flex flex-col justify-between">
@@ -122,13 +198,13 @@ function ProductsPage() {
                   id="product-search"
                   type="text"
                   value={search}
-                  onChange={(event) => setSearch(event.target.value)}
+                  onChange={(event) => handleSearchChange(event.target.value)}
                   placeholder="Search by product name or details..."
                   className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
                 />
               </div>
 
-              {/* Category */}
+              {/* Category Dropdown */}
               <div>
                 <label
                   htmlFor="category"
@@ -139,7 +215,7 @@ function ProductsPage() {
                 <select
                   id="category"
                   value={selectedCategory}
-                  onChange={(event) => setSelectedCategory(event.target.value)}
+                  onChange={(event) => handleCategoryChange(event.target.value)}
                   className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100 cursor-pointer"
                 >
                   <option value="All">All Categories</option>
@@ -179,23 +255,40 @@ function ProductsPage() {
             RESULTS
         ========================== */}
         <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
-          {/* Result count & clear button */}
-          <div className="mb-5 flex items-center justify-between">
+          {/* Result count & active filter info */}
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
             <p className="text-sm text-gray-600">
               Showing{" "}
               <span className="font-semibold text-gray-900">
                 {filteredProducts.length}
               </span>{" "}
               products
+              {selectedCategory !== "All" && (
+                <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-bold text-brand-700 border border-brand-200">
+                  Category: {selectedCategory}
+                  <button
+                    type="button"
+                    onClick={() => handleCategoryChange("All")}
+                    className="ml-1 text-brand-700 hover:text-brand-900 cursor-pointer"
+                    aria-label="Remove category filter"
+                  >
+                    &times;
+                  </button>
+                </span>
+              )}
             </p>
 
-            {search && (
+            {(search || selectedCategory !== "All") && (
               <button
                 type="button"
-                onClick={() => setSearch("")}
+                onClick={() => {
+                  handleSearchChange("");
+                  handleCategoryChange("All");
+                  setSortBy("default");
+                }}
                 className="text-sm font-medium text-brand-600 hover:text-brand-700 cursor-pointer"
               >
-                Clear search
+                Clear all filters
               </button>
             )}
           </div>
@@ -245,19 +338,21 @@ function ProductsPage() {
               <p className="mt-2 text-sm text-gray-500 max-w-md mx-auto">
                 {products.length === 0
                   ? "No products listed in the marketplace yet. Registered sellers can list new products from their dashboard."
-                  : "Try searching for another product or changing the category filter."}
+                  : selectedCategory !== "All"
+                  ? `There are currently no products listed under "${selectedCategory}".`
+                  : "Try searching for another product name or resetting filters."}
               </p>
-              {products.length > 0 && (
+              {(products.length > 0 || selectedCategory !== "All" || search) && (
                 <button
                   type="button"
                   onClick={() => {
-                    setSearch("");
-                    setSelectedCategory("All");
+                    handleSearchChange("");
+                    handleCategoryChange("All");
                     setSortBy("default");
                   }}
                   className="mt-6 rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700 shadow-sm cursor-pointer"
                 >
-                  Reset Filters
+                  View All Products
                 </button>
               )}
             </div>

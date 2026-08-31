@@ -5,10 +5,10 @@ import { prisma } from '../lib/prisma.js';
 import { uploadToCloudinary } from '../lib/cloudinary.js';
 
 // @route   GET /api/products
-// @desc    Get all products, optionally filtered by category (Public)
+// @desc    Get all products, optionally filtered by category or search (Public)
 export const getProducts = async (req: Request, res: Response): Promise<Response | void> => {
   try {
-    const { category, categoryId } = req.query;
+    const { category, categoryId, search } = req.query;
     const where: Prisma.productsWhereInput = { deleted_at: null, is_active: true };
 
     // Support filtering by category ID
@@ -20,7 +20,7 @@ export const getProducts = async (req: Request, res: Response): Promise<Response
     }
 
     // Support filtering by category slug or name
-    if (!where.category_id && category) {
+    if (!where.category_id && category && String(category).trim().toLowerCase() !== 'all') {
       const categoryValue = String(category).trim().toLowerCase();
       let foundCategory = await prisma.categories.findFirst({
         where: { slug: categoryValue },
@@ -28,14 +28,32 @@ export const getProducts = async (req: Request, res: Response): Promise<Response
 
       if (!foundCategory) {
         const allCategories = await prisma.categories.findMany();
-        foundCategory = allCategories.find(
-          (item) => String(item.name).trim().toLowerCase() === categoryValue
-        ) || null;
+        foundCategory = allCategories.find((item) => {
+          const name = String(item.name).trim().toLowerCase();
+          const slug = String(item.slug).trim().toLowerCase();
+          const firstWord = categoryValue.split(/[\s(&,-]+/)[0];
+          return (
+            name === categoryValue ||
+            slug === categoryValue ||
+            name.includes(categoryValue) ||
+            categoryValue.includes(name) ||
+            (firstWord && firstWord.length > 2 && name.includes(firstWord))
+          );
+        }) || null;
       }
 
       if (foundCategory) {
         where.category_id = foundCategory.id;
       }
+    }
+
+    // Support search query
+    if (search && String(search).trim()) {
+      const searchStr = String(search).trim();
+      where.OR = [
+        { name: { contains: searchStr } },
+        { description: { contains: searchStr } },
+      ];
     }
 
     const products = await prisma.products.findMany({
