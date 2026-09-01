@@ -9,33 +9,36 @@ function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchDetail = async () => {
-      if (!id) {
-        setLoading(false);
-        return;
+  const fetchDetail = async () => {
+    if (!id) {
+      setLoading(false);
+      return;
+    }
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await getProductById(id);
+      setProduct(data);
+      if (data) {
+        const mainImg =
+          data.product_images?.find((img) => img.is_primary)?.image_url ||
+          data.product_images?.[0]?.image_url ||
+          data.image ||
+          null;
+        setSelectedImage(mainImg);
       }
-      try {
-        setLoading(true);
-        const data = await getProductById(id);
-        setProduct(data);
-        if (data) {
-          const mainImg =
-            data.product_images?.find((img) => img.is_primary)?.image_url ||
-            data.product_images?.[0]?.image_url ||
-            data.image ||
-            null;
-          setSelectedImage(mainImg);
-        }
-      } catch (err) {
-        console.error("Error fetching product detail:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+    } catch (err) {
+      console.error("Error fetching product detail:", err);
+      setError("Unable to load this product. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchDetail();
   }, [id]);
 
@@ -49,6 +52,41 @@ function ProductDetailPage() {
             <p className="mt-4 text-sm font-medium text-gray-600">
               Loading product details...
             </p>
+          </div>
+        </main>
+        <CustomerFooter />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-white flex flex-col justify-between">
+        <CustomerNavbar />
+        <main className="flex-1 bg-gray-50 px-4 py-16">
+          <div className="mx-auto max-w-lg rounded-2xl border border-red-200 bg-red-50 p-10 text-center">
+            <svg className="mx-auto h-12 w-12 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+            </svg>
+            <h1 className="mt-4 text-xl font-bold text-red-800">{error}</h1>
+            <p className="mt-2 text-sm text-red-600">
+              This could be caused by a slow internet connection or a temporary server issue.
+            </p>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+              <button
+                type="button"
+                onClick={fetchDetail}
+                className="rounded-lg bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 shadow-sm cursor-pointer"
+              >
+                Try Again
+              </button>
+              <Link
+                to="/products"
+                className="rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+              >
+                Back to Marketplace
+              </Link>
+            </div>
           </div>
         </main>
         <CustomerFooter />

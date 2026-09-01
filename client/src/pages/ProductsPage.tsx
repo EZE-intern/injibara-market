@@ -24,6 +24,7 @@ function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState(initialSearch);
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [sortBy, setSortBy] = useState<SortOption>("default");
@@ -37,23 +38,25 @@ function ProductsPage() {
   }, [searchParams]);
 
   // Load products and all categories from backend
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        setLoading(true);
-        const [productsData, categoriesData] = await Promise.all([
-          getProducts(),
-          getCategories().catch(() => []),
-        ]);
-        setProducts(productsData);
-        setCategories(categoriesData);
-      } catch (err) {
-        console.error("Failed to load products or categories from database:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const [productsData, categoriesData] = await Promise.all([
+        getProducts(),
+        getCategories().catch(() => []),
+      ]);
+      setProducts(productsData);
+      setCategories(categoriesData);
+    } catch (err) {
+      console.error("Failed to load products or categories from database:", err);
+      setError("Unable to load products. Please check your connection and try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     loadData();
   }, []);
 
@@ -309,6 +312,23 @@ function ProductsPage() {
                   </div>
                 </div>
               ))}
+            </div>
+          ) : error ? (
+            <div className="rounded-2xl border border-red-200 bg-red-50 px-6 py-16 text-center">
+              <svg className="mx-auto h-12 w-12 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+              </svg>
+              <h2 className="mt-4 text-xl font-semibold text-red-800">{error}</h2>
+              <p className="mt-2 text-sm text-red-600">
+                This could be caused by a slow internet connection or a temporary server issue.
+              </p>
+              <button
+                type="button"
+                onClick={loadData}
+                className="mt-6 rounded-lg bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 shadow-sm cursor-pointer"
+              >
+                Try Again
+              </button>
             </div>
           ) : filteredProducts.length > 0 ? (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
