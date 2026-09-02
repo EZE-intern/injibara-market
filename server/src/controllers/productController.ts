@@ -125,11 +125,12 @@ export const createProduct = async (req: AuthRequest, res: Response): Promise<Re
     const sellerId = req.user?.id;
     if (!sellerId) return res.status(401).json({ message: 'ያልተፈቀደ መዳረሻ' });
 
+    // req.body is already validated and sanitized by validate(createProductSchema):
+    // - name is trimmed, min 3 chars
+    // - price is a positive number
+    // - stock is a non-negative integer
+    // - category_id and store_id are positive integers (if provided)
     const { name, description, price, discount_price, stock, category_id, store_id } = req.body;
-
-    if (!name || !price) {
-      return res.status(400).json({ message: 'የምርት ስም እና ዋጋ ያስፈልጋል' });
-    }
 
     const slug = name.toLowerCase().replace(/[^a-z0-9\u1200-\u137F]+/g, '-').replace(/^-|-$/g, '') + '-' + Date.now();
 
@@ -139,12 +140,12 @@ export const createProduct = async (req: AuthRequest, res: Response): Promise<Re
         name,
         slug,
         description: description || null,
-        price: parseFloat(price),
-        discount_price: discount_price ? parseFloat(discount_price) : null,
-        stock: stock ? parseInt(stock, 10) : 0,
+        price,
+        discount_price: discount_price ?? null,
+        stock: stock ?? 0,
         seller_id: Number(sellerId),
-        category_id: category_id ? Number(category_id) : null,
-        store_id: store_id ? Number(store_id) : null,
+        category_id: category_id ?? null,
+        store_id: store_id ?? null,
       },
     });
 
@@ -233,19 +234,20 @@ export const updateProduct = async (req: AuthRequest, res: Response): Promise<Re
       return res.status(403).json({ success: false, message: 'የራስዎን ምርት ብቻ ማሻሻል ይችላሉ' });
     }
 
+    // req.body is validated by validate(updateProductSchema)
     const { name, description, price, discount_price, stock, category_id, store_id } = req.body;
 
     // Update the product fields
     await prisma.products.update({
       where: { id },
       data: {
-        ...(name !== undefined && { name: String(name).trim() }),
-        ...(description !== undefined && { description: String(description).trim() }),
-        ...(price !== undefined && { price: parseFloat(price) }),
-        ...(discount_price !== undefined && { discount_price: parseFloat(discount_price) }),
-        ...(stock !== undefined && { stock: parseInt(stock, 10) }),
-        ...(category_id !== undefined && { category_id: Number(category_id) }),
-        ...(store_id !== undefined && { store_id: Number(store_id) }),
+        ...(name !== undefined && { name }),
+        ...(description !== undefined && { description }),
+        ...(price !== undefined && { price }),
+        ...(discount_price !== undefined && { discount_price }),
+        ...(stock !== undefined && { stock }),
+        ...(category_id !== undefined && { category_id }),
+        ...(store_id !== undefined && { store_id }),
       },
     });
 

@@ -1,9 +1,16 @@
 import express, { Router } from 'express';
-import { registerUser, loginUser } from '../controllers/authController.js';
+import { registerUser, loginUser, updateUserRole } from '../controllers/authController.js';
+import { protect, authorizeRoles } from '../middleware/authMiddleware.js';
+import { validate } from '../middleware/validate.js';
+import { registerSchema, loginSchema, updateUserRoleSchema } from '../schemas/index.js';
 
 const router: Router = express.Router();
 
-router.post('/register', registerUser);
-router.post('/login', loginUser);
+// Public auth routes — with input validation
+router.post('/register', validate(registerSchema), registerUser);
+router.post('/login', validate(loginSchema), loginUser);
+
+// Admin-only: change a user's role (promote to admin, demote to customer, etc.)
+router.patch('/users/:id/role', protect, authorizeRoles('admin'), validate(updateUserRoleSchema), updateUserRole);
 
 export default router;

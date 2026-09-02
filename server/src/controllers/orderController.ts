@@ -56,13 +56,10 @@ export const createOrder = async (req: AuthRequest, res: Response): Promise<void
       res.status(401).json({ message: 'User not authenticated' });
       return;
     }
-
+    // req.body is validated by validate(createOrderSchema):
+    // - items is a non-empty array with positive product_id and quantity >= 1
+    // - shipping_address, payment_method, and note are sanitized
     const { items, shipping_address, payment_method, note } = req.body;
-
-    if (!items || !Array.isArray(items) || items.length === 0) {
-      res.status(400).json({ message: 'Order must contain at least one item' });
-      return;
-    }
 
     // Calculate total amount
     let totalAmount = 0;

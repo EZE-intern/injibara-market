@@ -133,7 +133,7 @@ export default function SellerProductsPage() {
 
                         <td className="px-6 py-4">
                           <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700">
-                            {product.categories?.name || product.category || "General"}
+                            {product.categories?.name || (typeof product.category === "object" && product.category !== null ? product.category.name : product.category) || "General"}
                           </span>
                         </td>
 

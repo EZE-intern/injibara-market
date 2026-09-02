@@ -8,6 +8,8 @@ import {
 } from '../controllers/productController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { upload } from '../middleware/uploadMiddleware.js';
+import { validate } from '../middleware/validate.js';
+import { createProductSchema, updateProductSchema } from '../schemas/index.js';
 
 const router: Router = express.Router();
 
@@ -15,10 +17,10 @@ const router: Router = express.Router();
 router.get('/', getProducts);
 router.get('/:id', getProductById);
 
-// Protected routes: Any logged-in user can list items (and manage their own products)
-// upload.array('images', 6) allows up to 6 images per product (one per side)
-router.post('/', protect, upload.array('images', 6), createProduct);
-router.put('/:id', protect, upload.array('images', 6), updateProduct);
+// Protected routes with validation
+// Note: validate() runs AFTER multer (upload) since multer parses multipart form data into req.body
+router.post('/', protect, upload.array('images', 6), validate(createProductSchema), createProduct);
+router.put('/:id', protect, upload.array('images', 6), validate(updateProductSchema), updateProduct);
 router.delete('/:id', protect, deleteProduct);
 
 export default router;
