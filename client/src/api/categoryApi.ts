@@ -6,11 +6,19 @@ export interface Category {
   slug: string;
   description?: string | null;
   image?: string | null;
+  _count?: {
+    products?: number;
+  };
 }
 
 export interface CategoriesResponse {
   success: boolean;
   count: number;
+  total?: number;
+  page?: number;
+  limit?: number;
+  totalPages?: number;
+  hasMore?: boolean;
   data: Category[];
 }
 
@@ -19,9 +27,18 @@ export interface SingleCategoryResponse {
   data: Category;
 }
 
-export const getCategories = async (): Promise<Category[]> => {
+export interface GetCategoriesParams {
+  page?: number;
+  limit?: number;
+}
+
+export const getCategories = async (
+  params?: GetCategoriesParams
+): Promise<Category[]> => {
   try {
-    const response = await axiosClient.get<CategoriesResponse>("/categories");
+    const response = await axiosClient.get<CategoriesResponse>("/categories", {
+      params,
+    });
     return response.data?.data || [];
   } catch (error) {
     console.error("Failed to fetch categories:", error);

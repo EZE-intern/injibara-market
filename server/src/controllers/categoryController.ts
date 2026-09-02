@@ -52,26 +52,47 @@ export const createCategory = async (req: Request, res: Response): Promise<Respo
   }
 };
 
-// get all categories
+// get all categories, optionally limited / paginated
 // @route   GET /api/categories
 export const getCategories = async (req: Request, res: Response): Promise<Response | void> => {
   try {
-    const categories = await prisma.categories.findMany({
-      where: {
-        deleted_at: null,
-      },
-      orderBy: {
-        name: 'asc',
-      },
-    });
+    const page = Math.max(1, parseInt(String(req.query.page || '1'), 10) || 1);
+    const limitParam = req.query.limit ? parseInt(String(req.query.limit), 10) : undefined;
+    const limit = limitParam && Number.isInteger(limitParam) && limitParam > 0 ? Math.min(100, limitParam) : undefined;
+
+    const where = { deleted_at: null };
+
+    const [total, categories] = await Promise.all([
+      prisma.categories.count({ where }),
+      prisma.categories.findMany({
+        where,
+        ...(limit !== undefined ? { skip: (page - 1) * limit, take: limit } : {}),
+        include: {
+          _count: {
+            select: { products: { where: { deleted_at: null, is_active: true } } },
+          },
+        },
+        orderBy: {
+          name: 'asc',
+        },
+      }),
+    ]);
+
+    const totalPages = limit ? Math.ceil(total / limit) : 1;
+    const hasMore = limit ? page < totalPages : false;
 
     return res.status(200).json({
       success: true,
       count: categories.length,
+      total,
+      page,
+      limit: limit || total,
+      totalPages,
+      hasMore,
       data: categories,
     });
   } catch (error: unknown) {
-      const errorMessage = (error as Error).message;
+    const errorMessage = (error as Error).message;
 
     console.error('Error fetching categories:', error);
     return res.status(500).json({

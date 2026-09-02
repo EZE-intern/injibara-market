@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import ProductCard from "../components/common/ProductCard";
 import CustomerNavbar from "../components/customer/CustomerNavbar";
 import CustomerFooter from "../components/customer/CustomerFooter";
-import { getProducts } from "../api/productApi";
+import { getProductsWithPagination } from "../api/productApi";
 import { getCategories } from "../api/categoryApi";
 import type { Product } from "../types/Product";
 import type { Category } from "../api/categoryApi";
@@ -13,6 +13,8 @@ type SortOption =
   | "price-low"
   | "price-high"
   | "newest";
+
+const PAGE_SIZE = 12;
 
 function ProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -24,6 +26,10 @@ function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [totalCount, setTotalCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState(initialSearch);
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
@@ -37,16 +43,26 @@ function ProductsPage() {
     setSearch(urlSearch);
   }, [searchParams]);
 
-  // Load products and all categories from backend
-  const loadData = async () => {
+  // Load initial batch of products and categories from backend
+  const loadInitialData = async () => {
     try {
       setLoading(true);
       setError(null);
-      const [productsData, categoriesData] = await Promise.all([
-        getProducts(),
+      setPage(1);
+
+      const [productsRes, categoriesData] = await Promise.all([
+        getProductsWithPagination({
+          page: 1,
+          limit: PAGE_SIZE,
+          category: selectedCategory !== "All" ? selectedCategory : undefined,
+          search: search.trim() || undefined,
+        }),
         getCategories().catch(() => []),
       ]);
-      setProducts(productsData);
+
+      setProducts(productsRes.data || []);
+      setHasMore(Boolean(productsRes.hasMore));
+      setTotalCount(productsRes.total || productsRes.count || 0);
       setCategories(categoriesData);
     } catch (err) {
       console.error("Failed to load products or categories from database:", err);
@@ -57,8 +73,39 @@ function ProductsPage() {
   };
 
   useEffect(() => {
-    loadData();
-  }, []);
+    loadInitialData();
+  }, [selectedCategory, search]);
+
+  // Handle "Show More" / Load More button click
+  const handleLoadMore = async () => {
+    if (loadingMore || !hasMore) return;
+
+    try {
+      setLoadingMore(true);
+      const nextPage = page + 1;
+
+      const res = await getProductsWithPagination({
+        page: nextPage,
+        limit: PAGE_SIZE,
+        category: selectedCategory !== "All" ? selectedCategory : undefined,
+        search: search.trim() || undefined,
+      });
+
+      setProducts((prev) => {
+        const existingIds = new Set(prev.map((p) => p.id));
+        const newUnique = (res.data || []).filter((p) => !existingIds.has(p.id));
+        return [...prev, ...newUnique];
+      });
+
+      setPage(nextPage);
+      setHasMore(Boolean(res.hasMore));
+      if (res.total !== undefined) setTotalCount(res.total);
+    } catch (err) {
+      console.error("Failed to load more products:", err);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   // Update URL params when user selects another category or searches
   const handleCategoryChange = (newCategory: string) => {
@@ -85,63 +132,19 @@ function ProductsPage() {
   };
 
   /*
-   * Robust filtering by search and category
+   * Sorting & filtering
    */
-  const filteredProducts = useMemo(() => {
-    const normalizedSearch = search.toLowerCase().trim();
-    const normalizedSelectedCat = selectedCategory.toLowerCase().trim();
-
-    const result = products.filter((product) => {
-      const categoryName =
-        typeof product.category === "object" && product.category !== null
-          ? product.category.name
-          : product.categories?.name || (typeof product.category === "string" ? product.category : "");
-
-      const categorySlug =
-        typeof product.category === "object" && product.category !== null
-          ? product.category.slug || ""
-          : product.categories?.slug || "";
-
-      // 1. Check Search Match
-      const matchesSearch =
-        normalizedSearch === "" ||
-        product.name.toLowerCase().includes(normalizedSearch) ||
-        categoryName.toLowerCase().includes(normalizedSearch) ||
-        (product.description &&
-          product.description.toLowerCase().includes(normalizedSearch));
-
-      // 2. Check Category Match
-      let matchesCategory = true;
-      if (normalizedSelectedCat !== "all" && normalizedSelectedCat !== "") {
-        const isExactId = String(product.category_id) === normalizedSelectedCat;
-        const isNameMatch = categoryName.toLowerCase() === normalizedSelectedCat;
-        const isSlugMatch = categorySlug.toLowerCase() === normalizedSelectedCat;
-        const isPartialMatch =
-          categoryName.toLowerCase().includes(normalizedSelectedCat) ||
-          normalizedSelectedCat.includes(categoryName.toLowerCase()) ||
-          (normalizedSelectedCat.split(/[\s(&,-]+/)[0] &&
-            normalizedSelectedCat.split(/[\s(&,-]+/)[0].length > 2 &&
-            categoryName.toLowerCase().includes(normalizedSelectedCat.split(/[\s(&,-]+/)[0]));
-
-        matchesCategory = Boolean(isExactId || isNameMatch || isSlugMatch || isPartialMatch);
-      }
-
-      return matchesSearch && matchesCategory;
-    });
-
-    /*
-     * Sorting
-     */
+  const sortedProducts = useMemo(() => {
+    const list = [...products];
     if (sortBy === "price-low") {
-      result.sort((a, b) => Number(a.price) - Number(b.price));
+      list.sort((a, b) => Number(a.price) - Number(b.price));
     } else if (sortBy === "price-high") {
-      result.sort((a, b) => Number(b.price) - Number(a.price));
+      list.sort((a, b) => Number(b.price) - Number(a.price));
     } else if (sortBy === "newest") {
-      result.sort((a, b) => b.id - a.id);
+      list.sort((a, b) => b.id - a.id);
     }
-
-    return result;
-  }, [products, search, selectedCategory, sortBy]);
+    return list;
+  }, [products, sortBy]);
 
   // Combine categories loaded from backend with any unique product categories
   const categoryOptions = useMemo(() => {
@@ -178,7 +181,7 @@ function ProductsPage() {
           <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
             <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Marketplace Catalog</h1>
             <p className="mt-2 text-sm text-gray-600">
-              Discover authentic products from sellers around Injibara and the Awi area.
+              Discover authentic products and listings from sellers around Injibara and the Awi area.
             </p>
           </div>
         </section>
@@ -255,7 +258,7 @@ function ProductsPage() {
         </section>
 
         {/* =========================
-            RESULTS
+            RESULTS & SHOW MORE
         ========================== */}
         <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
           {/* Result count & active filter info */}
@@ -263,9 +266,9 @@ function ProductsPage() {
             <p className="text-sm text-gray-600">
               Showing{" "}
               <span className="font-semibold text-gray-900">
-                {filteredProducts.length}
+                {products.length}
               </span>{" "}
-              products
+              {totalCount > products.length ? `of ${totalCount}` : ""} products
               {selectedCategory !== "All" && (
                 <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-bold text-brand-700 border border-brand-200">
                   Category: {selectedCategory}
@@ -324,18 +327,44 @@ function ProductsPage() {
               </p>
               <button
                 type="button"
-                onClick={loadData}
+                onClick={loadInitialData}
                 className="mt-6 rounded-lg bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 shadow-sm cursor-pointer"
               >
                 Try Again
               </button>
             </div>
-          ) : filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-              {filteredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
+          ) : sortedProducts.length > 0 ? (
+            <>
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                {sortedProducts.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+
+              {/* "Show More" Button */}
+              {hasMore && (
+                <div className="mt-12 text-center">
+                  <button
+                    type="button"
+                    disabled={loadingMore}
+                    onClick={handleLoadMore}
+                    className="inline-flex items-center gap-2 rounded-xl bg-white border border-gray-300 px-8 py-3.5 text-sm font-bold text-gray-800 shadow-sm transition hover:bg-gray-50 hover:border-brand-500 hover:text-brand-700 disabled:opacity-50 cursor-pointer"
+                  >
+                    {loadingMore ? (
+                      <>
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-brand-600 border-t-transparent" />
+                        <span>ምርቶች በመጫን ላይ ናቸው... (Loading more...)</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>ተጨማሪ ምርቶች አሳይ (Show More Products)</span>
+                        <span className="text-xs">&darr;</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
+            </>
           ) : (
             /* Empty state */
             <div className="rounded-2xl bg-white px-6 py-16 text-center shadow-sm border border-gray-100">

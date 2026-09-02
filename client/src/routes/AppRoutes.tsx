@@ -5,6 +5,7 @@ import LoginPage from "../pages/LoginPage";
 import RegisterPage from "../pages/RegisterPage";
 import ProductsPage from "../pages/ProductsPage";
 import ProductDetailPage from "../pages/ProductDetailPage";
+import CategoriesPage from "../pages/CategoriesPage";
 
 import CustomerDashboardPage from "../pages/customer/CustomerDashboardPage";
 import CustomerCartPage from "../pages/customer/CustomerCartPage";
@@ -29,6 +30,7 @@ function AppRoutes() {
       {/* Marketplace */}
       <Route path="/products" element={<ProductsPage />} />
       <Route path="/products/:id" element={<ProductDetailPage />} />
+      <Route path="/categories" element={<CategoriesPage />} />
 
       {/* Customer */}
       <Route path="/customer" element={<CustomerDashboardPage />} />

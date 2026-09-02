@@ -10,6 +10,7 @@ import {
 import { protect } from '../middleware/authMiddleware.js';
 import { upload } from '../middleware/uploadMiddleware.js';
 import { validate } from '../middleware/validate.js';
+import { creationLimiter } from '../middleware/rateLimiter.js';
 import { createProductSchema, updateProductSchema } from '../schemas/index.js';
 
 const router: Router = express.Router();
@@ -22,9 +23,9 @@ router.get('/my-products', protect, getMyProducts);
 
 router.get('/:id', getProductById);
 
-// Protected routes with validation
+// Protected routes with validation & upload rate limiting
 // Note: validate() runs AFTER multer (upload) since multer parses multipart form data into req.body
-router.post('/', protect, upload.array('images', 6), validate(createProductSchema), createProduct);
+router.post('/', protect, creationLimiter, upload.array('images', 6), validate(createProductSchema), createProduct);
 router.put('/:id', protect, upload.array('images', 6), validate(updateProductSchema), updateProduct);
 router.delete('/:id', protect, deleteProduct);
 

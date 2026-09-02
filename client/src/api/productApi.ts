@@ -4,6 +4,11 @@ import type { Product } from "../types/Product";
 export interface ProductsResponse {
   success: boolean;
   count: number;
+  total?: number;
+  page?: number;
+  limit?: number;
+  totalPages?: number;
+  hasMore?: boolean;
   data: Product[];
 }
 
@@ -15,10 +20,13 @@ export interface SingleProductResponse {
 export interface GetProductsParams {
   category?: string;
   categoryId?: number;
+  search?: string;
+  page?: number;
+  limit?: number;
 }
 
 /**
- * Fetch all products, optionally filtered by category
+ * Fetch products (optionally filtered by category, search, and paginated)
  */
 export const getProducts = async (
   params?: GetProductsParams
@@ -30,10 +38,26 @@ export const getProducts = async (
 };
 
 /**
- * Fetch only the logged-in seller's products
+ * Fetch products with full pagination metadata (for Show More / pagination)
  */
-export const getMyProducts = async (): Promise<Product[]> => {
-  const response = await axiosClient.get<ProductsResponse>("/products/my-products");
+export const getProductsWithPagination = async (
+  params?: GetProductsParams
+): Promise<ProductsResponse> => {
+  const response = await axiosClient.get<ProductsResponse>("/products", {
+    params,
+  });
+  return response.data;
+};
+
+/**
+ * Fetch only the logged-in seller's products (with optional pagination)
+ */
+export const getMyProducts = async (
+  params?: { page?: number; limit?: number }
+): Promise<Product[]> => {
+  const response = await axiosClient.get<ProductsResponse>("/products/my-products", {
+    params,
+  });
   return response.data?.data || [];
 };
 

@@ -3,6 +3,7 @@ import { createStore, getStores, getStoreById } from '../controllers/storeContro
 import { protect, authorizeRoles } from '../middleware/authMiddleware.js';
 import { upload } from '../middleware/uploadMiddleware.js';
 import { validate } from '../middleware/validate.js';
+import { creationLimiter } from '../middleware/rateLimiter.js';
 import { createStoreSchema } from '../schemas/index.js';
 
 const router: Router = express.Router();
@@ -11,7 +12,7 @@ const router: Router = express.Router();
 router.get('/', getStores);
 router.get('/:id', getStoreById);
 
-// Private — Seller only, with validation (runs after multer parses multipart)
-router.post('/', protect, authorizeRoles('seller', 'admin'), upload.single('logo'), validate(createStoreSchema), createStore);
+// Private — Seller only, with validation & rate limiting
+router.post('/', protect, authorizeRoles('seller', 'admin'), creationLimiter, upload.single('logo'), validate(createStoreSchema), createStore);
 
 export default router;

@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 import { prisma } from '../lib/prisma.js';
 
-// 1. Get logged in user's orders
+// 1. Get logged in user's orders (with optional pagination)
 export const getMyOrders = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const userId = Number(req.user?.id);
@@ -11,35 +11,53 @@ export const getMyOrders = async (req: AuthRequest, res: Response): Promise<void
       return;
     }
 
-    const ordersList = await prisma.orders.findMany({
-      where: { user_id: userId },
-      include: {
-        order_items: {
-          include: {
-            products: {
-              select: {
-                id: true,
-                name: true,
-                image: true,
-                price: true,
-                product_images: {
-                  select: {
-                    id: true,
-                    image_url: true,
-                    is_primary: true,
+    const where = { user_id: userId };
+
+    const page = Math.max(1, parseInt(String(req.query.page || '1'), 10) || 1);
+    const limitParam = req.query.limit ? parseInt(String(req.query.limit), 10) : undefined;
+    const limit = limitParam && Number.isInteger(limitParam) && limitParam > 0 ? Math.min(100, limitParam) : undefined;
+
+    const [total, ordersList] = await Promise.all([
+      prisma.orders.count({ where }),
+      prisma.orders.findMany({
+        where,
+        ...(limit !== undefined ? { skip: (page - 1) * limit, take: limit } : {}),
+        include: {
+          order_items: {
+            include: {
+              products: {
+                select: {
+                  id: true,
+                  name: true,
+                  image: true,
+                  price: true,
+                  product_images: {
+                    select: {
+                      id: true,
+                      image_url: true,
+                      is_primary: true,
+                    },
                   },
                 },
               },
             },
           },
         },
-      },
-      orderBy: { created_at: 'desc' },
-    });
+        orderBy: { created_at: 'desc' },
+      }),
+    ]);
+
+    const totalPages = limit ? Math.ceil(total / limit) : 1;
+    const hasMore = limit ? page < totalPages : false;
 
     res.status(200).json({
       success: true,
       count: ordersList.length,
+      total,
+      page,
+      limit: limit || total,
+      totalPages,
+      hasMore,
       data: ordersList,
     });
   } catch (error) {

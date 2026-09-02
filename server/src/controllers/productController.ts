@@ -56,26 +56,43 @@ export const getProducts = async (req: Request, res: Response): Promise<Response
       ];
     }
 
-    const products = await prisma.products.findMany({
-      where,
-      include: {
-        product_images: {
-          select: {
-            id: true,
-            image_url: true,
-            side_angle: true,
-            is_primary: true,
-            sort_order: true,
+    // Pagination parameters
+    const page = Math.max(1, parseInt(String(req.query.page || '1'), 10) || 1);
+    const limitParam = req.query.limit ? parseInt(String(req.query.limit), 10) : undefined;
+    const limit = limitParam && Number.isInteger(limitParam) && limitParam > 0 ? Math.min(100, limitParam) : undefined;
+
+    const [total, products] = await Promise.all([
+      prisma.products.count({ where }),
+      prisma.products.findMany({
+        where,
+        ...(limit !== undefined ? { skip: (page - 1) * limit, take: limit } : {}),
+        include: {
+          product_images: {
+            select: {
+              id: true,
+              image_url: true,
+              side_angle: true,
+              is_primary: true,
+              sort_order: true,
+            },
           },
+          categories: { select: { id: true, name: true, slug: true } },
         },
-        categories: { select: { id: true, name: true, slug: true } },
-      },
-      orderBy: { created_at: 'desc' },
-    });
+        orderBy: { created_at: 'desc' },
+      }),
+    ]);
+
+    const totalPages = limit ? Math.ceil(total / limit) : 1;
+    const hasMore = limit ? page < totalPages : false;
     
     return res.status(200).json({ 
       success: true, 
-      count: products.length, 
+      count: products.length,
+      total,
+      page,
+      limit: limit || total,
+      totalPages,
+      hasMore,
       data: products 
     });
   } catch (error: unknown) {
@@ -93,29 +110,48 @@ export const getMyProducts = async (req: AuthRequest, res: Response): Promise<Re
       return res.status(401).json({ success: false, message: 'ያልተፈቀደ መዳረሻ' });
     }
 
-    const products = await prisma.products.findMany({
-      where: {
-        seller_id: Number(sellerId),
-        deleted_at: null,
-      },
-      include: {
-        product_images: {
-          select: {
-            id: true,
-            image_url: true,
-            side_angle: true,
-            is_primary: true,
-            sort_order: true,
+    const where: Prisma.productsWhereInput = {
+      seller_id: Number(sellerId),
+      deleted_at: null,
+    };
+
+    // Pagination parameters
+    const page = Math.max(1, parseInt(String(req.query.page || '1'), 10) || 1);
+    const limitParam = req.query.limit ? parseInt(String(req.query.limit), 10) : undefined;
+    const limit = limitParam && Number.isInteger(limitParam) && limitParam > 0 ? Math.min(100, limitParam) : undefined;
+
+    const [total, products] = await Promise.all([
+      prisma.products.count({ where }),
+      prisma.products.findMany({
+        where,
+        ...(limit !== undefined ? { skip: (page - 1) * limit, take: limit } : {}),
+        include: {
+          product_images: {
+            select: {
+              id: true,
+              image_url: true,
+              side_angle: true,
+              is_primary: true,
+              sort_order: true,
+            },
           },
+          categories: { select: { id: true, name: true, slug: true } },
         },
-        categories: { select: { id: true, name: true, slug: true } },
-      },
-      orderBy: { created_at: 'desc' },
-    });
+        orderBy: { created_at: 'desc' },
+      }),
+    ]);
+
+    const totalPages = limit ? Math.ceil(total / limit) : 1;
+    const hasMore = limit ? page < totalPages : false;
 
     return res.status(200).json({
       success: true,
       count: products.length,
+      total,
+      page,
+      limit: limit || total,
+      totalPages,
+      hasMore,
       data: products,
     });
   } catch (error: unknown) {
