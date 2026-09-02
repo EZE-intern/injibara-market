@@ -1,4 +1,4 @@
-/* global describe, it, expect */
+import { describe, it, expect } from 'vitest';
 
 describe('Backend Sanity Check', () => {
   it('should prove the backend testing infrastructure works', () => {

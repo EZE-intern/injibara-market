@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { JWT_SECRET } from '../utils/generateToken.js';
 
 // Extend the Express Request interface to include our custom user payload
 export interface AuthRequest extends Request {
@@ -21,7 +22,7 @@ export const protect = (req: AuthRequest, res: Response, next: NextFunction): vo
       token = req.headers.authorization.split(' ')[1];
 
       // Verify the token using your secret
-      const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as {id: number; role?: string; email: string };
+      const decoded = jwt.verify(token, JWT_SECRET) as { id: number; role?: string; email: string };
 
       // Attach the decoded payload (id, role, email) to the request object
       req.user = {

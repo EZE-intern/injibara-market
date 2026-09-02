@@ -1,5 +1,7 @@
 import jwt from 'jsonwebtoken';
 
+export const JWT_SECRET = process.env.JWT_SECRET || 'MIKAEL_ARTETA_ARSENAL';
+
 const generateToken = (
   id: string | number,
   role?: string,
@@ -7,9 +9,9 @@ const generateToken = (
 ): string => {
   return jwt.sign(
     { id, role, email },
-    process.env.JWT_SECRET || 'default_secret_key',
+    JWT_SECRET,
     {
-    expiresIn: '30d',
+      expiresIn: '30d',
     }
   );
 };

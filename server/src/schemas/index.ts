@@ -31,6 +31,15 @@ const optionalString = z.preprocess(
   z.string().optional()
 );
 
+// Helper for email normalization (trim and lowercase before validation)
+const sanitizedEmail = z.preprocess(
+  (val) => (typeof val === 'string' ? val.trim().toLowerCase() : val),
+  z
+    .string({ message: 'Email is required' })
+    .email('Please enter a valid email address')
+    .max(200)
+);
+
 // ─── Auth Schemas ────────────────────────────────────────────────────
 
 export const registerSchema = z.object({
@@ -40,11 +49,7 @@ export const registerSchema = z.object({
     .max(100, 'Full name must be at most 100 characters')
     .transform((val) => val.trim()),
 
-  email: z
-    .string({ message: 'Email is required' })
-    .email('Please enter a valid email address')
-    .max(200)
-    .transform((val) => val.toLowerCase().trim()),
+  email: sanitizedEmail,
 
   password: z
     .string({ message: 'Password is required' })
@@ -60,10 +65,7 @@ export const registerSchema = z.object({
 });
 
 export const loginSchema = z.object({
-  email: z
-    .string({ message: 'Email is required' })
-    .email('Please enter a valid email address')
-    .transform((val) => val.toLowerCase().trim()),
+  email: sanitizedEmail,
 
   password: z
     .string({ message: 'Password is required' })
