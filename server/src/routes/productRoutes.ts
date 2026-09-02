@@ -1,6 +1,7 @@
 import express, { Router } from 'express';
 import {
   getProducts,
+  getMyProducts,
   getProductById,
   createProduct,
   updateProduct,
@@ -15,6 +16,10 @@ const router: Router = express.Router();
 
 // Public routes: Anyone can view products
 router.get('/', getProducts);
+
+// Seller-specific: Get logged in user's products (Must be before /:id to avoid path conflict)
+router.get('/my-products', protect, getMyProducts);
+
 router.get('/:id', getProductById);
 
 // Protected routes with validation

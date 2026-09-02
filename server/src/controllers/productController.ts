@@ -84,6 +84,46 @@ export const getProducts = async (req: Request, res: Response): Promise<Response
   }
 };
 
+// @route   GET /api/products/my-products
+// @desc    Get all active products listed by the logged-in user (Private - Authenticated Seller)
+export const getMyProducts = async (req: AuthRequest, res: Response): Promise<Response | void> => {
+  try {
+    const sellerId = req.user?.id;
+    if (!sellerId) {
+      return res.status(401).json({ success: false, message: 'ያልተፈቀደ መዳረሻ' });
+    }
+
+    const products = await prisma.products.findMany({
+      where: {
+        seller_id: Number(sellerId),
+        deleted_at: null,
+      },
+      include: {
+        product_images: {
+          select: {
+            id: true,
+            image_url: true,
+            side_angle: true,
+            is_primary: true,
+            sort_order: true,
+          },
+        },
+        categories: { select: { id: true, name: true, slug: true } },
+      },
+      orderBy: { created_at: 'desc' },
+    });
+
+    return res.status(200).json({
+      success: true,
+      count: products.length,
+      data: products,
+    });
+  } catch (error: unknown) {
+    console.error('Error fetching seller products:', error);
+    return res.status(500).json({ success: false, message: 'የአገልጋይ ስህተት አጋጥሟል' });
+  }
+};
+
 // @route   GET /api/products/:id
 // @desc    Get a single product by ID (Public)
 export const getProductById = async (req: Request, res: Response): Promise<Response | void> => {

@@ -22,6 +22,15 @@ const ethiopianPhone = z
     return match ? `0${match[1]}` : val;
   });
 
+// Helper for FormData fields that send "" when empty
+const optionalNumber = (schema: z.ZodType) =>
+  z.preprocess((val) => (val === '' || val === null || val === undefined ? undefined : val), schema);
+
+const optionalString = z.preprocess(
+  (val) => (val === '' || val === null || val === undefined ? undefined : val),
+  z.string().optional()
+);
+
 // ─── Auth Schemas ────────────────────────────────────────────────────
 
 export const registerSchema = z.object({
@@ -72,48 +81,40 @@ export const updateUserRoleSchema = z.object({
 export const createProductSchema = z.object({
   name: z
     .string({ message: 'Product name is required' })
-    .min(3, 'Product name must be at least 3 characters')
+    .min(2, 'Product name must be at least 2 characters')
     .max(150, 'Product name must be at most 150 characters')
     .transform((val) => val.trim()),
 
-  description: z
-    .string()
-    .max(2000, 'Description must be at most 2000 characters')
-    .optional()
-    .transform((val) => val?.trim()),
+  description: optionalString.transform((val) => (typeof val === 'string' ? val.trim() : undefined)),
 
   price: z.coerce
     .number({ message: 'Price must be a number' })
     .positive('Price must be greater than 0')
     .max(100_000_000, 'Price is unreasonably high'),
 
-  discount_price: z.coerce
-    .number()
-    .positive('Discount price must be greater than 0')
-    .optional(),
+  discount_price: optionalNumber(
+    z.coerce.number().positive('Discount price must be greater than 0').optional()
+  ),
 
-  stock: z.coerce
-    .number()
-    .int('Stock must be a whole number')
-    .nonnegative('Stock cannot be negative')
-    .optional()
-    .default(0),
+  stock: optionalNumber(
+    z.coerce
+      .number()
+      .int('Stock must be a whole number')
+      .nonnegative('Stock cannot be negative')
+      .optional()
+  ),
 
-  category_id: z.coerce
-    .number()
-    .int()
-    .positive('Category ID must be a positive number')
-    .optional(),
+  category_id: optionalNumber(
+    z.coerce.number().int().positive('Category ID must be a positive number').optional()
+  ),
 
-  store_id: z.coerce
-    .number()
-    .int()
-    .positive('Store ID must be a positive number')
-    .optional(),
+  store_id: optionalNumber(
+    z.coerce.number().int().positive('Store ID must be a positive number').optional()
+  ),
 }).refine(
-  (data) => {
+  (data: any) => {
     if (data.discount_price !== undefined && data.price !== undefined) {
-      return data.discount_price < data.price;
+      return Number(data.discount_price) < Number(data.price);
     }
     return true;
   },
@@ -121,47 +122,29 @@ export const createProductSchema = z.object({
 );
 
 export const updateProductSchema = z.object({
-  name: z
-    .string()
-    .min(3, 'Product name must be at least 3 characters')
-    .max(150)
-    .transform((val) => val.trim())
-    .optional(),
+  name: optionalString.transform((val) => (typeof val === 'string' ? val.trim() : undefined)),
 
-  description: z
-    .string()
-    .max(2000)
-    .transform((val) => val.trim())
-    .optional(),
+  description: optionalString.transform((val) => (typeof val === 'string' ? val.trim() : undefined)),
 
-  price: z.coerce
-    .number()
-    .positive('Price must be greater than 0')
-    .max(100_000_000)
-    .optional(),
+  price: optionalNumber(
+    z.coerce.number().positive('Price must be greater than 0').max(100_000_000).optional()
+  ),
 
-  discount_price: z.coerce
-    .number()
-    .positive()
-    .optional(),
+  discount_price: optionalNumber(
+    z.coerce.number().positive('Discount price must be greater than 0').optional()
+  ),
 
-  stock: z.coerce
-    .number()
-    .int()
-    .nonnegative('Stock cannot be negative')
-    .optional(),
+  stock: optionalNumber(
+    z.coerce.number().int().nonnegative('Stock cannot be negative').optional()
+  ),
 
-  category_id: z.coerce
-    .number()
-    .int()
-    .positive()
-    .optional(),
+  category_id: optionalNumber(
+    z.coerce.number().int().positive().optional()
+  ),
 
-  store_id: z.coerce
-    .number()
-    .int()
-    .positive()
-    .optional(),
+  store_id: optionalNumber(
+    z.coerce.number().int().positive().optional()
+  ),
 });
 
 // ─── Order Schemas ───────────────────────────────────────────────────
@@ -184,10 +167,7 @@ export const createOrderSchema = z.object({
     .array(orderItemSchema)
     .min(1, 'Order must contain at least one item'),
 
-  shipping_address: z
-    .string()
-    .max(500)
-    .optional(),
+  shipping_address: optionalString,
 
   payment_method: z
     .string()
@@ -195,10 +175,7 @@ export const createOrderSchema = z.object({
     .optional()
     .default('cash_on_delivery'),
 
-  note: z
-    .string()
-    .max(500)
-    .optional(),
+  note: optionalString,
 });
 
 // ─── Category Schemas ────────────────────────────────────────────────
@@ -210,36 +187,17 @@ export const createCategorySchema = z.object({
     .max(100)
     .transform((val) => val.trim()),
 
-  description: z
-    .string()
-    .max(500)
-    .optional()
-    .transform((val) => val?.trim()),
+  description: optionalString.transform((val) => (typeof val === 'string' ? val.trim() : undefined)),
 
-  image: z
-    .string()
-    .url('Image must be a valid URL')
-    .optional(),
+  image: optionalString,
 });
 
 export const updateCategorySchema = z.object({
-  name: z
-    .string()
-    .min(2)
-    .max(100)
-    .transform((val) => val.trim())
-    .optional(),
+  name: optionalString.transform((val) => (typeof val === 'string' ? val.trim() : undefined)),
 
-  description: z
-    .string()
-    .max(500)
-    .transform((val) => val.trim())
-    .optional(),
+  description: optionalString.transform((val) => (typeof val === 'string' ? val.trim() : undefined)),
 
-  image: z
-    .string()
-    .url()
-    .optional(),
+  image: optionalString,
 });
 
 // ─── Store Schemas ───────────────────────────────────────────────────
@@ -251,19 +209,11 @@ export const createStoreSchema = z.object({
     .max(100)
     .transform((val) => val.trim()),
 
-  description: z
-    .string()
-    .max(500)
-    .optional()
-    .transform((val) => val?.trim()),
+  description: optionalString.transform((val) => (typeof val === 'string' ? val.trim() : undefined)),
 
   phone: ethiopianPhone.optional(),
 
-  address: z
-    .string()
-    .max(300)
-    .optional()
-    .transform((val) => val?.trim()),
+  address: optionalString.transform((val) => (typeof val === 'string' ? val.trim() : undefined)),
 });
 
 // ─── Type Exports ────────────────────────────────────────────────────

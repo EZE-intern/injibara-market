@@ -16,6 +16,7 @@ import BecomeSellerPage from "../pages/customer/BecomeSellerPage";
 import SellerDashboardPage from "../pages/SellerDashboardPage";
 import SellerProductsPage from "../pages/seller/SellerProductsPage";
 import AddProductPage from "../pages/seller/AddProductPage";
+import EditProductPage from "../pages/seller/EditProductPage";
 
 function AppRoutes() {
   return (
@@ -45,6 +46,7 @@ function AppRoutes() {
       <Route path="/seller/dashboard" element={<SellerDashboardPage />} />
       <Route path="/seller/products" element={<SellerProductsPage />} />
       <Route path="/seller/products/new" element={<AddProductPage />} />
+      <Route path="/seller/products/:id/edit" element={<EditProductPage />} />
       <Route path="/seller/add-product" element={<AddProductPage />} />
       <Route path="/myproducts" element={<AddProductPage />} />
     </Routes>

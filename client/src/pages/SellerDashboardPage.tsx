@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getProducts } from "../api/productApi";
+import { getMyProducts } from "../api/productApi";
 
 export default function SellerDashboardPage() {
   const [productCount, setProductCount] = useState<number>(0);
@@ -18,10 +18,10 @@ export default function SellerDashboardPage() {
       }
     }
 
-    // Fetch product count
+    // Fetch product count for the current seller
     const fetchStats = async () => {
       try {
-        const products = await getProducts();
+        const products = await getMyProducts();
         setProductCount(products.length);
       } catch (err) {
         console.error("Failed to load dashboard stats:", err);

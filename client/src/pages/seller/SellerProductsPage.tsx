@@ -1,20 +1,30 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { getProducts, deleteProduct } from "../../api/productApi";
+import { Link, useNavigate } from "react-router-dom";
+import { getMyProducts, deleteProduct } from "../../api/productApi";
 import type { Product } from "../../types/Product";
+import { notify } from "../../utils/notify";
+import { isAuthenticated } from "../../utils/authStorage";
 
 export default function SellerProductsPage() {
+  const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const fetchSellerProducts = async () => {
+    if (!isAuthenticated()) {
+      notify.error("Please sign in first.");
+      navigate("/login");
+      return;
+    }
+
     try {
       setLoading(true);
-      const all = await getProducts();
-      setProducts(all);
+      const userProducts = await getMyProducts();
+      setProducts(userProducts);
     } catch (err) {
       console.error("Failed to load seller products:", err);
+      notify.error("Failed to load your products. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -29,20 +39,14 @@ export default function SellerProductsPage() {
       return;
     }
 
-    const token = localStorage.getItem("token");
-    if (!token) {
-      alert("እባክዎ መጀመሪያ Login ያድርጉ!");
-      return;
-    }
-
     try {
       setDeletingId(id);
-      await deleteProduct(id, token);
+      await deleteProduct(id);
       setProducts((prev) => prev.filter((p) => p.id !== id));
-      alert("ምርቱ በተሳካ ሁኔታ ተሰርዟል!");
+      notify.success("ምርቱ በተሳካ ሁኔታ ተሰርዟል! (Product deleted)");
     } catch (err) {
       console.error("Failed to delete product:", err);
-      alert("ምርቱን መሰረዝ አልተቻለም።");
+      notify.error("ምርቱን መሰረዝ አልተቻለም። (Failed to delete product)");
     } finally {
       setDeletingId(null);
     }
@@ -82,7 +86,7 @@ export default function SellerProductsPage() {
 
           <Link
             to="/seller/products/new"
-            className="inline-flex items-center justify-center rounded-xl bg-brand-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brand-700"
+            className="inline-flex items-center justify-center rounded-xl bg-brand-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brand-700 cursor-pointer"
           >
             + አዲስ ምርት ጨምር (Add Product)
           </Link>
@@ -103,6 +107,7 @@ export default function SellerProductsPage() {
                     <th className="px-6 py-4">ምርት (Product)</th>
                     <th className="px-6 py-4">ምድብ (Category)</th>
                     <th className="px-6 py-4">ዋጋ (Price)</th>
+                    <th className="px-6 py-4">ያለ እቃ (Stock)</th>
                     <th className="px-6 py-4">ፎቶዎች (Images)</th>
                     <th className="px-6 py-4 text-right">እርምጃዎች (Actions)</th>
                   </tr>
@@ -122,7 +127,7 @@ export default function SellerProductsPage() {
                             <img
                               src={primaryImg}
                               alt={product.name}
-                              className="h-12 w-12 rounded-lg object-cover border border-gray-200"
+                              className="h-12 w-12 rounded-lg object-cover border border-gray-200 bg-gray-50"
                             />
                             <div>
                               <p className="font-bold text-gray-900">{product.name}</p>
@@ -133,12 +138,25 @@ export default function SellerProductsPage() {
 
                         <td className="px-6 py-4">
                           <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700">
-                            {product.categories?.name || (typeof product.category === "object" && product.category !== null ? product.category.name : product.category) || "General"}
+                            {product.categories?.name ||
+                              (typeof product.category === "object" && product.category !== null
+                                ? product.category.name
+                                : product.category) ||
+                              "General"}
                           </span>
                         </td>
 
                         <td className="px-6 py-4 font-bold text-brand-700">
                           {Number(product.price).toLocaleString()} ETB
+                          {product.discount_price && (
+                            <span className="ml-2 text-xs font-normal text-gray-400 line-through">
+                              {Number(product.discount_price).toLocaleString()} ETB
+                            </span>
+                          )}
+                        </td>
+
+                        <td className="px-6 py-4 text-xs font-medium text-gray-700">
+                          {product.stock !== undefined ? product.stock : 1}
                         </td>
 
                         <td className="px-6 py-4 text-xs text-gray-500">
@@ -147,18 +165,31 @@ export default function SellerProductsPage() {
 
                         <td className="px-6 py-4 text-right">
                           <div className="flex items-center justify-end gap-2">
+                            {/* Edit Button */}
+                            <Link
+                              to={`/seller/products/${product.id}/edit`}
+                              className="inline-flex items-center gap-1 rounded-lg border border-brand-200 bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-700 hover:bg-brand-100 transition cursor-pointer"
+                            >
+                              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                              Edit
+                            </Link>
+
+                            {/* View Listing */}
                             <Link
                               to={`/products/${product.id}`}
                               className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-100 transition"
                             >
-                              View &rarr;
+                              View
                             </Link>
 
+                            {/* Delete Button */}
                             <button
                               type="button"
                               disabled={deletingId === product.id}
                               onClick={() => handleDelete(product.id, product.name)}
-                              className="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-100 transition disabled:opacity-50"
+                              className="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-100 transition disabled:opacity-50 cursor-pointer"
                             >
                               {deletingId === product.id ? "..." : "Delete"}
                             </button>

@@ -30,6 +30,14 @@ export const getProducts = async (
 };
 
 /**
+ * Fetch only the logged-in seller's products
+ */
+export const getMyProducts = async (): Promise<Product[]> => {
+  const response = await axiosClient.get<ProductsResponse>("/products/my-products");
+  return response.data?.data || [];
+};
+
+/**
  * Fetch single product by ID with all product images
  */
 export const getProductById = async (
