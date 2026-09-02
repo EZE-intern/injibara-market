@@ -114,7 +114,7 @@ export const createProductSchema = z.object({
     z.coerce.number().int().positive('Store ID must be a positive number').optional()
   ),
 }).refine(
-  (data: any) => {
+  (data) => {
     if (data.discount_price !== undefined && data.price !== undefined) {
       return Number(data.discount_price) < Number(data.price);
     }
