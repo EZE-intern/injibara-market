@@ -1,4 +1,5 @@
 import { Routes, Route } from "react-router-dom";
+import ProtectedRoute from "./ProtectedRoute";
 
 import HomePage from "../pages/HomePage";
 import LoginPage from "../pages/LoginPage";
@@ -22,35 +23,38 @@ import EditProductPage from "../pages/seller/EditProductPage";
 function AppRoutes() {
   return (
     <Routes>
-      {/* Public */}
+      {/* Public Routes */}
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
 
-      {/* Marketplace */}
+      {/* Marketplace (Public) */}
       <Route path="/products" element={<ProductsPage />} />
       <Route path="/products/:id" element={<ProductDetailPage />} />
       <Route path="/categories" element={<CategoriesPage />} />
 
-      {/* Customer */}
-      <Route path="/customer" element={<CustomerDashboardPage />} />
-      <Route path="/customer/cart" element={<CustomerCartPage />} />
-      <Route path="/customer/orders" element={<CustomerOrdersPage />} />
-      <Route path="/customer/saved" element={<CustomerSavedPage />} />
-      <Route path="/customer/profile" element={<CustomerProfilePage />} />
+      {/* Protected Routes (Customer & Seller) */}
+      <Route element={<ProtectedRoute />}>
+        {/* Customer */}
+        <Route path="/customer" element={<CustomerDashboardPage />} />
+        <Route path="/customer/cart" element={<CustomerCartPage />} />
+        <Route path="/customer/orders" element={<CustomerOrdersPage />} />
+        <Route path="/customer/saved" element={<CustomerSavedPage />} />
+        <Route path="/customer/profile" element={<CustomerProfilePage />} />
 
-      {/* Seller Application */}
-      <Route path="/customer/become-seller" element={<BecomeSellerPage />} />
-      <Route path="/become-seller" element={<BecomeSellerPage />} />
+        {/* Seller Application */}
+        <Route path="/customer/become-seller" element={<BecomeSellerPage />} />
+        <Route path="/become-seller" element={<BecomeSellerPage />} />
 
-      {/* Seller Hub */}
-      <Route path="/seller" element={<SellerDashboardPage />} />
-      <Route path="/seller/dashboard" element={<SellerDashboardPage />} />
-      <Route path="/seller/products" element={<SellerProductsPage />} />
-      <Route path="/seller/products/new" element={<AddProductPage />} />
-      <Route path="/seller/products/:id/edit" element={<EditProductPage />} />
-      <Route path="/seller/add-product" element={<AddProductPage />} />
-      <Route path="/myproducts" element={<AddProductPage />} />
+        {/* Seller Hub */}
+        <Route path="/seller" element={<SellerDashboardPage />} />
+        <Route path="/seller/dashboard" element={<SellerDashboardPage />} />
+        <Route path="/seller/products" element={<SellerProductsPage />} />
+        <Route path="/seller/products/new" element={<AddProductPage />} />
+        <Route path="/seller/products/:id/edit" element={<EditProductPage />} />
+        <Route path="/seller/add-product" element={<AddProductPage />} />
+        <Route path="/myproducts" element={<AddProductPage />} />
+      </Route>
     </Routes>
   );
 }

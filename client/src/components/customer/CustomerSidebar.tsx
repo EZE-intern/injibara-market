@@ -1,4 +1,5 @@
 import { NavLink, useNavigate } from "react-router-dom";
+import { clearAuth } from "../../utils/authStorage";
 
 interface CustomerSidebarProps {
   mobileOpen?: boolean;
@@ -39,8 +40,7 @@ function CustomerSidebar({
   ];
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    clearAuth();
     navigate("/login");
   };
 

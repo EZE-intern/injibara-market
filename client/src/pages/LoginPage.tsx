@@ -1,10 +1,11 @@
 import { FormEvent, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { loginUser } from "../api/authApi";
 import { saveAuth } from "../utils/authStorage";
 
 function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,11 +28,16 @@ function LoginPage() {
       // Save authentication session
       saveAuth(response.token, response.user);
 
-      // Route to dashboard or home
-      if (response.user.role === "seller") {
-        navigate("/seller");
+      // Route to previous requested page or role default dashboard
+      const state = location.state as { from?: { pathname?: string; search?: string } } | null;
+      const fromPath = state?.from?.pathname ? `${state.from.pathname}${state.from.search || ""}` : null;
+
+      if (fromPath) {
+        navigate(fromPath, { replace: true });
+      } else if (response.user.role === "seller") {
+        navigate("/seller", { replace: true });
       } else {
-        navigate("/customer");
+        navigate("/customer", { replace: true });
       }
     } catch (err: unknown) {
       console.error("Login failed:", err);
