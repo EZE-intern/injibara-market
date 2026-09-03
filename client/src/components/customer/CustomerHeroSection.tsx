@@ -26,103 +26,112 @@ function CustomerHeroSection() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-gray-50">
-      <div className="mx-auto max-w-7xl px-6 py-12 md:px-12 lg:px-16">
-        <div className="grid gap-10 lg:grid-cols-12 lg:items-center">
-          
-          {/* Left Column */}
-          <div className="z-10 lg:col-span-7">
-            <div className="max-w-2xl">
-              <span className="mb-4 inline-block rounded-full bg-brand-50 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-brand-700">
-                Awi Zone Community Platform
-              </span>
-              <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
-                Your marketplace.
-                <span className="block text-brand-600 mt-1">Your community.</span>
-              </h1>
-              
-              <p className="mt-4 text-base text-gray-600 sm:text-lg">
-                Buy and sell products and services from people around Injibara.
-              </p>
-              <p className="mt-1.5 text-sm text-brand-700 font-medium">
-                በእንጅባራ የሚሸጡና የሚገዙትን ያግኙ።
-              </p>
-            </div>
+    <section className="relative overflow-hidden min-h-[420px] md:min-h-[480px] flex items-center">
+      {/* Full-width Background Image */}
+      <div className="absolute inset-0">
+        <img
+          src="https://images.unsplash.com/photo-1523805009345-7448845a9e53?w=1920&q=80"
+          alt=""
+          aria-hidden="true"
+          className="h-full w-full object-cover"
+        />
+      </div>
 
-            {/* Search Bar */}
-            <form onSubmit={handleSearchSubmit} className="mt-8 max-w-2xl">
-              <div className="flex flex-col gap-2 rounded-xl bg-white p-2 shadow-md sm:flex-row sm:items-center border border-gray-100">
-                
-                {/* Product Search Input */}
-                <div className="flex flex-1 items-center gap-2 px-3">
-                  <Search size={18} className="text-gray-400 shrink-0" />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search teff, electronics, livestock, clothing..."
-                    className="w-full py-2 text-sm text-gray-800 placeholder-gray-400 outline-none"
-                  />
-                </div>
+      {/* Gradient overlay: solid white on the left fading to transparent on the right */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(to right, rgba(255,255,255,0.97) 0%, rgba(255,255,255,0.85) 20%, rgba(255,255,255,0.60) 45%, rgba(255,255,255,0.25) 70%, rgba(255,255,255,0) 100%)",
+        }}
+      />
 
-                {/* Location Filter */}
-                <div className="flex items-center gap-2 border-t border-gray-100 px-3 py-2 sm:border-t-0 sm:border-l sm:py-0 shrink-0">
-                  <MapPin size={18} className="text-brand-600 shrink-0" />
-                  <select className="bg-transparent text-sm font-medium text-gray-700 outline-none py-1.5 cursor-pointer">
-                    <option value="injibara">Injibara</option>
-                    <option value="awi">Awi Zone</option>
-                    <option value="bahirdar">Bahir Dar</option>
-                  </select>
-                </div>
+      {/* Frosted glass blur layer on the left side */}
+      <div
+        className="absolute inset-0"
+        style={{
+          backdropFilter: "blur(6px)",
+          WebkitBackdropFilter: "blur(6px)",
+          maskImage:
+            "linear-gradient(to right, black 0%, black 40%, transparent 70%)",
+          WebkitMaskImage:
+            "linear-gradient(to right, black 0%, black 40%, transparent 70%)",
+        }}
+      />
 
-                {/* Search Button */}
-                <button
-                  type="submit"
-                  className="rounded-lg bg-brand-600 p-3 text-white transition hover:bg-brand-700 shrink-0 flex items-center justify-center cursor-pointer shadow-sm"
-                  aria-label="Search button"
-                >
-                  <Search size={20} />
-                </button>
-              </div>
-            </form>
+      {/* Content */}
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-6 py-12 md:px-12 lg:px-16">
+        <div className="max-w-2xl">
+          <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
+            Your marketplace.
+            <span className="block text-brand-600 mt-1">Your community.</span>
+          </h1>
 
-            {/* Quick Actions */}
-            <div className="mt-8 flex flex-wrap gap-4">
-              <button
-                type="button"
-                onClick={() => navigate("/products")}
-                className="flex items-center gap-2 rounded-lg bg-brand-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 cursor-pointer"
-              >
-                <Grid size={16} />
-                Browse Categories
-              </button>
+          <p className="mt-4 text-base text-gray-700 sm:text-lg">
+            Buy and sell products and services
+            <br className="hidden sm:block" />
+            from people around Injibara.
+          </p>
+          <p className="mt-1.5 text-sm text-brand-700 font-medium">
+            በእንጅባራ የሚሸጡና የሚገዙትን ያግኙ።
+          </p>
+        </div>
 
-              <button
-                type="button"
-                onClick={handleSellClick}
-                className="flex items-center gap-2 rounded-lg border border-brand-600 bg-white px-5 py-3 text-sm font-semibold text-brand-700 transition hover:bg-brand-50 cursor-pointer"
-              >
-                <Plus size={16} />
-                Start Selling
-              </button>
-            </div>
-          </div>
-
-          {/* Right Column */}
-          <div className="lg:col-span-5 relative">
-            <div className="overflow-hidden rounded-2xl border-4 border-white shadow-xl bg-gray-100 aspect-[4/3] w-full lg:aspect-square">
-              <img
-                src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d"
-                alt="Injibara Marketplace"
-                className="h-full w-full object-cover"
+        {/* Search Bar */}
+        <form onSubmit={handleSearchSubmit} className="mt-8 max-w-2xl">
+          <div className="flex flex-col gap-2 rounded-xl bg-white p-2 shadow-lg sm:flex-row sm:items-center border border-gray-200">
+            {/* Product Search Input */}
+            <div className="flex flex-1 items-center gap-2 px-3">
+              <Search size={18} className="text-gray-400 shrink-0" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search products, services, vehicles..."
+                className="w-full py-2 text-sm text-gray-800 placeholder-gray-400 outline-none"
               />
             </div>
-            <div className="absolute -bottom-4 -left-4 rounded-xl bg-white p-4 shadow-lg border border-gray-100 hidden sm:block">
-              <div className="text-xs text-gray-500 font-medium">Local Marketplace</div>
-              <div className="text-sm font-bold text-gray-900 mt-0.5">Injibara Town, Awi</div>
-            </div>
-          </div>
 
+            {/* Location Filter */}
+            <div className="flex items-center gap-2 border-t border-gray-100 px-3 py-2 sm:border-t-0 sm:border-l sm:py-0 shrink-0">
+              <MapPin size={18} className="text-brand-600 shrink-0" />
+              <select className="bg-transparent text-sm font-medium text-gray-700 outline-none py-1.5 cursor-pointer">
+                <option value="injibara">Injibara</option>
+                <option value="awi">Awi Zone</option>
+                <option value="bahirdar">Bahir Dar</option>
+              </select>
+            </div>
+
+            {/* Search Button */}
+            <button
+              type="submit"
+              className="rounded-lg bg-brand-600 p-3 text-white transition hover:bg-brand-700 shrink-0 flex items-center justify-center cursor-pointer shadow-sm"
+              aria-label="Search button"
+            >
+              <Search size={20} />
+            </button>
+          </div>
+        </form>
+
+        {/* Quick Actions */}
+        <div className="mt-8 flex flex-wrap gap-4">
+          <button
+            type="button"
+            onClick={() => navigate("/products")}
+            className="flex items-center gap-2 rounded-lg bg-brand-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 cursor-pointer"
+          >
+            <Grid size={16} />
+            Browse Categories
+          </button>
+
+          <button
+            type="button"
+            onClick={handleSellClick}
+            className="flex items-center gap-2 rounded-lg border border-brand-600 bg-white/80 backdrop-blur-sm px-5 py-3 text-sm font-semibold text-brand-700 transition hover:bg-white cursor-pointer"
+          >
+            <Plus size={16} />
+            Sell Something
+          </button>
         </div>
       </div>
     </section>
