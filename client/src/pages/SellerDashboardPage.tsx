@@ -193,6 +193,23 @@ export default function SellerDashboardPage() {
               </Link>
 
               <Link
+                to="/seller/messages"
+                className="group flex flex-col rounded-xl border border-gray-200 p-5 transition hover:border-brand-300 hover:bg-brand-50/10 hover:shadow-sm"
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50 text-indigo-700 group-hover:bg-indigo-100">
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                </div>
+                <h3 className="mt-3 font-bold text-gray-900 group-hover:text-indigo-800">
+                  Messages
+                </h3>
+                <p className="mt-1 text-xs text-gray-500">
+                  View and respond to buyer inquiries and conversations.
+                </p>
+              </Link>
+
+              <Link
                 to="/"
                 className="group flex flex-col rounded-xl border border-gray-200 p-5 transition hover:border-brand-300 hover:bg-brand-50/10 hover:shadow-sm"
               >

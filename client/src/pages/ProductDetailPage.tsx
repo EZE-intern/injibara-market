@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import CustomerNavbar from "../components/customer/CustomerNavbar";
 import CustomerFooter from "../components/customer/CustomerFooter";
 import { getProductById } from "../api/productApi";
+import { getToken } from "../utils/authStorage";
 import type { Product } from "../types/Product";
 
 function ProductDetailPage() {
@@ -11,6 +12,7 @@ function ProductDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const fetchDetail = async () => {
     if (!id) {
@@ -285,7 +287,13 @@ function ProductDetailPage() {
                 <div className="mt-8 pt-6 border-t border-gray-150 flex flex-col gap-3 sm:flex-row">
                   <button
                     type="button"
-                    onClick={() => alert(`Inquiring about ${product.name}. Direct messaging will connect you directly with the merchant!`)}
+                    onClick={() => {
+                      if (!getToken()) {
+                        navigate("/login", { state: { from: `/messages/chat/${product.id}` } });
+                        return;
+                      }
+                      navigate(`/messages/chat/${product.id}`);
+                    }}
                     className="flex-1 rounded-lg bg-brand-600 px-6 py-3 font-semibold text-white transition hover:bg-brand-700 shadow-sm cursor-pointer"
                   >
                     Contact Seller

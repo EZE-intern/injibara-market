@@ -17,8 +17,10 @@ import BecomeSellerPage from "../pages/customer/BecomeSellerPage";
 
 import SellerDashboardPage from "../pages/SellerDashboardPage";
 import SellerProductsPage from "../pages/seller/SellerProductsPage";
+import SellerMessagesPage from "../pages/seller/SellerMessagesPage";
 import AddProductPage from "../pages/seller/AddProductPage";
 import EditProductPage from "../pages/seller/EditProductPage";
+import BuyerChatPage from "../pages/BuyerChatPage";
 
 function AppRoutes() {
   return (
@@ -53,7 +55,11 @@ function AppRoutes() {
         <Route path="/seller/products/new" element={<AddProductPage />} />
         <Route path="/seller/products/:id/edit" element={<EditProductPage />} />
         <Route path="/seller/add-product" element={<AddProductPage />} />
+        <Route path="/seller/messages" element={<SellerMessagesPage />} />
         <Route path="/myproducts" element={<AddProductPage />} />
+
+        {/* Messaging */}
+        <Route path="/messages/chat/:productId" element={<BuyerChatPage />} />
       </Route>
     </Routes>
   );

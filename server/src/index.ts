@@ -6,6 +6,7 @@ import productRoute from './routes/productRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
 import storeRoutes from './routes/storeRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
+import messageRoutes from './routes/messageRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -36,6 +37,7 @@ app.use('/api/products', productRoute);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/stores', storeRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/messages', messageRoutes);
 
 // Start Server
 app.listen(PORT, () => {

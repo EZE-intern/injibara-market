@@ -105,7 +105,14 @@ export default function EditProductPage() {
         });
 
         if (data.product_images && data.product_images.length > 0) {
-          setExistingImages(data.product_images);
+          setExistingImages(
+            data.product_images.map((img) => ({
+              id: img.id,
+              image_url: img.image_url,
+              is_primary: img.is_primary ?? undefined,
+              side_angle: img.side_angle,
+            }))
+          );
         } else if (data.image) {
           setExistingImages([{ id: 0, image_url: data.image, is_primary: true }]);
         }
