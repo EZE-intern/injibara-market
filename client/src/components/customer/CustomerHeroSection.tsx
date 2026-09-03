@@ -30,10 +30,10 @@ function CustomerHeroSection() {
       {/* Full-width Background Image */}
       <div className="absolute inset-0">
         <img
-          src="https://images.unsplash.com/photo-1523805009345-7448845a9e53?w=1920&q=80"
-          alt=""
+          src="/images/lake_zengena.jpg"
+          alt="Lake Zengena in Awi Zone near Injibara"
           aria-hidden="true"
-          className="h-full w-full object-cover"
+          className="h-full w-full object-cover object-[center_35%]"
         />
       </div>
 
