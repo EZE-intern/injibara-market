@@ -43,10 +43,11 @@ export const protect = (req: AuthRequest, res: Response, next: NextFunction): vo
 
 // 2. Role Authorization Guard
 export const authorizeRoles = (...roles: string[]) => {
+  const normalizedRoles = roles.map((r) => r.toLowerCase());
   return (req: AuthRequest, res: Response, next: NextFunction): void => {
-    // Check if user exists on the request and if their role is in the allowed roles array
-    if (!req.user || !roles.includes(req.user.role)) {
-      res.status(403).json({ message: 'ይህንን ተግባር ለማከናወን ፈቃድ የሎትም' }); // Forbidden
+    const userRole = req.user?.role?.toLowerCase();
+    if (!req.user || !userRole || !normalizedRoles.includes(userRole)) {
+      res.status(403).json({ message: 'Forbidden: Insufficient permissions.' });
       return;
     }
     next();
