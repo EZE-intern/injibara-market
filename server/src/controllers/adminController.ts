@@ -49,7 +49,7 @@ export const adminController = {
    */
   async getBrokerInquiries(req: AuthRequest, res: Response): Promise<Response> {
     try {
-      // Find messages linked to products whose categories are brokered
+      // Find messages linked to products
       const inquiries = await prisma.messages.findMany({
         where: {
           product_id: { not: null },
@@ -66,14 +66,24 @@ export const adminController = {
           users_messages_receiver_idTousers: true,
         },
         orderBy: { created_at: 'desc' },
-        take: 50,
+        take: 100,
       });
 
-      const formatted = inquiries.map((item) => ({
+      // Filter to only Tier 1 brokered categories (Property & Land, Vehicles & Transport, Heavy Machinery)
+      const brokeredInquiries = inquiries.filter((item) => {
+        const catName = item.products?.categories?.name;
+        const catSlug = item.products?.categories?.slug;
+        return isBrokeredCategory(catName, catSlug);
+      });
+
+      const formatted = brokeredInquiries.map((item) => ({
         id: item.id,
         status: item.is_read ? 'MEDIATED' : 'NEW',
         created_at: item.created_at.toISOString(),
         appointment_date: null,
+        message_text: item.message_text,
+        buyer_id: item.sender_id,
+        receiver_id: item.receiver_id,
         product: item.products
           ? {
               id: item.products.id,
@@ -90,6 +100,7 @@ export const adminController = {
               id: item.users_messages_sender_idTousers.id,
               full_name: item.users_messages_sender_idTousers.full_name,
               phone: item.users_messages_sender_idTousers.phone,
+              email: item.users_messages_sender_idTousers.email,
             }
           : null,
         seller: item.products?.users
@@ -142,6 +153,9 @@ export const adminController = {
           id: item.id,
           status: item.is_read ? 'MEDIATED' : 'NEW',
           created_at: item.created_at.toISOString(),
+          message_text: item.message_text,
+          buyer_id: item.sender_id,
+          receiver_id: item.receiver_id,
           product: item.products
             ? {
                 id: item.products.id,
@@ -158,6 +172,7 @@ export const adminController = {
                 id: item.users_messages_sender_idTousers.id,
                 full_name: item.users_messages_sender_idTousers.full_name,
                 phone: item.users_messages_sender_idTousers.phone,
+                email: item.users_messages_sender_idTousers.email,
               }
             : null,
           seller: item.products?.users
@@ -172,6 +187,156 @@ export const adminController = {
     } catch (error) {
       console.error('Error fetching inquiry details:', error);
       return res.status(500).json({ success: false, message: 'Failed to load inquiry details.' });
+    }
+  },
+
+  /**
+   * GET /api/admin/broker-inquiries/:id/messages
+   * Returns all conversation messages between buyer and admin for this inquiry.
+   */
+  async getInquiryMessages(req: AuthRequest, res: Response): Promise<Response> {
+    try {
+      const id = Number(req.params.id);
+      const inquiry = await prisma.messages.findUnique({
+        where: { id },
+        include: {
+          products: {
+            include: { categories: true },
+          },
+        },
+      });
+
+      if (!inquiry) {
+        return res.status(404).json({ success: false, message: 'Inquiry not found.' });
+      }
+
+      const productId = inquiry.product_id;
+      const buyerId = inquiry.sender_id;
+
+      if (!productId) {
+        return res.status(400).json({ success: false, message: 'Inquiry has no associated product.' });
+      }
+
+      // Fetch all messages for this product between buyer and admin
+      const messages = await prisma.messages.findMany({
+        where: {
+          product_id: productId,
+          OR: [
+            { sender_id: buyerId },
+            { receiver_id: buyerId },
+          ],
+        },
+        include: {
+          users_messages_sender_idTousers: {
+            select: { id: true, full_name: true, role: true },
+          },
+          users_messages_receiver_idTousers: {
+            select: { id: true, full_name: true, role: true },
+          },
+        },
+        orderBy: { created_at: 'asc' },
+      });
+
+      // Mark buyer's incoming unread messages as read
+      await prisma.messages.updateMany({
+        where: {
+          product_id: productId,
+          sender_id: buyerId,
+          is_read: false,
+        },
+        data: { is_read: true },
+      });
+
+      return res.json({
+        success: true,
+        count: messages.length,
+        data: messages.map((m) => ({
+          id: m.id,
+          message_text: m.message_text,
+          sender_id: m.sender_id,
+          receiver_id: m.receiver_id,
+          product_id: m.product_id,
+          is_read: m.is_read,
+          created_at: m.created_at.toISOString(),
+          sender: m.users_messages_sender_idTousers,
+          receiver: m.users_messages_receiver_idTousers,
+        })),
+      });
+    } catch (error) {
+      console.error('Error fetching inquiry messages:', error);
+      return res.status(500).json({ success: false, message: 'Failed to load conversation.' });
+    }
+  },
+
+  /**
+   * POST /api/admin/broker-inquiries/:id/messages
+   * Send a reply from admin to the buyer for this brokered inquiry.
+   */
+  async sendInquiryReply(req: AuthRequest, res: Response): Promise<Response> {
+    try {
+      const id = Number(req.params.id);
+      const { message_text } = req.body;
+
+      if (!message_text || typeof message_text !== 'string' || !message_text.trim()) {
+        return res.status(400).json({ success: false, message: 'Message text is required.' });
+      }
+
+      const inquiry = await prisma.messages.findUnique({
+        where: { id },
+        include: {
+          products: {
+            include: { categories: true },
+          },
+        },
+      });
+
+      if (!inquiry || !inquiry.product_id) {
+        return res.status(404).json({ success: false, message: 'Inquiry not found.' });
+      }
+
+      const adminId = Number(req.user?.id);
+      const buyerId = inquiry.sender_id;
+
+      const createdMessage = await prisma.messages.create({
+        data: {
+          sender_id: adminId,
+          receiver_id: buyerId,
+          product_id: inquiry.product_id,
+          message_text: message_text.trim(),
+          is_read: false,
+        },
+        include: {
+          users_messages_sender_idTousers: {
+            select: { id: true, full_name: true, role: true },
+          },
+        },
+      });
+
+      // Mark the original inquiry as read / assigned
+      if (!inquiry.is_read) {
+        await prisma.messages.update({
+          where: { id: inquiry.id },
+          data: { is_read: true },
+        });
+      }
+
+      return res.status(201).json({
+        success: true,
+        message: 'Reply sent successfully.',
+        data: {
+          id: createdMessage.id,
+          message_text: createdMessage.message_text,
+          sender_id: createdMessage.sender_id,
+          receiver_id: createdMessage.receiver_id,
+          product_id: createdMessage.product_id,
+          is_read: createdMessage.is_read,
+          created_at: createdMessage.created_at.toISOString(),
+          sender: createdMessage.users_messages_sender_idTousers,
+        },
+      });
+    } catch (error) {
+      console.error('Error sending inquiry reply:', error);
+      return res.status(500).json({ success: false, message: 'Failed to send reply.' });
     }
   },
 

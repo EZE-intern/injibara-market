@@ -71,11 +71,28 @@ const messageController = {
       } else if (product_id) {
         // First contact — resolve receiver from product
         productIdNum = Number(product_id);
-        const resolved = await resolveProductReceiver(productIdNum);
-        if (resolved.error) {
-          return res.status(404).json({ success: false, message: resolved.error });
+        const userRole = req.user.role?.toLowerCase();
+        if ((userRole === 'admin' || userRole === 'super_admin') && !receiver_id) {
+          const initialMsg = await prisma.messages.findFirst({
+            where: { product_id: productIdNum, NOT: { sender_id: senderId } },
+            orderBy: { created_at: 'asc' },
+          });
+          if (initialMsg) {
+            targetReceiverId = initialMsg.sender_id;
+          } else {
+            const resolved = await resolveProductReceiver(productIdNum);
+            if (resolved.error) {
+              return res.status(404).json({ success: false, message: resolved.error });
+            }
+            targetReceiverId = resolved.receiverId;
+          }
+        } else {
+          const resolved = await resolveProductReceiver(productIdNum);
+          if (resolved.error) {
+            return res.status(404).json({ success: false, message: resolved.error });
+          }
+          targetReceiverId = resolved.receiverId;
         }
-        targetReceiverId = resolved.receiverId;
       } else {
         return res.status(400).json({
           success: false,
@@ -159,7 +176,7 @@ const messageController = {
 
   /**
    * GET /api/messages/chat/:productId
-   * Get the conversation for a specific product (buyer side).
+   * Get the conversation for a specific product (buyer side or broker admin).
    * Resolves the contact automatically from the product's category/seller.
    */
   async getConversationByProduct(req: AuthRequest, res: Response): Promise<Response> {
@@ -170,9 +187,19 @@ const messageController = {
 
       const productId = Number(req.params.productId);
       const currentUserId = Number(req.user.id);
+      const userRole = req.user.role?.toLowerCase();
 
       if (!productId || isNaN(productId)) {
         return res.status(400).json({ success: false, message: 'Valid product ID is required.' });
+      }
+
+      // If user is an admin acting as the broker for this brokered deal
+      if (userRole === 'admin' || userRole === 'super_admin') {
+        const messages = await prisma.messages.findMany({
+          where: { product_id: productId },
+          orderBy: { created_at: 'asc' },
+        });
+        return res.status(200).json({ success: true, data: messages });
       }
 
       const resolved = await resolveProductReceiver(productId);

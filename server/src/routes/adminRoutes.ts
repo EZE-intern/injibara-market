@@ -13,6 +13,8 @@ router.get('/overview', adminController.getOverview);
 // 2. Broker Hub
 router.get('/broker-inquiries', adminController.getBrokerInquiries);
 router.get('/broker-inquiries/:id', adminController.getBrokerInquiryById);
+router.get('/broker-inquiries/:id/messages', adminController.getInquiryMessages);
+router.post('/broker-inquiries/:id/messages', adminController.sendInquiryReply);
 router.put('/broker-inquiries/:id/status', adminController.updateBrokerInquiryStatus);
 router.put('/broker-inquiries/:id/appointment', adminController.setBrokerAppointment);
 

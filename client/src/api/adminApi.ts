@@ -46,6 +46,12 @@ export interface BrokerInquiry {
 
   appointment_date?: string | null;
 
+  message_text?: string | null;
+
+  buyer_id?: number | null;
+
+  receiver_id?: number | null;
+
   product?: {
     id: number;
     name: string;
@@ -61,12 +67,33 @@ export interface BrokerInquiry {
     id: number;
     full_name: string;
     phone?: string | null;
+    email?: string | null;
   } | null;
 
   seller?: {
     id: number;
     full_name: string;
     phone?: string | null;
+  } | null;
+}
+
+export interface InquiryChatMessage {
+  id: number;
+  message_text: string;
+  sender_id: number;
+  receiver_id: number;
+  product_id?: number | null;
+  is_read: boolean;
+  created_at: string;
+  sender?: {
+    id: number;
+    full_name: string;
+    role: string;
+  } | null;
+  receiver?: {
+    id: number;
+    full_name: string;
+    role: string;
   } | null;
 }
 
@@ -98,6 +125,46 @@ export const getBrokerInquiryById =
     const response =
       await axiosClient.get<BrokerInquiryResponse>(
         `/admin/broker-inquiries/${id}`
+      );
+
+    return response.data.data;
+  };
+
+interface InquiryMessagesResponse {
+  success: boolean;
+  count: number;
+  data: InquiryChatMessage[];
+}
+
+export const getInquiryMessages =
+  async (
+    inquiryId: number
+  ): Promise<InquiryChatMessage[]> => {
+    const response =
+      await axiosClient.get<InquiryMessagesResponse>(
+        `/admin/broker-inquiries/${inquiryId}/messages`
+      );
+
+    return response.data.data;
+  };
+
+interface SendInquiryReplyResponse {
+  success: boolean;
+  message: string;
+  data: InquiryChatMessage;
+}
+
+export const sendInquiryReply =
+  async (
+    inquiryId: number,
+    messageText: string
+  ): Promise<InquiryChatMessage> => {
+    const response =
+      await axiosClient.post<SendInquiryReplyResponse>(
+        `/admin/broker-inquiries/${inquiryId}/messages`,
+        {
+          message_text: messageText,
+        }
       );
 
     return response.data.data;

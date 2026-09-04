@@ -1,11 +1,23 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
+import { Link } from "react-router-dom";
+import {
+  MessageSquare,
+  Send,
+  X,
+  ExternalLink,
+  Clock,
+} from "lucide-react";
 import {
   getBrokerInquiries,
+  getInquiryMessages,
+  sendInquiryReply,
   setBrokerAppointment,
   updateBrokerInquiryStatus,
   type BrokerInquiry,
   type BrokerInquiryStatus,
+  type InquiryChatMessage,
 } from "../../api/adminApi";
+import { getUser } from "../../utils/authStorage";
 
 function BrokerHubPage() {
   const [inquiries, setInquiries] = useState<BrokerInquiry[]>([]);
@@ -18,6 +30,17 @@ function BrokerHubPage() {
   const [appointmentDate, setAppointmentDate] = useState("");
 
   const [actionLoading, setActionLoading] = useState(false);
+
+  // Chat thread modal state
+  const [chatInquiry, setChatInquiry] = useState<BrokerInquiry | null>(null);
+  const [chatMessages, setChatMessages] = useState<InquiryChatMessage[]>([]);
+  const [chatLoading, setChatLoading] = useState(false);
+  const [chatInput, setChatInput] = useState("");
+  const [chatSending, setChatSending] = useState(false);
+  const [chatError, setChatError] = useState<string | null>(null);
+  const chatMessagesEndRef = useRef<HTMLDivElement>(null);
+
+  const currentUser = getUser();
 
   /* =========================================================
      LOAD INQUIRIES
@@ -42,6 +65,82 @@ function BrokerHubPage() {
   useEffect(() => {
     loadInquiries();
   }, []);
+
+  /* =========================================================
+     CHAT THREAD MODAL HANDLERS
+  ========================================================= */
+
+  const openChatThread = async (inquiry: BrokerInquiry) => {
+    setChatInquiry(inquiry);
+    setChatMessages([]);
+    setChatLoading(true);
+    setChatError(null);
+    setChatInput("");
+
+    try {
+      const msgs = await getInquiryMessages(inquiry.id);
+      setChatMessages(msgs);
+    } catch (err) {
+      console.error("Failed to load chat messages", err);
+      setChatError("Could not load message history.");
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
+  // Poll chat messages while chat modal is open
+  useEffect(() => {
+    if (!chatInquiry) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const msgs = await getInquiryMessages(chatInquiry.id);
+        setChatMessages(msgs);
+      } catch {
+        // silent polling failure
+      }
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [chatInquiry]);
+
+  // Scroll to bottom when messages update
+  useEffect(() => {
+    chatMessagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatMessages]);
+
+  const handleSendChat = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!chatInquiry || !chatInput.trim() || chatSending) return;
+
+    const textToSend = chatInput.trim();
+    setChatInput("");
+    setChatSending(true);
+
+    try {
+      const newMsg = await sendInquiryReply(chatInquiry.id, textToSend);
+      setChatMessages((prev) => [...prev, newMsg]);
+
+      // If inquiry was NEW, advance status to ASSIGNED in local state
+      if (chatInquiry.status === "NEW") {
+        setInquiries((prev) =>
+          prev.map((item) =>
+            item.id === chatInquiry.id ? { ...item, status: "ASSIGNED" } : item
+          )
+        );
+        if (selectedInquiry?.id === chatInquiry.id) {
+          setSelectedInquiry((prev) =>
+            prev ? { ...prev, status: "ASSIGNED" } : null
+          );
+        }
+      }
+    } catch (err) {
+      console.error("Failed to send reply", err);
+      setChatInput(textToSend);
+    } finally {
+      setChatSending(false);
+    }
+  };
 
   /* =========================================================
      PIPELINE COUNTS
@@ -596,6 +695,28 @@ function BrokerHubPage() {
               </section>
 
               {/* =================================================
+                  BUYER'S INQUIRY MESSAGE
+              ================================================= */}
+
+              <section>
+                <h3 className="mb-3 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  <MessageSquare className="h-3.5 w-3.5 text-purple-600" />
+                  <span>Buyer's Message</span>
+                </h3>
+
+                <div className="rounded-xl border border-purple-100 bg-purple-50/70 p-4">
+                  <p className="text-sm font-medium leading-relaxed text-slate-800 italic">
+                    "{selectedInquiry.message_text || "Buyer submitted this inquiry for broker mediation."}"
+                  </p>
+
+                  <div className="mt-3 flex items-center gap-1.5 text-xs font-medium text-purple-600">
+                    <Clock className="h-3 w-3" />
+                    <span>Received {new Date(selectedInquiry.created_at).toLocaleString()}</span>
+                  </div>
+                </div>
+              </section>
+
+              {/* =================================================
                   SELLER
               ================================================= */}
 
@@ -767,19 +888,149 @@ function BrokerHubPage() {
               <section className="border-t border-gray-100 pt-5">
                 <button
                   type="button"
-                  disabled
-                  className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-400"
+                  onClick={() => openChatThread(selectedInquiry)}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-purple-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-purple-700 shadow-sm cursor-pointer"
                 >
-                  Open Chat Thread
+                  <MessageSquare className="h-4 w-4" />
+                  <span>Open Chat Thread</span>
                 </button>
 
-                <p className="mt-2 text-center text-xs text-gray-400">
-                  Chat integration will be enabled when
-                  the backend chat contract is available.
+                <p className="mt-2 text-center text-xs text-gray-500">
+                  Chat directly with {selectedInquiry.buyer?.full_name || "the buyer"} about this brokered deal.
                 </p>
               </section>
             </div>
           </aside>
+        </div>
+      )}
+
+      {/* =========================================================
+          INTERACTIVE INQUIRY CHAT MODAL
+      ========================================================= */}
+      {chatInquiry && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+          <div className="flex h-[600px] w-full max-w-xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4 bg-slate-900 text-white">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="flex h-2.5 w-2.5 rounded-full bg-green-400"></span>
+                  <h3 className="font-bold text-base">
+                    Chat with {chatInquiry.buyer?.full_name || "Buyer"}
+                  </h3>
+                </div>
+
+                <div className="mt-1 flex items-center gap-3 text-xs text-slate-300">
+                  <span>Listing: {chatInquiry.product?.name || "Product"}</span>
+                  {chatInquiry.product?.price && (
+                    <span>• {chatInquiry.product.price} ETB</span>
+                  )}
+                  {chatInquiry.buyer?.phone && (
+                    <span>• Tel: {chatInquiry.buyer.phone}</span>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {chatInquiry.product?.id && (
+                  <Link
+                    to={`/messages/chat/${chatInquiry.product.id}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    title="Open Full Chat View in New Tab"
+                    className="rounded-lg p-2 text-slate-300 transition hover:bg-white/10 hover:text-white"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                  </Link>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setChatInquiry(null)}
+                  className="rounded-lg p-2 text-slate-300 transition hover:bg-white/10 hover:text-white cursor-pointer"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Messages Body */}
+            <div className="flex-1 overflow-y-auto bg-gray-50 p-4 space-y-3">
+              {chatLoading ? (
+                <div className="flex h-full items-center justify-center text-sm text-gray-500">
+                  Loading conversation history...
+                </div>
+              ) : chatError ? (
+                <div className="rounded-xl bg-red-50 p-4 text-center text-sm text-red-600">
+                  {chatError}
+                </div>
+              ) : chatMessages.length === 0 ? (
+                <div className="flex h-full flex-col items-center justify-center text-center text-gray-400">
+                  <MessageSquare className="h-10 w-10 text-gray-300 mb-2" />
+                  <p className="font-medium text-gray-600">No messages yet</p>
+                  <p className="mt-1 text-xs text-gray-400">
+                    Send a message to begin broker mediation with {chatInquiry.buyer?.full_name || "the buyer"}.
+                  </p>
+                </div>
+              ) : (
+                chatMessages.map((msg) => {
+                  const isMe =
+                    Number(msg.sender_id) === Number(currentUser?.id) ||
+                    msg.sender?.role?.toLowerCase() === "admin" ||
+                    msg.sender?.role?.toLowerCase() === "super_admin";
+
+                  return (
+                    <div
+                      key={msg.id}
+                      className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}
+                    >
+                      <span className="mb-1 text-[11px] font-medium text-gray-400">
+                        {isMe ? "Admin (You)" : (chatInquiry.buyer?.full_name || "Buyer")} •{" "}
+                        {new Date(msg.created_at).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+
+                      <div
+                        className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
+                          isMe
+                            ? "bg-purple-600 text-white rounded-br-sm shadow-sm"
+                            : "border border-gray-200 bg-white text-slate-800 rounded-bl-sm shadow-sm"
+                        }`}
+                      >
+                        {msg.message_text}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+              <div ref={chatMessagesEndRef} />
+            </div>
+
+            {/* Modal Input Form */}
+            <form
+              onSubmit={handleSendChat}
+              className="border-t border-gray-200 bg-white p-3 flex items-center gap-2"
+            >
+              <input
+                type="text"
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                placeholder={`Reply to ${chatInquiry.buyer?.full_name || "buyer"} as Broker...`}
+                disabled={chatSending}
+                className="flex-1 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm outline-none transition focus:border-purple-500 focus:bg-white focus:ring-2 focus:ring-purple-100"
+              />
+
+              <button
+                type="submit"
+                disabled={chatSending || !chatInput.trim()}
+                className="flex items-center gap-2 rounded-xl bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-purple-700 disabled:opacity-50 cursor-pointer"
+              >
+                <Send className="h-4 w-4" />
+                <span>{chatSending ? "Sending..." : "Send"}</span>
+              </button>
+            </form>
+          </div>
         </div>
       )}
     </div>

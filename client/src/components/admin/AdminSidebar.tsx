@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, Link, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Briefcase,
@@ -9,6 +9,8 @@ import {
   UserCog,
   Settings,
   LogOut,
+  Home,
+  User,
 } from "lucide-react";
 import { clearAuth, getUser } from "../../utils/authStorage";
 
@@ -60,21 +62,21 @@ function AdminSidebar() {
           LOGO / HEADER
       ========================= */}
       <div className="flex h-20 items-center border-b border-gray-100 px-6">
-        <div>
-          <h1 className="text-lg font-bold text-slate-900">
+        <Link to="/" className="group block" title="Go to Injibara Market Homepage">
+          <h1 className="text-lg font-bold text-slate-900 group-hover:text-purple-600 transition">
             INJIBARA MARKET
           </h1>
 
           <p className="mt-1 text-xs font-medium uppercase tracking-wide text-purple-600">
             Admin Panel
           </p>
-        </div>
+        </Link>
       </div>
 
       {/* =========================
           NAVIGATION
       ========================= */}
-      <nav className="space-y-1 px-4 py-6">
+      <nav className="space-y-1 px-4 py-6 overflow-y-auto max-h-[calc(100vh-180px)]">
         {navigation.map((item) => {
           const Icon = item.icon;
           return (
@@ -100,7 +102,7 @@ function AdminSidebar() {
         {/* =========================
             SEPARATOR
         ========================= */}
-        <div className="my-5 border-t border-gray-100" />
+        <div className="my-4 border-t border-gray-100" />
 
         {/* =========================
             SUPER ADMIN ONLY
@@ -139,6 +141,40 @@ function AdminSidebar() {
           <Settings className="h-5 w-5 shrink-0" />
           <span>Settings</span>
         </NavLink>
+
+        {/* =========================
+            EXIT ADMIN / SWITCH PORTALS
+        ========================= */}
+        <div className="my-4 border-t border-gray-100" />
+        <div className="px-4 pb-1">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+            Marketplace Portals
+          </p>
+        </div>
+
+        <Link
+          to="/"
+          className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-600 transition hover:bg-purple-50 hover:text-purple-700"
+        >
+          <Home className="h-5 w-5 shrink-0 text-gray-400" />
+          <span>Marketplace Home</span>
+        </Link>
+
+        <Link
+          to="/customer"
+          className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-600 transition hover:bg-purple-50 hover:text-purple-700"
+        >
+          <User className="h-5 w-5 shrink-0 text-gray-400" />
+          <span>Customer Dashboard</span>
+        </Link>
+
+        <Link
+          to="/seller"
+          className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-600 transition hover:bg-purple-50 hover:text-purple-700"
+        >
+          <Store className="h-5 w-5 shrink-0 text-gray-400" />
+          <span>Seller Dashboard</span>
+        </Link>
       </nav>
 
       {/* =========================

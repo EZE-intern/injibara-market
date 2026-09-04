@@ -147,4 +147,133 @@ describe('Admin Routes & Security Tests', () => {
     expect(res.body.data[0].product_count).toBe(12);
     expect(res.body.data[0].status).toBe('APPROVED');
   });
+
+  it('should return broker inquiries with message_text filtered to Tier 1 brokered categories', async () => {
+    vi.spyOn(prisma.messages, 'findMany').mockResolvedValue([
+      {
+        id: 101,
+        sender_id: 20,
+        receiver_id: 1,
+        product_id: 50,
+        message_text: 'Is this Bajaj still available for purchase?',
+        is_read: false,
+        created_at: new Date('2026-01-01'),
+        products: {
+          id: 50,
+          name: 'Bajaj RE 2024',
+          price: 350000,
+          categories: { name: 'Vehicles & Bajaj', slug: 'vehicles' },
+          product_images: [{ image_url: 'https://img.com/bajaj.jpg' }],
+          users: { id: 30, full_name: 'Seller Abebe', phone: '0911223344' },
+        },
+        users_messages_sender_idTousers: {
+          id: 20,
+          full_name: 'Buyer Kebede',
+          phone: '0988776655',
+          email: 'buyer@kebede.com',
+        },
+      } as any,
+      {
+        id: 102,
+        sender_id: 21,
+        receiver_id: 31,
+        product_id: 51,
+        message_text: 'What is the shoe size?',
+        is_read: true,
+        created_at: new Date('2026-01-01'),
+        products: {
+          id: 51,
+          name: 'Leather Shoes',
+          price: 2500,
+          categories: { name: 'Fashion & Clothes', slug: 'fashion' },
+          product_images: [],
+          users: { id: 31, full_name: 'Shoe Seller', phone: '0911001122' },
+        },
+        users_messages_sender_idTousers: {
+          id: 21,
+          full_name: 'Shoe Buyer',
+          phone: '0911223344',
+          email: 'shoebuyer@test.com',
+        },
+      } as any,
+    ]);
+
+    const res = await request(app)
+      .get('/api/admin/broker-inquiries')
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    // Only the Tier 1 Bajaj inquiry should be returned, fashion filtered out
+    expect(res.body.count).toBe(1);
+    expect(res.body.data[0].id).toBe(101);
+    expect(res.body.data[0].message_text).toBe('Is this Bajaj still available for purchase?');
+    expect(res.body.data[0].buyer.full_name).toBe('Buyer Kebede');
+  });
+
+  it('should allow admin to get conversation messages for a broker inquiry', async () => {
+    vi.spyOn(prisma.messages, 'findUnique').mockResolvedValue({
+      id: 101,
+      sender_id: 20,
+      product_id: 50,
+      products: { categories: { name: 'Vehicles', slug: 'vehicles' } },
+    } as any);
+
+    vi.spyOn(prisma.messages, 'findMany').mockResolvedValue([
+      {
+        id: 1,
+        message_text: 'Hello, I want to inspect the vehicle',
+        sender_id: 20,
+        receiver_id: 1,
+        product_id: 50,
+        is_read: false,
+        created_at: new Date('2026-01-01T10:00:00Z'),
+        users_messages_sender_idTousers: { id: 20, full_name: 'Buyer Kebede', role: 'customer' },
+        users_messages_receiver_idTousers: { id: 1, full_name: 'Admin', role: 'admin' },
+      } as any,
+    ]);
+
+    vi.spyOn(prisma.messages, 'updateMany').mockResolvedValue({ count: 1 } as any);
+
+    const res = await request(app)
+      .get('/api/admin/broker-inquiries/101/messages')
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.data.length).toBe(1);
+    expect(res.body.data[0].message_text).toBe('Hello, I want to inspect the vehicle');
+  });
+
+  it('should allow admin to send reply to buyer for a broker inquiry', async () => {
+    vi.spyOn(prisma.messages, 'findUnique').mockResolvedValue({
+      id: 101,
+      sender_id: 20,
+      product_id: 50,
+      is_read: false,
+      products: { categories: { name: 'Vehicles', slug: 'vehicles' } },
+    } as any);
+
+    vi.spyOn(prisma.messages, 'create').mockResolvedValue({
+      id: 2,
+      sender_id: 1,
+      receiver_id: 20,
+      product_id: 50,
+      message_text: 'We have scheduled your inspection for tomorrow.',
+      is_read: false,
+      created_at: new Date('2026-01-01T11:00:00Z'),
+      users_messages_sender_idTousers: { id: 1, full_name: 'Admin', role: 'admin' },
+    } as any);
+
+    vi.spyOn(prisma.messages, 'update').mockResolvedValue({} as any);
+
+    const res = await request(app)
+      .post('/api/admin/broker-inquiries/101/messages')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ message_text: 'We have scheduled your inspection for tomorrow.' });
+
+    expect(res.status).toBe(201);
+    expect(res.body.success).toBe(true);
+    expect(res.body.data.message_text).toBe('We have scheduled your inspection for tomorrow.');
+  });
 });
