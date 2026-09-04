@@ -176,6 +176,20 @@ describe('Validation Schemas & Business Invariants', () => {
       expect(parsed.price).toBe(3000);
       expect(parsed.stock).toBe(5);
     });
+
+    it('should normalize product location by trimming and converting to lowercase', async () => {
+      const parsedCreate = await createProductSchema.parseAsync({
+        name: 'Fresh Honey',
+        price: '800',
+        location: '   INJIBARA  ',
+      });
+      expect(parsedCreate.location).toBe('injibara');
+
+      const parsedUpdate = await updateProductSchema.parseAsync({
+        location: '  Kossober Zone  ',
+      });
+      expect(parsedUpdate.location).toBe('kossober zone');
+    });
   });
 
   // ─── 3. Order Calculations & Array Schemas ──────────────────────────

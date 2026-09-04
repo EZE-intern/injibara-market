@@ -6,6 +6,7 @@ import { isAuthenticated } from "../../utils/authStorage";
 function CustomerHeroSection() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchLocation, setSearchLocation] = useState("");
   const authenticated = isAuthenticated();
 
   const handleSellClick = () => {
@@ -18,11 +19,15 @@ function CustomerHeroSection() {
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const params = new URLSearchParams();
     if (searchQuery.trim()) {
-      navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
-    } else {
-      navigate("/products");
+      params.set("search", searchQuery.trim());
     }
+    if (searchLocation.trim()) {
+      params.set("location", searchLocation.trim().toLowerCase());
+    }
+    const queryString = params.toString();
+    navigate(queryString ? `/products?${queryString}` : "/products");
   };
 
   return (
@@ -95,9 +100,16 @@ function CustomerHeroSection() {
             {/* Location Filter */}
             <div className="flex items-center gap-2 border-t border-gray-100 px-3 py-2 sm:border-t-0 sm:border-l sm:py-0 shrink-0">
               <MapPin size={18} className="text-brand-600 shrink-0" />
-              <select className="bg-transparent text-sm font-medium text-gray-700 outline-none py-1.5 cursor-pointer">
+              <select
+                value={searchLocation}
+                onChange={(e) => setSearchLocation(e.target.value)}
+                className="bg-transparent text-sm font-medium text-gray-700 outline-none py-1.5 cursor-pointer"
+              >
+                <option value="">All Locations</option>
                 <option value="injibara">Injibara</option>
                 <option value="awi">Awi Zone</option>
+                <option value="kossober">Kossober</option>
+                <option value="chagni">Chagni</option>
                 <option value="bahirdar">Bahir Dar</option>
               </select>
             </div>

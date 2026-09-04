@@ -113,6 +113,12 @@ export const createProductSchema = z.object({
   store_id: optionalNumber(
     z.coerce.number().int().positive('Store ID must be a positive number').optional()
   ),
+
+  location: optionalString.transform((val) =>
+    typeof val === 'string' && val.trim().length > 0
+      ? val.trim().toLowerCase()
+      : undefined
+  ),
 }).refine(
   (data) => {
     if (data.discount_price !== undefined && data.price !== undefined) {
@@ -127,6 +133,12 @@ export const updateProductSchema = z.object({
   name: optionalString.transform((val) => (typeof val === 'string' ? val.trim() : undefined)),
 
   description: optionalString.transform((val) => (typeof val === 'string' ? val.trim() : undefined)),
+
+  location: optionalString.transform((val) =>
+    typeof val === 'string' && val.trim().length > 0
+      ? val.trim().toLowerCase()
+      : undefined
+  ),
 
   price: optionalNumber(
     z.coerce.number().positive('Price must be greater than 0').max(100_000_000).optional()

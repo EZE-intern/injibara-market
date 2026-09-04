@@ -22,6 +22,7 @@ function ProductsPage() {
   // Read URL query parameters
   const initialCategory = searchParams.get("category") || searchParams.get("categoryId") || "All";
   const initialSearch = searchParams.get("search") || "";
+  const initialLocation = searchParams.get("location") || "";
 
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -33,14 +34,17 @@ function ProductsPage() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState(initialSearch);
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
+  const [selectedLocation, setSelectedLocation] = useState(initialLocation);
   const [sortBy, setSortBy] = useState<SortOption>("default");
 
   // Keep state synchronized whenever URL search parameters change
   useEffect(() => {
     const urlCat = searchParams.get("category") || searchParams.get("categoryId") || "All";
     const urlSearch = searchParams.get("search") || "";
+    const urlLoc = searchParams.get("location") || "";
     setSelectedCategory(urlCat);
     setSearch(urlSearch);
+    setSelectedLocation(urlLoc);
   }, [searchParams]);
 
   // Load initial batch of products and categories from backend
@@ -56,6 +60,10 @@ function ProductsPage() {
           limit: PAGE_SIZE,
           category: selectedCategory !== "All" ? selectedCategory : undefined,
           search: search.trim() || undefined,
+          location:
+            selectedLocation.trim() && selectedLocation.trim().toLowerCase() !== "all"
+              ? selectedLocation.trim().toLowerCase()
+              : undefined,
         }),
         getCategories().catch(() => []),
       ]);
@@ -74,7 +82,7 @@ function ProductsPage() {
 
   useEffect(() => {
     loadInitialData();
-  }, [selectedCategory, search]);
+  }, [selectedCategory, search, selectedLocation]);
 
   // Handle "Show More" / Load More button click
   const handleLoadMore = async () => {
@@ -89,6 +97,10 @@ function ProductsPage() {
         limit: PAGE_SIZE,
         category: selectedCategory !== "All" ? selectedCategory : undefined,
         search: search.trim() || undefined,
+        location:
+          selectedLocation.trim() && selectedLocation.trim().toLowerCase() !== "all"
+            ? selectedLocation.trim().toLowerCase()
+            : undefined,
       });
 
       setProducts((prev) => {
@@ -116,6 +128,17 @@ function ProductsPage() {
       newParams.delete("categoryId");
     } else {
       newParams.set("category", newCategory);
+    }
+    setSearchParams(newParams);
+  };
+
+  const handleLocationChange = (newLocation: string) => {
+    setSelectedLocation(newLocation);
+    const newParams = new URLSearchParams(searchParams);
+    if (!newLocation.trim() || newLocation.toLowerCase() === "all") {
+      newParams.delete("location");
+    } else {
+      newParams.set("location", newLocation.toLowerCase());
     }
     setSearchParams(newParams);
   };
@@ -191,7 +214,7 @@ function ProductsPage() {
         ========================== */}
         <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           <div className="rounded-xl bg-white p-5 shadow-sm border border-gray-100">
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {/* Search */}
               <div>
                 <label
@@ -205,9 +228,32 @@ function ProductsPage() {
                   type="text"
                   value={search}
                   onChange={(event) => handleSearchChange(event.target.value)}
-                  placeholder="Search by product name or details..."
+                  placeholder="Search name, details, or location..."
                   className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
                 />
+              </div>
+
+              {/* Location Dropdown */}
+              <div>
+                <label
+                  htmlFor="location"
+                  className="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-700"
+                >
+                  Location
+                </label>
+                <select
+                  id="location"
+                  value={selectedLocation}
+                  onChange={(event) => handleLocationChange(event.target.value)}
+                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100 cursor-pointer"
+                >
+                  <option value="">All Locations</option>
+                  <option value="injibara">Injibara</option>
+                  <option value="awi">Awi Zone</option>
+                  <option value="kossober">Kossober</option>
+                  <option value="chagni">Chagni</option>
+                  <option value="bahirdar">Bahir Dar</option>
+                </select>
               </div>
 
               {/* Category Dropdown */}

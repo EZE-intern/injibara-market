@@ -32,6 +32,7 @@ export default function AddProductPage() {
     price: "",
     discount_price: "",
     stock: "1",
+    location: "",
     category_id: "",
     description: "",
   });
@@ -181,6 +182,9 @@ export default function AddProductPage() {
       payload.append("discount_price", formData.discount_price.trim());
     }
     payload.append("stock", formData.stock.trim() || "1");
+    if (formData.location.trim()) {
+      payload.append("location", formData.location.trim().toLowerCase());
+    }
     if (finalCategoryId) {
       payload.append("category_id", finalCategoryId);
     }
@@ -391,12 +395,28 @@ export default function AddProductPage() {
                   className="mt-2 w-full rounded-lg border border-gray-300 p-3 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
                 />
               </div>
+
+              {/* Location */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-900">
+                  6. መገኛ ቦታ (Location) <span className="text-brand-600">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="location"
+                  value={formData.location}
+                  onChange={handleInputChange}
+                  placeholder="ምሳሌ፡ Injibara / Kossober / Chagni"
+                  required
+                  className="mt-2 w-full rounded-lg border border-gray-300 p-3 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
+                />
+              </div>
             </div>
 
             {/* 3. Description */}
             <div>
               <label className="block text-sm font-semibold text-gray-900">
-                6. ዝርዝር መግለጫ (Description)
+                7. ዝርዝር መግለጫ (Description)
               </label>
               <textarea
                 name="description"
@@ -412,7 +432,7 @@ export default function AddProductPage() {
             <div className="border-t border-gray-100 pt-6">
               <div className="mb-4">
                 <h3 className="text-base font-bold text-gray-900">
-                  7. ባለ 6-አቅጣጫ የምርት ፎቶዎች (6-Angle Product Inspection Photos)
+                  8. ባለ 6-አቅጣጫ የምርት ፎቶዎች (6-Angle Product Inspection Photos)
                 </h3>
                 <p className="text-xs text-gray-500">
                   የምርቱን ጥራት ለማሳየት ከተለያዩ አቅጣጫዎች የተነሱ ፎቶዎችን ይጫኑ። የፊተኛው ፎቶ (Front) ግዴታ ነው።

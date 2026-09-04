@@ -36,6 +36,7 @@ export default function EditProductPage() {
     price: "",
     discount_price: "",
     stock: "1",
+    location: "",
     category_id: "",
     description: "",
   });
@@ -100,6 +101,7 @@ export default function EditProductPage() {
           price: data.price !== undefined ? String(data.price) : "",
           discount_price: data.discount_price ? String(data.discount_price) : "",
           stock: data.stock !== undefined ? String(data.stock) : "1",
+          location: data.location || "",
           category_id: data.category_id ? String(data.category_id) : "",
           description: data.description || "",
         });
@@ -229,6 +231,9 @@ export default function EditProductPage() {
       payload.append("discount_price", formData.discount_price.trim());
     }
     payload.append("stock", formData.stock.trim() || "1");
+    if (formData.location.trim()) {
+      payload.append("location", formData.location.trim().toLowerCase());
+    }
     if (finalCategoryId) {
       payload.append("category_id", finalCategoryId);
     }
@@ -453,12 +458,27 @@ export default function EditProductPage() {
                   className="mt-2 w-full rounded-lg border border-gray-300 p-3 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
                 />
               </div>
+
+              {/* Location */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-900">
+                  6. መገኛ ቦታ (Location)
+                </label>
+                <input
+                  type="text"
+                  name="location"
+                  value={formData.location}
+                  onChange={handleInputChange}
+                  placeholder="ምሳሌ፡ Injibara / Kossober / Chagni"
+                  className="mt-2 w-full rounded-lg border border-gray-300 p-3 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
+                />
+              </div>
             </div>
 
             {/* 3. Description */}
             <div>
               <label className="block text-sm font-semibold text-gray-900">
-                6. ዝርዝር መግለጫ (Description)
+                7. ዝርዝር መግለጫ (Description)
               </label>
               <textarea
                 name="description"

@@ -8,7 +8,7 @@ import { uploadToCloudinary } from '../lib/cloudinary.js';
 // @desc    Get all products, optionally filtered by category or search (Public)
 export const getProducts = async (req: Request, res: Response): Promise<Response | void> => {
   try {
-    const { category, categoryId, search } = req.query;
+    const { category, categoryId, search, location } = req.query;
     const where: Prisma.productsWhereInput = { deleted_at: null, is_active: true };
 
     // Support filtering by category ID
@@ -47,13 +47,20 @@ export const getProducts = async (req: Request, res: Response): Promise<Response
       }
     }
 
-    // Support search query
+    // Support search query across name, description, and location with .toLowerCase()
     if (search && String(search).trim()) {
-      const searchStr = String(search).trim();
+      const searchStr = String(search).trim().toLowerCase();
       where.OR = [
         { name: { contains: searchStr } },
         { description: { contains: searchStr } },
+        { location: { contains: searchStr } },
       ];
+    }
+
+    // Support dedicated location filter with .toLowerCase()
+    if (location && String(location).trim() && String(location).trim().toLowerCase() !== 'all') {
+      const locStr = String(location).trim().toLowerCase();
+      where.location = { contains: locStr };
     }
 
     // Pagination parameters
@@ -206,7 +213,7 @@ export const createProduct = async (req: AuthRequest, res: Response): Promise<Re
     // - price is a positive number
     // - stock is a non-negative integer
     // - category_id and store_id are positive integers (if provided)
-    const { name, description, price, discount_price, stock, category_id, store_id } = req.body;
+    const { name, description, price, discount_price, stock, category_id, store_id, location } = req.body;
 
     const slug = name.toLowerCase().replace(/[^a-z0-9\u1200-\u137F]+/g, '-').replace(/^-|-$/g, '') + '-' + Date.now();
 
@@ -216,6 +223,7 @@ export const createProduct = async (req: AuthRequest, res: Response): Promise<Re
         name,
         slug,
         description: description || null,
+        location: location ? String(location).trim().toLowerCase() : null,
         price,
         discount_price: discount_price ?? null,
         stock: stock ?? 0,
@@ -311,7 +319,7 @@ export const updateProduct = async (req: AuthRequest, res: Response): Promise<Re
     }
 
     // req.body is validated by validate(updateProductSchema)
-    const { name, description, price, discount_price, stock, category_id, store_id } = req.body;
+    const { name, description, price, discount_price, stock, category_id, store_id, location } = req.body;
 
     // Update the product fields
     await prisma.products.update({
@@ -324,6 +332,9 @@ export const updateProduct = async (req: AuthRequest, res: Response): Promise<Re
         ...(stock !== undefined && { stock }),
         ...(category_id !== undefined && { category_id }),
         ...(store_id !== undefined && { store_id }),
+        ...(location !== undefined && {
+          location: location ? String(location).trim().toLowerCase() : null,
+        }),
       },
     });
 

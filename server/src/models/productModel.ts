@@ -7,6 +7,7 @@ export interface CreateProductInput {
   name: string;
   price: number | string;
   description?: string;
+  location?: string;
   category_id: number | string;
   seller_id: number | string;
   slug?: string;
@@ -14,9 +15,10 @@ export interface CreateProductInput {
 }
 
 export class ProductModel {
-  static async getAll(categoryId?: number) {
+  static async getAll(categoryId?: number, location?: string) {
     const where: Prisma.productsWhereInput = { deleted_at: null, is_active: true };
     if (categoryId) where.category_id = categoryId;
+    if (location) where.location = { contains: location.trim().toLowerCase() };
 
     return await prisma.products.findMany({
       where,

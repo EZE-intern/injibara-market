@@ -38,7 +38,7 @@ function CustomerFooter() {
             <h4 className="text-sm font-bold uppercase tracking-wider text-white">Quick Links</h4>
             <ul className="mt-4 space-y-2 text-xs text-red-100/90">
               <li><Link to="/products" className="hover:text-white transition">Browse Listings</Link></li>
-              <li><Link to="/products" className="hover:text-white transition">Categories</Link></li>
+              <li><Link to="/categories" className="hover:text-white transition">Categories</Link></li>
               <li><Link to="/seller" className="hover:text-white transition">Seller Hub</Link></li>
               <li><Link to="/customer/orders" className="hover:text-white transition">My Orders</Link></li>
             </ul>
@@ -49,8 +49,8 @@ function CustomerFooter() {
             <h4 className="text-sm font-bold uppercase tracking-wider text-white">For Buyers</h4>
             <ul className="mt-4 space-y-2 text-xs text-red-100/90">
               <li><span className="hover:text-white cursor-pointer transition">Safety Tips</span></li>
-              <li><span className="hover:text-white cursor-pointer transition">Payment Methods</span></li>
-              <li><span className="hover:text-white cursor-pointer transition">Delivery</span></li>
+              <li><span className="hover:text-white cursor-pointer transition">Direct Inspection</span></li>
+              <li><span className="hover:text-white cursor-pointer transition">Delivery & Pickup</span></li>
               <li><span className="hover:text-white cursor-pointer transition">Buyer Protection</span></li>
             </ul>
           </div>

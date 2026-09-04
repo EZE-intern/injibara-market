@@ -21,6 +21,7 @@ export interface GetProductsParams {
   category?: string;
   categoryId?: number;
   search?: string;
+  location?: string;
   page?: number;
   limit?: number;
 }
