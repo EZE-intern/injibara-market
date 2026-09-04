@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { clearAuth } from "../../utils/authStorage";
+import { clearAuth, getUser } from "../../utils/authStorage";
 
 interface CustomerSidebarProps {
   mobileOpen?: boolean;
@@ -11,6 +11,7 @@ function CustomerSidebar({
   onClose,
 }: CustomerSidebarProps) {
   const navigate = useNavigate();
+  const user = getUser();
 
   const navigation = [
     {
@@ -92,6 +93,17 @@ function CustomerSidebar({
 
           {/* Divider */}
           <div className="my-5 border-t border-gray-200" />
+
+          {/* Admin Panel */}
+          {(user?.role?.toLowerCase() === "admin" || user?.role?.toLowerCase() === "super_admin") && (
+            <NavLink
+              to="/admin"
+              onClick={onClose}
+              className="flex items-center gap-3 rounded-lg border border-purple-200 bg-purple-50 px-4 py-3 text-sm font-semibold text-purple-700 transition hover:bg-purple-100"
+            >
+              Admin Dashboard
+            </NavLink>
+          )}
 
           {/* Become Seller */}
           <NavLink

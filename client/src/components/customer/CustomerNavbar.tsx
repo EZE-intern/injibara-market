@@ -109,6 +109,14 @@ function CustomerNavbar() {
 
           {authenticated ? (
             <div className="flex items-center gap-3">
+              {(user?.role?.toLowerCase() === "admin" || user?.role?.toLowerCase() === "super_admin") && (
+                <Link
+                  to="/admin"
+                  className="rounded-lg bg-purple-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-purple-700"
+                >
+                  Admin Panel
+                </Link>
+              )}
               <Link
                 to="/customer/profile"
                 className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-50 text-sm font-semibold text-brand-700 transition hover:bg-brand-100"
