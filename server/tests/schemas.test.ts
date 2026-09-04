@@ -50,6 +50,23 @@ describe('Validation Schemas & Business Invariants', () => {
       }
     });
 
+    it('should accept registration with empty phone or omitted phone', async () => {
+      const parsedWithEmpty = await registerSchema.parseAsync({
+        full_name: 'Test User',
+        email: 'test@example.com',
+        password: 'password123',
+        phone: '',
+      });
+      expect(parsedWithEmpty.phone).toBeUndefined();
+
+      const parsedWithoutPhone = await registerSchema.parseAsync({
+        full_name: 'Test User',
+        email: 'test@example.com',
+        password: 'password123',
+      });
+      expect(parsedWithoutPhone.phone).toBeUndefined();
+    });
+
     it('should reject invalid phone numbers (non-Ethiopian, short, letters)', async () => {
       const invalidPhones = ['0812345678', '0512345678', '12345', 'not-a-phone', '+12025550123'];
 

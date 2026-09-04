@@ -26,20 +26,40 @@ function RegisterPage() {
     setLoading(true);
 
     try {
-      await registerUser({
-        full_name: fullName,
-        email,
-        phone,
+      const payload: {
+        full_name: string;
+        email: string;
+        password: string;
+        role: "customer" | "seller";
+        phone?: string;
+      } = {
+        full_name: fullName.trim(),
+        email: email.trim(),
         password,
         role: "customer",
-      });
+      };
+
+      if (phone.trim()) {
+        payload.phone = phone.trim();
+      }
+
+      await registerUser(payload);
 
       // Redirect to login page on success
       navigate("/login");
     } catch (err: unknown) {
       console.error("Registration failed:", err);
-      const errorObj = err as { response?: { data?: { message?: string } } };
+      const errorObj = err as {
+        response?: {
+          data?: {
+            message?: string;
+            errors?: { field: string; message: string }[];
+          };
+        };
+      };
+      const fieldError = errorObj.response?.data?.errors?.[0]?.message;
       const message =
+        fieldError ||
         errorObj.response?.data?.message ||
         "Registration failed. Please try again.";
       setError(message);

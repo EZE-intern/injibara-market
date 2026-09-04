@@ -31,6 +31,11 @@ const optionalString = z.preprocess(
   z.string().optional()
 );
 
+const optionalEthiopianPhone = z.preprocess(
+  (val) => (val === '' || val === null || val === undefined ? undefined : val),
+  ethiopianPhone.optional()
+);
+
 // Helper for email normalization (trim and lowercase before validation)
 const sanitizedEmail = z.preprocess(
   (val) => (typeof val === 'string' ? val.trim().toLowerCase() : val),
@@ -56,7 +61,7 @@ export const registerSchema = z.object({
     .min(6, 'Password must be at least 6 characters')
     .max(128, 'Password must be at most 128 characters'),
 
-  phone: ethiopianPhone.optional(),
+  phone: optionalEthiopianPhone,
 
   // SECURITY: Public registration only allows customer or seller.
   // Admin role can ONLY be assigned through the admin promotion endpoint
@@ -225,7 +230,7 @@ export const createStoreSchema = z.object({
 
   description: optionalString.transform((val) => (typeof val === 'string' ? val.trim() : undefined)),
 
-  phone: ethiopianPhone.optional(),
+  phone: optionalEthiopianPhone,
 
   address: optionalString.transform((val) => (typeof val === 'string' ? val.trim() : undefined)),
 });
