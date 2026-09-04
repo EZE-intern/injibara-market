@@ -276,4 +276,89 @@ describe('Admin Routes & Security Tests', () => {
     expect(res.body.success).toBe(true);
     expect(res.body.data.message_text).toBe('We have scheduled your inspection for tomorrow.');
   });
+
+  it('should deduplicate inquiries by (product_id, buyer_id) and prevent admin replies from creating duplicate listings', async () => {
+    // Simulate initial buyer message and an admin reply for the same product
+    vi.spyOn(prisma.messages, 'findMany').mockResolvedValue([
+      {
+        id: 101,
+        sender_id: 20,
+        receiver_id: 1,
+        product_id: 50,
+        message_text: 'Is this Bajaj still available?',
+        is_read: true,
+        created_at: new Date('2026-01-01T10:00:00Z'),
+        products: {
+          id: 50,
+          name: 'Bajaj RE 2024',
+          price: 350000,
+          categories: { name: 'Vehicles & Transport', slug: 'vehicles' },
+          product_images: [{ image_url: 'https://img.com/bajaj.jpg' }],
+          users: { id: 30, full_name: 'Seller Abebe', phone: '0911223344' },
+        },
+        users_messages_sender_idTousers: {
+          id: 20,
+          full_name: 'Buyer Kebede',
+          phone: '0988776655',
+          email: 'buyer@kebede.com',
+          role: 'customer',
+        },
+        users_messages_receiver_idTousers: {
+          id: 1,
+          full_name: 'Admin User',
+          phone: '0911000000',
+          email: 'admin@injibaramarket.com',
+          role: 'admin',
+        },
+      } as any,
+      {
+        id: 102,
+        sender_id: 1, // ADMIN sends reply
+        receiver_id: 20,
+        product_id: 50,
+        message_text: 'ohh good, we will inspect it tomorrow.',
+        is_read: false,
+        created_at: new Date('2026-01-01T10:30:00Z'),
+        products: {
+          id: 50,
+          name: 'Bajaj RE 2024',
+          price: 350000,
+          categories: { name: 'Vehicles & Transport', slug: 'vehicles' },
+          product_images: [{ image_url: 'https://img.com/bajaj.jpg' }],
+          users: { id: 30, full_name: 'Seller Abebe', phone: '0911223344' },
+        },
+        users_messages_sender_idTousers: {
+          id: 1,
+          full_name: 'Admin User',
+          phone: '0911000000',
+          email: 'admin@injibaramarket.com',
+          role: 'admin',
+        },
+        users_messages_receiver_idTousers: {
+          id: 20,
+          full_name: 'Buyer Kebede',
+          phone: '0988776655',
+          email: 'buyer@kebede.com',
+          role: 'customer',
+        },
+      } as any,
+    ]);
+
+    const res = await request(app)
+      .get('/api/admin/broker-inquiries')
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    // MUST only return 1 inquiry row, not 2!
+    expect(res.body.count).toBe(1);
+    expect(res.body.data.length).toBe(1);
+    // Buyer MUST be Kebede, not Admin
+    expect(res.body.data[0].buyer.id).toBe(20);
+    expect(res.body.data[0].buyer.full_name).toBe('Buyer Kebede');
+    // Status must be ASSIGNED since admin replied
+    expect(res.body.data[0].status).toBe('ASSIGNED');
+    // Primary inquiry message should remain the buyer's initial message
+    expect(res.body.data[0].message_text).toBe('Is this Bajaj still available?');
+  });
 });

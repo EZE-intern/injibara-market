@@ -5,6 +5,20 @@ import { AuthRequest } from '../middleware/authMiddleware.js';
 import { isBrokeredCategory } from '../utils/brokeredCategories.js';
 import { products_status } from '@prisma/client';
 
+interface BrokerInquiryMeta {
+  status?: string;
+  appointment_date?: string | null;
+}
+
+// In-memory state tracking for broker inquiries (pipeline status & appointment dates)
+const brokerInquiryState = new Map<string, BrokerInquiryMeta>();
+
+function isUserAdmin(role?: string | null): boolean {
+  if (!role) return false;
+  const r = role.toLowerCase();
+  return r === 'admin' || r === 'super_admin';
+}
+
 export const adminController = {
   /**
    * GET /api/admin/overview
@@ -45,12 +59,13 @@ export const adminController = {
 
   /**
    * GET /api/admin/broker-inquiries
-   * Returns brokered deal requests.
+   * Returns brokered deal requests deduplicated per (product_id, buyer_id).
+   * Ensures admin replies do NOT create new inquiry rows.
    */
   async getBrokerInquiries(req: AuthRequest, res: Response): Promise<Response> {
     try {
-      // Find messages linked to products
-      const inquiries = await prisma.messages.findMany({
+      // Find all messages linked to products in chronological order
+      const messages = await prisma.messages.findMany({
         where: {
           product_id: { not: null },
         },
@@ -65,52 +80,150 @@ export const adminController = {
           users_messages_sender_idTousers: true,
           users_messages_receiver_idTousers: true,
         },
-        orderBy: { created_at: 'desc' },
-        take: 100,
+        orderBy: { created_at: 'asc' },
+        take: 500,
       });
 
       // Filter to only Tier 1 brokered categories (Property & Land, Vehicles & Transport, Heavy Machinery)
-      const brokeredInquiries = inquiries.filter((item) => {
+      const brokeredMessages = messages.filter((item) => {
         const catName = item.products?.categories?.name;
         const catSlug = item.products?.categories?.slug;
         return isBrokeredCategory(catName, catSlug);
       });
 
-      const formatted = brokeredInquiries.map((item) => ({
-        id: item.id,
-        status: item.is_read ? 'MEDIATED' : 'NEW',
-        created_at: item.created_at.toISOString(),
-        appointment_date: null,
-        message_text: item.message_text,
-        buyer_id: item.sender_id,
-        receiver_id: item.receiver_id,
-        product: item.products
-          ? {
-              id: item.products.id,
-              name: item.products.name,
-              price: Number(item.products.price),
-              image: item.products.product_images?.[0]?.image_url || item.products.image || null,
-              category: item.products.categories
-                ? { name: item.products.categories.name }
-                : null,
+      // Group messages by (product_id, buyer_id)
+      // Key format: `${productId}_${buyerId}`
+      const groups = new Map<string, {
+        id: number;
+        productId: number;
+        buyerId: number;
+        buyer: (typeof brokeredMessages)[0]['users_messages_sender_idTousers'] | null;
+        seller: (typeof brokeredMessages)[0]['users_messages_sender_idTousers'] | null;
+        product: (typeof brokeredMessages)[0]['products'];
+        created_at: Date;
+        initial_message_text: string;
+        latest_message_text: string;
+        latest_message_at: Date;
+        has_admin_reply: boolean;
+        is_read: boolean;
+      }>();
+
+      for (const msg of brokeredMessages) {
+        if (!msg.product_id) continue;
+
+        const senderIsAdmin = isUserAdmin(msg.users_messages_sender_idTousers?.role);
+        const receiverIsAdmin = isUserAdmin(msg.users_messages_receiver_idTousers?.role);
+
+        // Determine who the buyer is in this message:
+        // If sender is not admin, sender is the buyer.
+        // If sender is admin, receiver is the buyer.
+        let buyerId: number;
+        let buyer: (typeof brokeredMessages)[0]['users_messages_sender_idTousers'] | null;
+
+        if (!senderIsAdmin) {
+          buyerId = msg.sender_id;
+          buyer = msg.users_messages_sender_idTousers;
+        } else if (!receiverIsAdmin) {
+          buyerId = msg.receiver_id;
+          buyer = msg.users_messages_receiver_idTousers;
+        } else {
+          // Both sender and receiver are admins; skip internal notes
+          continue;
+        }
+
+        const groupKey = `${msg.product_id}_${buyerId}`;
+        const existing = groups.get(groupKey);
+
+        if (!existing) {
+          groups.set(groupKey, {
+            id: msg.id,
+            productId: msg.product_id,
+            buyerId,
+            buyer,
+            seller: msg.products?.users ?? null,
+            product: msg.products,
+            created_at: msg.created_at,
+            initial_message_text: msg.message_text,
+            latest_message_text: msg.message_text,
+            latest_message_at: msg.created_at,
+            has_admin_reply: senderIsAdmin,
+            is_read: Boolean(msg.is_read),
+          });
+        } else {
+          if (senderIsAdmin) {
+            existing.has_admin_reply = true;
+          } else {
+            // It's a message from the buyer.
+            // If the earliest message was an admin reply, adopt this buyer's message as the initial inquiry
+            if (isUserAdmin(existing.buyer?.role)) {
+              existing.id = msg.id;
+              existing.buyer = buyer;
+              existing.initial_message_text = msg.message_text;
             }
-          : null,
-        buyer: item.users_messages_sender_idTousers
-          ? {
-              id: item.users_messages_sender_idTousers.id,
-              full_name: item.users_messages_sender_idTousers.full_name,
-              phone: item.users_messages_sender_idTousers.phone,
-              email: item.users_messages_sender_idTousers.email,
-            }
-          : null,
-        seller: item.products?.users
-          ? {
-              id: item.products.users.id,
-              full_name: item.products.users.full_name,
-              phone: item.products.users.phone,
-            }
-          : null,
-      }));
+          }
+
+          existing.latest_message_text = msg.message_text;
+          existing.latest_message_at = msg.created_at;
+          if (msg.is_read) {
+            existing.is_read = true;
+          }
+        }
+      }
+
+      // Convert groups to formatted inquiries
+      const formatted = Array.from(groups.values()).map((item) => {
+        const groupKey = `${item.productId}_${item.buyerId}`;
+        const meta = brokerInquiryState.get(groupKey) || brokerInquiryState.get(String(item.id));
+
+        let status = 'NEW';
+        if (meta?.status) {
+          status = meta.status;
+        } else if (item.has_admin_reply) {
+          status = 'ASSIGNED';
+        } else if (item.is_read) {
+          status = 'ASSIGNED';
+        }
+
+        return {
+          id: item.id,
+          status,
+          created_at: item.created_at.toISOString(),
+          latest_activity_at: item.latest_message_at.toISOString(),
+          appointment_date: meta?.appointment_date ?? null,
+          message_text: item.initial_message_text,
+          buyer_id: item.buyerId,
+          receiver_id: item.buyerId,
+          product: item.product
+            ? {
+                id: item.product.id,
+                name: item.product.name,
+                price: Number(item.product.price),
+                image: item.product.product_images?.[0]?.image_url || item.product.image || null,
+                category: item.product.categories
+                  ? { name: item.product.categories.name }
+                  : null,
+              }
+            : null,
+          buyer: item.buyer
+            ? {
+                id: item.buyer.id,
+                full_name: item.buyer.full_name,
+                phone: item.buyer.phone,
+                email: item.buyer.email,
+              }
+            : null,
+          seller: item.seller
+            ? {
+                id: item.seller.id,
+                full_name: item.seller.full_name,
+                phone: item.seller.phone,
+              }
+            : null,
+        };
+      });
+
+      // Sort by newest activity first
+      formatted.sort((a, b) => new Date(b.latest_activity_at).getTime() - new Date(a.latest_activity_at).getTime());
 
       return res.json({
         success: true,
@@ -140,6 +253,7 @@ export const adminController = {
             },
           },
           users_messages_sender_idTousers: true,
+          users_messages_receiver_idTousers: true,
         },
       });
 
@@ -147,14 +261,29 @@ export const adminController = {
         return res.status(404).json({ success: false, message: 'Inquiry not found.' });
       }
 
+      const senderIsAdmin = isUserAdmin(item.users_messages_sender_idTousers?.role);
+      const buyer = senderIsAdmin ? item.users_messages_receiver_idTousers : item.users_messages_sender_idTousers;
+      const buyerId = senderIsAdmin ? item.receiver_id : item.sender_id;
+
+      const groupKey = `${item.product_id}_${buyerId}`;
+      const meta = brokerInquiryState.get(groupKey) || brokerInquiryState.get(String(item.id));
+
+      let status = 'NEW';
+      if (meta?.status) {
+        status = meta.status;
+      } else if (item.is_read) {
+        status = 'ASSIGNED';
+      }
+
       return res.json({
         success: true,
         data: {
           id: item.id,
-          status: item.is_read ? 'MEDIATED' : 'NEW',
+          status,
           created_at: item.created_at.toISOString(),
+          appointment_date: meta?.appointment_date ?? null,
           message_text: item.message_text,
-          buyer_id: item.sender_id,
+          buyer_id: buyerId,
           receiver_id: item.receiver_id,
           product: item.products
             ? {
@@ -167,12 +296,12 @@ export const adminController = {
                   : null,
               }
             : null,
-          buyer: item.users_messages_sender_idTousers
+          buyer: buyer
             ? {
-                id: item.users_messages_sender_idTousers.id,
-                full_name: item.users_messages_sender_idTousers.full_name,
-                phone: item.users_messages_sender_idTousers.phone,
-                email: item.users_messages_sender_idTousers.email,
+                id: buyer.id,
+                full_name: buyer.full_name,
+                phone: buyer.phone,
+                email: buyer.email,
               }
             : null,
           seller: item.products?.users
@@ -203,6 +332,9 @@ export const adminController = {
           products: {
             include: { categories: true },
           },
+          users_messages_sender_idTousers: {
+            select: { id: true, full_name: true, role: true },
+          },
         },
       });
 
@@ -211,11 +343,12 @@ export const adminController = {
       }
 
       const productId = inquiry.product_id;
-      const buyerId = inquiry.sender_id;
-
       if (!productId) {
         return res.status(400).json({ success: false, message: 'Inquiry has no associated product.' });
       }
+
+      const senderIsAdmin = isUserAdmin(inquiry.users_messages_sender_idTousers?.role);
+      const buyerId = senderIsAdmin ? inquiry.receiver_id : inquiry.sender_id;
 
       // Fetch all messages for this product between buyer and admin
       const messages = await prisma.messages.findMany({
@@ -287,6 +420,9 @@ export const adminController = {
           products: {
             include: { categories: true },
           },
+          users_messages_sender_idTousers: {
+            select: { id: true, full_name: true, role: true },
+          },
         },
       });
 
@@ -295,7 +431,8 @@ export const adminController = {
       }
 
       const adminId = Number(req.user?.id);
-      const buyerId = inquiry.sender_id;
+      const senderIsAdmin = isUserAdmin(inquiry.users_messages_sender_idTousers?.role);
+      const buyerId = senderIsAdmin ? inquiry.receiver_id : inquiry.sender_id;
 
       const createdMessage = await prisma.messages.create({
         data: {
@@ -318,6 +455,15 @@ export const adminController = {
           where: { id: inquiry.id },
           data: { is_read: true },
         });
+      }
+
+      // Automatically advance status to ASSIGNED in metadata if still NEW or unassigned
+      const groupKey = `${inquiry.product_id}_${buyerId}`;
+      const existingMeta = brokerInquiryState.get(groupKey) || brokerInquiryState.get(String(id));
+      if (!existingMeta?.status || existingMeta.status === 'NEW') {
+        const updatedMeta: BrokerInquiryMeta = { ...existingMeta, status: 'ASSIGNED' };
+        brokerInquiryState.set(groupKey, updatedMeta);
+        brokerInquiryState.set(String(id), updatedMeta);
       }
 
       return res.status(201).json({
@@ -348,6 +494,24 @@ export const adminController = {
       const id = Number(req.params.id);
       const { status } = req.body;
 
+      const inquiry = await prisma.messages.findUnique({
+        where: { id },
+        include: {
+          users_messages_sender_idTousers: {
+            select: { id: true, role: true },
+          },
+        },
+      });
+
+      if (inquiry && inquiry.product_id) {
+        const senderIsAdmin = isUserAdmin(inquiry.users_messages_sender_idTousers?.role);
+        const buyerId = senderIsAdmin ? inquiry.receiver_id : inquiry.sender_id;
+        const groupKey = `${inquiry.product_id}_${buyerId}`;
+        const existing = brokerInquiryState.get(groupKey) || brokerInquiryState.get(String(id)) || {};
+        brokerInquiryState.set(groupKey, { ...existing, status });
+        brokerInquiryState.set(String(id), { ...existing, status });
+      }
+
       await prisma.messages.update({
         where: { id },
         data: { is_read: status === 'MEDIATED' || status === 'CLOSED' },
@@ -371,6 +535,24 @@ export const adminController = {
     try {
       const id = Number(req.params.id);
       const { appointment_date } = req.body;
+
+      const inquiry = await prisma.messages.findUnique({
+        where: { id },
+        include: {
+          users_messages_sender_idTousers: {
+            select: { id: true, role: true },
+          },
+        },
+      });
+
+      if (inquiry && inquiry.product_id) {
+        const senderIsAdmin = isUserAdmin(inquiry.users_messages_sender_idTousers?.role);
+        const buyerId = senderIsAdmin ? inquiry.receiver_id : inquiry.sender_id;
+        const groupKey = `${inquiry.product_id}_${buyerId}`;
+        const existing = brokerInquiryState.get(groupKey) || brokerInquiryState.get(String(id)) || {};
+        brokerInquiryState.set(groupKey, { ...existing, status: 'APPOINTMENT_SCHEDULED', appointment_date });
+        brokerInquiryState.set(String(id), { ...existing, status: 'APPOINTMENT_SCHEDULED', appointment_date });
+      }
 
       return res.json({
         success: true,
