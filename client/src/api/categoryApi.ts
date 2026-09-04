@@ -1,22 +1,26 @@
-import axiosClient from './axiosClient';
+import axiosClient from "./axiosClient";
 
 export interface Category {
   id: number;
   name: string;
   slug: string;
-  description: string | null;
-  image: string | null;
-  created_at?: string;
-  deleted_at?: string | null;
+  parent_id?: number | null;
+  icon?: string | null;
+  image?: string | null;
+  product_count?: number;
+  children?: Category[];
 }
 
 interface CategoriesResponse {
   success: boolean;
-  count: number;
   data: Category[];
 }
 
 export const getCategories = async (): Promise<Category[]> => {
-  const response = await axiosClient.get<CategoriesResponse>('/categories');
-  return response.data.data || [];
+  const response =
+    await axiosClient.get<CategoriesResponse>(
+      "/categories"
+    );
+
+  return response.data.data;
 };

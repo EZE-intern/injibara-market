@@ -13,9 +13,8 @@ function FeaturedListings() {
   useEffect(() => {
     const loadProducts = async () => {
       try {
-        const data = await getProducts();
-
-        setProducts(data.slice(0, 4));
+       const response = await getProducts();
+setProducts(response.data.slice(0, 4));
       } catch (error) {
         console.error(
           'Failed to load featured products:',

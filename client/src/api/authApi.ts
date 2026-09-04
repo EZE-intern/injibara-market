@@ -7,7 +7,12 @@ export interface RegisterData {
   phone?: string;
 }
 
-export interface User {
+export interface LoginData {
+  email: string;
+  password: string;
+}
+
+export interface AuthUser {
   id: number;
   full_name: string;
   email: string;
@@ -16,13 +21,8 @@ export interface User {
 
 export interface AuthResponse {
   message: string;
-  user: User;
+  user: AuthUser;
   token: string;
-}
-
-export interface LoginData {
-  email: string;
-  password: string;
 }
 
 export const registerUser = async (

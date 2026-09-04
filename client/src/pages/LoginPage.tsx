@@ -37,12 +37,24 @@ function LoginPage() {
       } else {
         navigate("/customer");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Login failed:", error);
 
-      const message =
-        error?.response?.data?.message ||
-        "Unable to login. Please check your email and password.";
+      let message = "Unable to login. Please check your email and password.";
+      if (
+        error &&
+        typeof error === "object" &&
+        "response" in error &&
+        error.response &&
+        typeof error.response === "object" &&
+        "data" in error.response &&
+        error.response.data &&
+        typeof error.response.data === "object" &&
+        "message" in error.response.data &&
+        typeof (error.response.data as { message: unknown }).message === "string"
+      ) {
+        message = (error.response.data as { message: string }).message;
+      }
 
       setError(message);
     } finally {

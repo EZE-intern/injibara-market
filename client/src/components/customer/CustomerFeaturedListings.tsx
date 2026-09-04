@@ -11,9 +11,8 @@ function CustomerFeaturedListings() {
   useEffect(() => {
     const loadProducts = async () => {
       try {
-        const data = await getProducts();
-        // Show up to 5 products as in the mockup image
-        setProducts(data.slice(0, 5));
+       const response = await getProducts();
+setProducts(response.data.slice(0, 5));
       } catch (error) {
         console.error('Failed to load featured products:', error);
       } finally {

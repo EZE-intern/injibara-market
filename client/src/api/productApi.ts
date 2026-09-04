@@ -1,62 +1,47 @@
-import axiosClient from './axiosClient';
-import type { Product } from '../types/Product';
+import axiosClient from "./axiosClient";
+import type { Product } from "../types/Product";
 
-interface ProductsResponse {
-  products?: Product[];
-  data?: Product[];
+export interface ProductsResponse {
+  success: boolean;
+  count: number;
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  hasMore: boolean;
+  data: Product[];
 }
 
-interface ProductResponse {
-  product?: Product;
-  data?: Product;
+export interface ProductResponse {
+  success: boolean;
+  data: Product;
 }
 
-/**
- * Get all products from the backend.
- */
-export const getProducts = async (): Promise<Product[]> => {
-  const response = await axiosClient.get<ProductsResponse | Product[]>('/products');
-
-  const data = response.data;
-
-  if (Array.isArray(data)) {
-    return data;
+export const getProducts = async (
+  params?: {
+    category?: string;
+    categoryId?: number;
+    search?: string;
+    page?: number;
+    limit?: number;
   }
-
-  if (Array.isArray(data.products)) {
-    return data.products;
-  }
-
-  if (Array.isArray(data.data)) {
-    return data.data;
-  }
-
-  return [];
-};
-
-/**
- * Get one product by ID.
- */
-export const getProductById = async (
-  id: number,
-): Promise<Product> => {
-  const response = await axiosClient.get<ProductResponse | Product>(
-    `/products/${id}`,
+): Promise<ProductsResponse> => {
+  const response = await axiosClient.get<ProductsResponse>(
+    "/products",
+    {
+      params,
+    }
   );
 
-  const data = response.data;
+  return response.data;
+};
 
-  if ('id' in data) {
-    return data;
-  }
+export const getProductById = async (
+  id: number
+): Promise<Product> => {
+  const response = await axiosClient.get<ProductResponse>(
+    `/products/${id}`
+  );
 
-  if (data.product) {
-    return data.product;
-  }
-
-  if (data.data) {
-    return data.data;
-  }
-
-  throw new Error('Product was not found.');
+  return response.data.data;
 };

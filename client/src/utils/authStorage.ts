@@ -1,12 +1,13 @@
-import type { AuthUser } from "../api/authApi";
+export interface AuthUser {
+  id: number;
+  full_name: string;
+  email: string;
+  role: string;
+  phone?: string | null;
+}
 
 const TOKEN_KEY = "injibara_market_token";
 const USER_KEY = "injibara_market_user";
-
-export const saveAuth = (token: string, user: AuthUser) => {
-  localStorage.setItem(TOKEN_KEY, token);
-  localStorage.setItem(USER_KEY, JSON.stringify(user));
-};
 
 export const getToken = (): string | null => {
   return localStorage.getItem(TOKEN_KEY);
@@ -26,7 +27,15 @@ export const getUser = (): AuthUser | null => {
   }
 };
 
-export const clearAuth = () => {
+export const saveAuth = (
+  token: string,
+  user: AuthUser
+): void => {
+  localStorage.setItem(TOKEN_KEY, token);
+  localStorage.setItem(USER_KEY, JSON.stringify(user));
+};
+
+export const clearAuth = (): void => {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
 };

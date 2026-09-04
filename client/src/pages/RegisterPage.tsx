@@ -45,12 +45,24 @@ function RegisterPage() {
 
       // Send the new customer to their dashboard
       navigate("/customer");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Registration failed:", err);
 
-      const message =
-        err.response?.data?.message ||
-        "Registration failed. Please try again.";
+      let message = "Registration failed. Please try again.";
+      if (
+        err &&
+        typeof err === "object" &&
+        "response" in err &&
+        err.response &&
+        typeof err.response === "object" &&
+        "data" in err.response &&
+        err.response.data &&
+        typeof err.response.data === "object" &&
+        "message" in err.response.data &&
+        typeof (err.response.data as { message: unknown }).message === "string"
+      ) {
+        message = (err.response.data as { message: string }).message;
+      }
 
       setError(message);
     } finally {

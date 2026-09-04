@@ -29,9 +29,8 @@ function ProductsPage() {
         setLoading(true);
         setError('');
 
-        const data = await getProducts();
-
-        setProducts(data);
+      const response = await getProducts();
+setProducts(response.data);
       } catch (err) {
         console.error('Failed to load products:', err);
 
