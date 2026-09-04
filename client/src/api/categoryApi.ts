@@ -6,6 +6,11 @@ export interface Category {
   slug: string;
   description?: string | null;
   image?: string | null;
+  name_am?: string | null;
+  parent_id?: number | null;
+  icon?: string | null;
+  product_count?: number;
+  children?: Category[];
   _count?: {
     products?: number;
   };

@@ -21,6 +21,8 @@ export interface Conversation {
   product_id: number | null;
 }
 
+export type ConversationSummary = Conversation;
+
 /**
  * Get the inbox — list of all conversations for the authenticated user.
  */
@@ -36,6 +38,8 @@ export async function getThread(contactId: number): Promise<Message[]> {
   const res = await axiosClient.get(`/messages/thread/${contactId}`);
   return res.data.data || [];
 }
+
+export const getConversation = getThread;
 
 /**
  * Get the conversation for a specific product (buyer side).
