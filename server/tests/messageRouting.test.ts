@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isBrokeredCategory } from '../src/controllers/messageController.js';
+import { isBrokeredCategory } from '../src/utils/brokeredCategories.js';
 
 describe('Tier 1 Brokered Category Routing Logic', () => {
   describe('Tier 1: Property & Land (Routes to Admin)', () => {
