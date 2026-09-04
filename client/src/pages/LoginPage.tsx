@@ -32,9 +32,13 @@ function LoginPage() {
       const state = location.state as { from?: { pathname?: string; search?: string } } | null;
       const fromPath = state?.from?.pathname ? `${state.from.pathname}${state.from.search || ""}` : null;
 
+      const role = response.user.role?.toLowerCase();
+
       if (fromPath) {
         navigate(fromPath, { replace: true });
-      } else if (response.user.role === "seller") {
+      } else if (role === "admin" || role === "super_admin") {
+        navigate("/admin", { replace: true });
+      } else if (role === "seller") {
         navigate("/seller", { replace: true });
       } else {
         navigate("/customer", { replace: true });
