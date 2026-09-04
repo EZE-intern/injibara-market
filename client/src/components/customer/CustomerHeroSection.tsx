@@ -117,7 +117,7 @@ function CustomerHeroSection() {
         <div className="mt-8 flex flex-wrap gap-4">
           <button
             type="button"
-            onClick={() => navigate("/products")}
+            onClick={() => navigate("/categories")}
             className="flex items-center gap-2 rounded-lg bg-brand-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 cursor-pointer"
           >
             <Grid size={16} />

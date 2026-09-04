@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
+import { Heart } from "lucide-react";
 import CustomerNavbar from "../components/customer/CustomerNavbar";
 import CustomerFooter from "../components/customer/CustomerFooter";
 import { getProductById } from "../api/productApi";
 import { getToken } from "../utils/authStorage";
+import { isProductSaved, toggleSaveProduct } from "../utils/savedStorage";
 import type { Product } from "../types/Product";
 
 function ProductDetailPage() {
@@ -12,6 +14,7 @@ function ProductDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isSaved, setIsSaved] = useState(false);
   const navigate = useNavigate();
 
   const fetchDetail = async () => {
@@ -43,6 +46,20 @@ function ProductDetailPage() {
   useEffect(() => {
     fetchDetail();
   }, [id]);
+
+  useEffect(() => {
+    if (!product) return;
+    setIsSaved(isProductSaved(product.id));
+
+    const handleSync = () => {
+      setIsSaved(isProductSaved(product.id));
+    };
+
+    window.addEventListener("saved_products_updated", handleSync);
+    return () => {
+      window.removeEventListener("saved_products_updated", handleSync);
+    };
+  }, [product]);
 
   if (loading) {
     return (
@@ -301,9 +318,24 @@ function ProductDetailPage() {
 
                   <button
                     type="button"
-                    className="rounded-lg border border-gray-300 px-6 py-3 font-semibold text-gray-700 transition hover:bg-gray-50 cursor-pointer"
+                    onClick={() => {
+                      if (product) {
+                        const nextSaved = toggleSaveProduct(product);
+                        setIsSaved(nextSaved);
+                      }
+                    }}
+                    className={`flex items-center justify-center gap-2 rounded-lg border px-6 py-3 font-semibold transition cursor-pointer ${
+                      isSaved
+                        ? "border-brand-300 bg-brand-50 text-brand-700 hover:bg-brand-100"
+                        : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                    }`}
+                    aria-label={isSaved ? "Remove from saved items" : "Save item"}
                   >
-                    Save Item
+                    <Heart
+                      size={18}
+                      className={isSaved ? "fill-brand-600 text-brand-600" : "text-gray-500"}
+                    />
+                    <span>{isSaved ? "Saved" : "Save Item"}</span>
                   </button>
                 </div>
               </div>

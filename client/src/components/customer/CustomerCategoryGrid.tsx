@@ -94,8 +94,8 @@ function CustomerCategoryGrid() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            {hasMoreThanSix && (
+          {hasMoreThanSix && (
+            <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => setShowAll(!showAll)}
@@ -112,15 +112,8 @@ function CustomerCategoryGrid() {
                   </>
                 )}
               </button>
-            )}
-
-            <Link
-              to="/categories"
-              className="text-xs font-semibold text-gray-500 hover:text-brand-600 transition flex items-center gap-1"
-            >
-              Browse Category Directory &rarr;
-            </Link>
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Category Grid (6 columns on large screens) */}
