@@ -4,28 +4,70 @@ import MessageModel from '../models/messageModel.js';
 import { prisma } from '../lib/prisma.js';
 
 /**
- * High-value categories where the buyer contacts admin (broker) instead of the seller directly.
- * Business model: Injibara Market acts as broker for these asset categories.
+ * Tier 1 High-Value Brokered Categories (Injibara Market Business Model):
+ * Injibara Market acts as a broker for high-value capital assets to ensure trust,
+ * legal compliance, and safe payment escrow:
+ *   1. Property & Land (Real estate, farmland, commercial plots, residential houses)
+ *   2. Vehicles & Transport (Cars, Bajaj, trucks, commercial vehicles, motorcycles)
+ *   3. Heavy Machinery (Agricultural tractors, construction equipment, industrial machinery)
+ *
+ * For these categories, buyer inquiries are routed to the Admin brokerage desk
+ * instead of connecting directly to the seller.
  */
-const BROKERED_CATEGORIES = ['vehicles & transport', 'construction materials'];
+export const BROKERED_CATEGORY_PATTERNS: RegExp[] = [
+  // 1. Property & Land
+  /\bproperty\b/i,
+  /\bland\b/i,
+  /\breal[\s_-]?estate\b/i,
+  /\bfarmland\b/i,
+  /\bplots?\b/i,
+  /መሬት/,
+
+  // 2. Vehicles & Transport
+  /\bvehicles?\b/i,
+  /\btransports?\b/i,
+  /\bbajaj\b/i,
+  /\bcars?\b/i,
+  /\bmotorcycles?\b/i,
+  /\btrucks?\b/i,
+  /\bautomobiles?\b/i,
+  /መኪና/,
+  /ባጃጅ/,
+
+  // 3. Heavy Machinery & Large Equipment
+  /\bheavy[\s_-]?machinery\b/i,
+  /\blarge[\s_-]?machinery\b/i,
+  /\bmachinery?\b/i,
+  /\bmachines?\b/i,
+  /\bconstruction[\s_-]?materials?\b/i,
+  /\bconstruction[\s_-]?machinery\b/i,
+  /\bconstruction[\s_-]?equipments?\b/i,
+  /\bindustrial[\s_-]?equipments?\b/i,
+  /\btractors?\b/i,
+  /\bexcavators?\b/i,
+  /\bbulldozers?\b/i,
+  /ማሽነሪ/,
+];
 
 /**
- * Check if a category name matches one of the brokered categories.
+ * Check if a category name or slug matches any of the Tier 1 Brokered categories.
  */
-function isBrokeredCategory(categoryName: string): boolean {
-  const normalized = categoryName.toLowerCase().trim();
-  return BROKERED_CATEGORIES.some((cat) => normalized.includes(cat));
+export function isBrokeredCategory(categoryName?: string | null, categorySlug?: string | null): boolean {
+  const combined = `${categoryName || ''} ${categorySlug || ''}`.trim();
+  if (!combined) return false;
+
+  return BROKERED_CATEGORY_PATTERNS.some((pattern) => pattern.test(combined));
 }
 
 /**
  * Resolve the receiver for a product-based message.
- * - Brokered categories (vehicles, land/property, large machinery) → admin
- * - All other categories → seller
+ * - Brokered categories (Vehicles, Property & Land, Heavy Machinery) → Admin (broker)
+ * - All other categories (Electronics, Fashion, Food, etc.) → Seller directly
  */
 async function resolveProductReceiver(productId: number): Promise<{ receiverId: number; error?: string }> {
   const product = await prisma.products.findUnique({
     where: { id: productId },
-    include: { categories: { select: { name: true } } },
+    include: { categories: { select: { name: true, slug: true } } },
   });
 
   if (!product) {
@@ -37,8 +79,9 @@ async function resolveProductReceiver(productId: number): Promise<{ receiverId: 
   }
 
   const categoryName = product.categories?.name || '';
+  const categorySlug = product.categories?.slug || '';
 
-  if (isBrokeredCategory(categoryName)) {
+  if (isBrokeredCategory(categoryName, categorySlug)) {
     // Route to admin for brokered high-value categories
     const adminUser = await prisma.users.findFirst({
       where: { role: 'admin' },
