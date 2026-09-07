@@ -8,21 +8,24 @@ import { getCategoryIconNode } from "../components/customer/CustomerCategoryGrid
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
 
-  useEffect(() => {
-    const loadCategories = async () => {
-      try {
-        setLoading(true);
-        const data = await getCategories();
-        setCategories(data);
-      } catch (err) {
-        console.error("Failed to load categories:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const loadCategories = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await getCategories();
+      setCategories(data);
+    } catch (err) {
+      console.error("Failed to load categories:", err);
+      setError("Unable to load categories. Please check your connection and try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     loadCategories();
   }, []);
 
@@ -94,6 +97,17 @@ export default function CategoriesPage() {
             <div className="py-20 text-center">
               <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-brand-600 border-t-transparent" />
               <p className="mt-4 text-sm font-medium text-gray-500">Loading categories directory...</p>
+            </div>
+          ) : error ? (
+            <div className="rounded-2xl border border-red-200 bg-red-50 p-12 text-center shadow-sm">
+              <p className="font-semibold text-red-700">{error}</p>
+              <button
+                type="button"
+                onClick={loadCategories}
+                className="mt-4 rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 cursor-pointer transition"
+              >
+                Retry
+              </button>
             </div>
           ) : filteredCategories.length > 0 ? (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">

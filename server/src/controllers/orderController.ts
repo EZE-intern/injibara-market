@@ -79,22 +79,37 @@ export const createOrder = async (req: AuthRequest, res: Response): Promise<void
     // - shipping_address, payment_method, and note are sanitized
     const { items, shipping_address, payment_method, note } = req.body;
 
-    // Calculate total amount
+    // Calculate total amount and validate inventory
     let totalAmount = 0;
-    const orderItemsData = [];
+    const orderItemsData: {
+      product_id: number;
+      product_name: string;
+      price: number;
+      quantity: number;
+    }[] = [];
+    const productsToUpdate: { id: number; newStock: number }[] = [];
 
     for (const item of items) {
       const product = await prisma.products.findUnique({
         where: { id: Number(item.product_id) },
       });
 
-      if (!product) {
-        res.status(404).json({ message: `Product with ID ${item.product_id} not found` });
+      if (!product || product.deleted_at || !product.is_active) {
+        res.status(404).json({ message: `Product with ID ${item.product_id} not found or unavailable` });
+        return;
+      }
+
+      const quantity = Number(item.quantity) || 1;
+      const currentStock = product.stock ?? 0;
+
+      if (currentStock < quantity) {
+        res.status(400).json({
+          message: `Insufficient stock for product "${product.name}". Available: ${currentStock}, requested: ${quantity}`,
+        });
         return;
       }
 
       const itemPrice = Number(product.price);
-      const quantity = Number(item.quantity) || 1;
       totalAmount += itemPrice * quantity;
 
       orderItemsData.push({
@@ -103,33 +118,50 @@ export const createOrder = async (req: AuthRequest, res: Response): Promise<void
         price: itemPrice,
         quantity,
       });
+
+      productsToUpdate.push({
+        id: product.id,
+        newStock: Math.max(0, currentStock - quantity),
+      });
     }
 
     const orderNumber = `ORD-${Date.now().toString().slice(-6)}-${Math.floor(100 + Math.random() * 900)}`;
 
-    const newOrder = await prisma.orders.create({
-      data: {
-        user_id: userId,
-        order_number: orderNumber,
-        total_amount: totalAmount,
-        status: 'pending',
-        payment_method: payment_method || 'cash_on_delivery',
-        payment_status: 'pending',
-        shipping_address: shipping_address || null,
-        note: note || null,
-        order_items: {
-          create: orderItemsData,
-        },
-        order_status_history: {
-          create: {
-            status: 'pending',
-            changed_by: userId,
+    const newOrder = await prisma.$transaction(async (tx) => {
+      const created = await tx.orders.create({
+        data: {
+          user_id: userId,
+          order_number: orderNumber,
+          total_amount: totalAmount,
+          status: 'pending',
+          payment_method: payment_method || 'cash_on_delivery',
+          payment_status: 'pending',
+          shipping_address: shipping_address || null,
+          note: note || null,
+          order_items: {
+            create: orderItemsData,
+          },
+          order_status_history: {
+            create: {
+              status: 'pending',
+              changed_by: userId,
+            },
           },
         },
-      },
-      include: {
-        order_items: true,
-      },
+        include: {
+          order_items: true,
+        },
+      });
+
+      // Deduct product stock
+      for (const p of productsToUpdate) {
+        await tx.products.update({
+          where: { id: p.id },
+          data: { stock: p.newStock },
+        });
+      }
+
+      return created;
     });
 
     res.status(201).json({
@@ -181,3 +213,71 @@ export const getOrderById = async (req: AuthRequest, res: Response): Promise<voi
     res.status(500).json({ message: 'Failed to fetch order detail' });
   }
 };
+
+// 4. Get incoming orders for products belonging to the logged-in seller
+export const getSellerOrders = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const sellerId = Number(req.user?.id);
+    if (!sellerId) {
+      res.status(401).json({ message: 'User not authenticated' });
+      return;
+    }
+
+    const orders = await prisma.orders.findMany({
+      where: {
+        order_items: {
+          some: {
+            products: {
+              seller_id: sellerId,
+            },
+          },
+        },
+      },
+      include: {
+        users: {
+          select: {
+            id: true,
+            full_name: true,
+            email: true,
+            phone: true,
+          },
+        },
+        order_items: {
+          where: {
+            products: {
+              seller_id: sellerId,
+            },
+          },
+          include: {
+            products: {
+              select: {
+                id: true,
+                name: true,
+                image: true,
+                price: true,
+                product_images: {
+                  select: {
+                    id: true,
+                    image_url: true,
+                    is_primary: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      orderBy: { created_at: 'desc' },
+    });
+
+    res.status(200).json({
+      success: true,
+      count: orders.length,
+      data: orders,
+    });
+  } catch (error) {
+    console.error('Error fetching seller orders:', error);
+    res.status(500).json({ message: 'Failed to fetch seller orders' });
+  }
+};
+

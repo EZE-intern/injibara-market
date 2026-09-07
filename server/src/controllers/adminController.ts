@@ -170,13 +170,26 @@ export const adminController = {
         }
       }
 
+      // Fetch persisted broker inquiry records from the database
+      const dbRecords = await prisma.broker_inquiries.findMany().catch(() => []);
+      const dbMap = new Map<string, { status: string; appointment_date: Date | null }>();
+      for (const rec of dbRecords) {
+        dbMap.set(`${rec.product_id}_${rec.buyer_id}`, {
+          status: rec.status,
+          appointment_date: rec.appointment_date,
+        });
+      }
+
       // Convert groups to formatted inquiries
       const formatted = Array.from(groups.values()).map((item) => {
         const groupKey = `${item.productId}_${item.buyerId}`;
+        const dbMeta = dbMap.get(groupKey);
         const meta = brokerInquiryState.get(groupKey) || brokerInquiryState.get(String(item.id));
 
         let status = 'NEW';
-        if (meta?.status) {
+        if (dbMeta?.status) {
+          status = dbMeta.status;
+        } else if (meta?.status) {
           status = meta.status;
         } else if (item.has_admin_reply) {
           status = 'ASSIGNED';
@@ -184,12 +197,16 @@ export const adminController = {
           status = 'ASSIGNED';
         }
 
+        const appointmentDate = dbMeta?.appointment_date
+          ? dbMeta.appointment_date.toISOString()
+          : meta?.appointment_date ?? null;
+
         return {
           id: item.id,
           status,
           created_at: item.created_at.toISOString(),
           latest_activity_at: item.latest_message_at.toISOString(),
-          appointment_date: meta?.appointment_date ?? null,
+          appointment_date: appointmentDate,
           message_text: item.initial_message_text,
           buyer_id: item.buyerId,
           receiver_id: item.buyerId,
@@ -266,14 +283,33 @@ export const adminController = {
       const buyerId = senderIsAdmin ? item.receiver_id : item.sender_id;
 
       const groupKey = `${item.product_id}_${buyerId}`;
+      const dbRecord = item.product_id
+        ? await prisma.broker_inquiries
+            .findUnique({
+              where: {
+                product_id_buyer_id: {
+                  product_id: item.product_id,
+                  buyer_id: buyerId,
+                },
+              },
+            })
+            .catch(() => null)
+        : null;
+
       const meta = brokerInquiryState.get(groupKey) || brokerInquiryState.get(String(item.id));
 
       let status = 'NEW';
-      if (meta?.status) {
+      if (dbRecord?.status) {
+        status = dbRecord.status;
+      } else if (meta?.status) {
         status = meta.status;
       } else if (item.is_read) {
         status = 'ASSIGNED';
       }
+
+      const appointmentDate = dbRecord?.appointment_date
+        ? dbRecord.appointment_date.toISOString()
+        : meta?.appointment_date ?? null;
 
       return res.json({
         success: true,
@@ -281,7 +317,7 @@ export const adminController = {
           id: item.id,
           status,
           created_at: item.created_at.toISOString(),
-          appointment_date: meta?.appointment_date ?? null,
+          appointment_date: appointmentDate,
           message_text: item.message_text,
           buyer_id: buyerId,
           receiver_id: item.receiver_id,
@@ -457,13 +493,32 @@ export const adminController = {
         });
       }
 
-      // Automatically advance status to ASSIGNED in metadata if still NEW or unassigned
+      // Automatically advance status to ASSIGNED in metadata and database if still NEW or unassigned
       const groupKey = `${inquiry.product_id}_${buyerId}`;
       const existingMeta = brokerInquiryState.get(groupKey) || brokerInquiryState.get(String(id));
       if (!existingMeta?.status || existingMeta.status === 'NEW') {
         const updatedMeta: BrokerInquiryMeta = { ...existingMeta, status: 'ASSIGNED' };
         brokerInquiryState.set(groupKey, updatedMeta);
         brokerInquiryState.set(String(id), updatedMeta);
+
+        await prisma.broker_inquiries
+          .upsert({
+            where: {
+              product_id_buyer_id: {
+                product_id: inquiry.product_id,
+                buyer_id: buyerId,
+              },
+            },
+            create: {
+              product_id: inquiry.product_id,
+              buyer_id: buyerId,
+              status: 'ASSIGNED',
+            },
+            update: {
+              status: 'ASSIGNED',
+            },
+          })
+          .catch((err) => console.error('Failed to persist broker status on reply:', err));
       }
 
       return res.status(201).json({
@@ -510,6 +565,25 @@ export const adminController = {
         const existing = brokerInquiryState.get(groupKey) || brokerInquiryState.get(String(id)) || {};
         brokerInquiryState.set(groupKey, { ...existing, status });
         brokerInquiryState.set(String(id), { ...existing, status });
+
+        await prisma.broker_inquiries
+          .upsert({
+            where: {
+              product_id_buyer_id: {
+                product_id: inquiry.product_id,
+                buyer_id: buyerId,
+              },
+            },
+            create: {
+              product_id: inquiry.product_id,
+              buyer_id: buyerId,
+              status,
+            },
+            update: {
+              status,
+            },
+          })
+          .catch((err) => console.error('Failed to persist broker status:', err));
       }
 
       await prisma.messages.update({
@@ -552,6 +626,27 @@ export const adminController = {
         const existing = brokerInquiryState.get(groupKey) || brokerInquiryState.get(String(id)) || {};
         brokerInquiryState.set(groupKey, { ...existing, status: 'APPOINTMENT_SCHEDULED', appointment_date });
         brokerInquiryState.set(String(id), { ...existing, status: 'APPOINTMENT_SCHEDULED', appointment_date });
+
+        await prisma.broker_inquiries
+          .upsert({
+            where: {
+              product_id_buyer_id: {
+                product_id: inquiry.product_id,
+                buyer_id: buyerId,
+              },
+            },
+            create: {
+              product_id: inquiry.product_id,
+              buyer_id: buyerId,
+              status: 'APPOINTMENT_SCHEDULED',
+              appointment_date: new Date(appointment_date),
+            },
+            update: {
+              status: 'APPOINTMENT_SCHEDULED',
+              appointment_date: new Date(appointment_date),
+            },
+          })
+          .catch((err) => console.error('Failed to persist broker appointment:', err));
       }
 
       return res.json({

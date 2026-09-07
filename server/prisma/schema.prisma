@@ -199,10 +199,11 @@ model products {
   deleted_at     DateTime?        @db.Timestamp(0)
   cart_items     cart_items[]
   favorites      favorites[]
-  inventory_logs inventory_logs[]
-  messages       messages[]
-  order_items    order_items[]
-  product_images product_images[]
+  inventory_logs   inventory_logs[]
+  messages         messages[]
+  broker_inquiries broker_inquiries[]
+  order_items      order_items[]
+  product_images   product_images[]
   users          users?           @relation(fields: [seller_id], references: [id], onUpdate: Restrict)
   categories     categories?      @relation(fields: [category_id], references: [id], onUpdate: Restrict)
   stores          stores?          @relation(fields: [store_id], references: [id], onDelete: SetNull)
@@ -267,6 +268,24 @@ model users {
   products                             products[]
   reviews                              reviews[]
   stores                               stores[]
+  broker_inquiries                     broker_inquiries[]
+}
+
+model broker_inquiries {
+  id               Int       @id @default(autoincrement())
+  product_id       Int
+  buyer_id         Int
+  status           String    @default("NEW") @db.VarChar(50)
+  appointment_date DateTime? @db.DateTime(0)
+  notes            String?   @db.Text
+  created_at       DateTime  @default(now()) @db.Timestamp(0)
+  updated_at       DateTime  @default(now()) @updatedAt @db.Timestamp(0)
+  products         products  @relation(fields: [product_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  users            users     @relation(fields: [buyer_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
+
+  @@unique([product_id, buyer_id])
+  @@index([product_id])
+  @@index([buyer_id])
 }
 
 enum order_status_history_status {

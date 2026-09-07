@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import express from 'express';
 import request from 'supertest';
 import adminRoutes from '../src/routes/adminRoutes.js';
@@ -14,6 +14,12 @@ describe('Admin Routes & Security Tests', () => {
   const adminToken = generateToken(1, 'admin', 'admin@injibaramarket.com');
   const superAdminToken = generateToken(2, 'super_admin', 'super@injibaramarket.com');
   const customerToken = generateToken(3, 'customer', 'customer@injibaramarket.com');
+
+  beforeEach(() => {
+    vi.spyOn((prisma as any).broker_inquiries, 'findMany').mockResolvedValue([]);
+    vi.spyOn((prisma as any).broker_inquiries, 'findUnique').mockResolvedValue(null);
+    vi.spyOn((prisma as any).broker_inquiries, 'upsert').mockResolvedValue({} as any);
+  });
 
   it('should reject unauthenticated requests to /api/admin/overview with 401', async () => {
     const res = await request(app).get('/api/admin/overview');

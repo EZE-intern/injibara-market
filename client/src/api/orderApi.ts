@@ -32,12 +32,25 @@ export interface Order {
   note?: string | null;
   created_at: string;
   updated_at: string;
+  users?: {
+    id: number;
+    full_name: string;
+    email: string;
+    phone?: string | null;
+  } | null;
   order_items: OrderItem[];
 }
 
 export const getMyOrders = async (): Promise<Order[]> => {
   const response = await axiosClient.get<{ success: boolean; count: number; data: Order[] }>(
     "/orders/my-orders"
+  );
+  return response.data?.data || [];
+};
+
+export const getSellerOrders = async (): Promise<Order[]> => {
+  const response = await axiosClient.get<{ success: boolean; count: number; data: Order[] }>(
+    "/orders/seller-orders"
   );
   return response.data?.data || [];
 };

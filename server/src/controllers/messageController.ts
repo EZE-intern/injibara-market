@@ -29,9 +29,14 @@ async function resolveProductReceiver(productId: number): Promise<{ receiverId: 
 
   if (isBrokeredCategory(categoryName, categorySlug)) {
     // Route to admin for brokered high-value categories
-    const adminUser = await prisma.users.findFirst({
-      where: { role: 'admin' },
-    });
+    // Target the primary admin (seberbel@gmail.com) first, with fallback to any available admin
+    const adminUser =
+      (await prisma.users.findFirst({
+        where: { role: 'admin', email: 'seberbel@gmail.com' },
+      })) ||
+      (await prisma.users.findFirst({
+        where: { role: 'admin' },
+      }));
     if (!adminUser) {
       return { receiverId: 0, error: 'No admin available to handle this request.' };
     }

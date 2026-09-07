@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import { globalLimiter } from './middleware/rateLimiter.js';
 import authRoutes from './routes/authRoutes.js';
@@ -41,7 +41,27 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/admin', adminRoutes);
 
+// Catch-all for undefined API routes
+app.use('/api', (req: Request, res: Response) => {
+  res.status(404).json({
+    success: false,
+    message: `API endpoint not found: ${req.method} ${req.originalUrl}`,
+  });
+});
+
+// Global error handling middleware (requires 4 arguments for Express)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+  console.error('Unhandled server error:', err);
+  const message = err instanceof Error ? err.message : 'Internal server error';
+  res.status(500).json({
+    success: false,
+    message,
+  });
+});
+
 // Start Server
 app.listen(PORT, () => {
   console.log(`Server setup complete on port ${PORT}`);
 });
+

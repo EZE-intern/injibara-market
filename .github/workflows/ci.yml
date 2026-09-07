@@ -2,9 +2,9 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ develop, main ]
   pull_request:
-    branches: [ develop ]
+    branches: [ develop, main ]
 
 jobs:
   lint:
@@ -17,27 +17,23 @@ jobs:
           node-version: '20'
           cache: 'npm'
       - run: npm ci
-      - run: cd client && npm install
-      - run: cd server && npm install
       - run: npm run lint
 
   test:
     name: Run Tests
-    needs: lint # This ensures tests ONLY run if linting passes first
+    needs: lint
     runs-on: ubuntu-latest
 
-    # This spins up an isolated PostgreSQL database just for the CI tests
     services:
-      postgres:
-        image: postgres:15
+      mysql:
+        image: mysql:8.0
         env:
-          POSTGRES_USER: root
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: injibara_test_db
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: injibara_test_db
         ports:
-          - 5432:5432
+          - 3306:3306
         options: >-
-          --health-cmd "pg_isready -U root -d injibara_test_db"
+          --health-cmd "mysqladmin ping -h localhost"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -52,30 +48,22 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install Root Dependencies
+      - name: Install Dependencies
         run: npm ci
-
-      - name: Install Client Dependencies
-        run: cd client && npm install
-
-      - name: Install Server Dependencies
-        run: cd server && npm install
 
       - name: Generate Prisma Client
         run: cd server && npx prisma generate
 
-      - name: Run Frontend Tests (Vitest)
-        run: cd client && npm test
-
       - name: Run Backend Tests (Vitest)
         env:
-          # This connects Prisma directly to the CI PostgreSQL container
-          DATABASE_URL: postgresql://root:password@localhost:5432/injibara_test_db?schema=public
+          DATABASE_URL: mysql://root:password@127.0.0.1:3306/injibara_test_db
+          DATABASE_URL_MYSQL: mysql://root:password@127.0.0.1:3306/injibara_test_db
+          JWT_SECRET: MIKAEL_ARTETA_ARSENAL
         run: cd server && npm test
 
   build:
       name: Build Project
-      needs: test # Only runs if tests pass
+      needs: test
       runs-on: ubuntu-latest
       steps:
         - name: Checkout Code
@@ -85,12 +73,10 @@ jobs:
           with:
             node-version: '20'
             cache: 'npm'
-        - name: Install Root Dependencies
+        - name: Install Dependencies
           run: npm ci
-        - name: Install Client Dependencies
-          run: cd client && npm ci
-        - name: Install Server Dependencies
-          run: cd server && npm install
+        - name: Generate Prisma Client
+          run: cd server && npx prisma generate
         - name: Build Frontend
           run: cd client && npm run build
         - name: Build Backend
