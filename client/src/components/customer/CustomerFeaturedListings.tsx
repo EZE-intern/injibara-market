@@ -7,19 +7,23 @@ import type { Product } from "../../types/Product";
 function CustomerFeaturedListings() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadProducts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await getProducts();
+      setProducts(data.slice(0, 6));
+    } catch (err) {
+      console.error("Failed to load featured products:", err);
+      setError("Unable to load featured products. The server may be warming up.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const loadProducts = async () => {
-      try {
-        const data = await getProducts();
-        setProducts(data.slice(0, 6));
-      } catch (error) {
-        console.error("Failed to load featured products:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadProducts();
   }, []);
 
@@ -34,6 +38,28 @@ function CustomerFeaturedListings() {
         <div className="py-12 text-center text-gray-500">
           <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-brand-600" />
           <p className="mt-3 text-sm">Loading listings...</p>
+        </div>
+      </section>
+    );
+  }
+
+  if (error && products.length === 0) {
+    return (
+      <section className="mx-auto max-w-7xl px-6 py-12 md:px-12 lg:px-16">
+        <div className="mb-6 flex items-center justify-between">
+          <h2 className="text-xl font-extrabold text-gray-900 tracking-tight sm:text-2xl">
+            Featured Listings
+          </h2>
+        </div>
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-8 text-center text-amber-900">
+          <p className="text-sm font-medium">{error}</p>
+          <button
+            type="button"
+            onClick={loadProducts}
+            className="mt-3 rounded-lg bg-brand-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-brand-700 cursor-pointer"
+          >
+            Retry Loading
+          </button>
         </div>
       </section>
     );

@@ -2,7 +2,24 @@ import axios from "axios";
 import { notify } from "../utils/notify";
 import { clearAuth } from "../utils/authStorage";
 
-const API_TIMEOUT_MS = 15000; // 15 seconds — generous for 3G connections
+const API_TIMEOUT_MS = 60000; // 60 seconds — allows cloud host cold-starts without premature timeout
+
+let lastToastTime = 0;
+let lastToastMsg = "";
+
+function notifyThrottled(type: "warning" | "error", message: string, cooldown = 5000) {
+  const now = Date.now();
+  if (lastToastMsg === message && now - lastToastTime < cooldown) {
+    return;
+  }
+  lastToastTime = now;
+  lastToastMsg = message;
+  if (type === "warning") {
+    notify.warning(message);
+  } else {
+    notify.error(message);
+  }
+}
 
 const axiosClient = axios.create({
   baseURL:
@@ -33,16 +50,38 @@ axiosClient.interceptors.response.use(
   // Success pass-through — no modification
   (response) => response,
 
-  // Error handler
-  (error) => {
+  // Error handler with automatic cold-start retry
+  async (error) => {
+    const config = error.config;
+
+    // Retry idempotent GET requests on cold start, timeout, or transient gateway errors
+    const isGetRequest = !config?.method || config.method.toLowerCase() === "get";
+    const isRetryable =
+      !error.response ||
+      error.code === "ECONNABORTED" ||
+      error.code === "ERR_NETWORK" ||
+      [502, 503, 504].includes(error.response?.status);
+
+    if (config && isGetRequest && isRetryable) {
+      config.__retryCount = config.__retryCount || 0;
+      if (config.__retryCount < 2) {
+        config.__retryCount += 1;
+        const delay = config.__retryCount * 1500;
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        return axiosClient(config);
+      }
+    }
+
     // Network error or CORS issue (no response received at all)
     if (!error.response) {
       if (error.code === "ECONNABORTED") {
-        notify.warning(
+        notifyThrottled(
+          "warning",
           "The request timed out. Please check your internet connection and try again."
         );
       } else {
-        notify.error(
+        notifyThrottled(
+          "error",
           "Unable to reach the server. Please check your internet connection."
         );
       }
