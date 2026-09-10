@@ -29,8 +29,20 @@ function LoginPage() {
       saveAuth(response.token, response.user);
 
       // Route to previous requested page or role default dashboard
-      const state = location.state as { from?: { pathname?: string; search?: string } } | null;
-      const fromPath = state?.from?.pathname ? `${state.from.pathname}${state.from.search || ""}` : null;
+      // Accept Location-like { pathname } or a plain path string
+      const state = location.state as {
+        from?: { pathname?: string; search?: string } | string;
+      } | null;
+      let fromPath: string | null = null;
+      if (typeof state?.from === "string" && state.from.startsWith("/")) {
+        fromPath = state.from;
+      } else if (
+        state?.from &&
+        typeof state.from === "object" &&
+        state.from.pathname
+      ) {
+        fromPath = `${state.from.pathname}${state.from.search || ""}`;
+      }
 
       const role = response.user.role?.toLowerCase();
 

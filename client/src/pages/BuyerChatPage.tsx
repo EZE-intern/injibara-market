@@ -6,6 +6,7 @@ import CustomerFooter from "../components/customer/CustomerFooter";
 import { getChatByProduct, sendMessage } from "../api/messageApi";
 import { getProductById } from "../api/productApi";
 import { getUser } from "../utils/authStorage";
+import { isBrokeredProduct } from "../utils/brokeredCategories";
 import type { Message } from "../api/messageApi";
 import type { Product } from "../types/Product";
 
@@ -112,6 +113,9 @@ function BuyerChatPage() {
     rawProduct?.seller?.full_name ||
     "Seller";
 
+  const isTier1 = product ? isBrokeredProduct(product) : false;
+  const contactLabel = isTier1 ? "Admin Broker" : sellerName;
+
   return (
     <div className="min-h-screen bg-white flex flex-col justify-between">
       <CustomerNavbar />
@@ -128,15 +132,23 @@ function BuyerChatPage() {
             </button>
             <div className="min-w-0">
               <h1 className="text-lg font-bold text-gray-900 truncate">
-                Chat with {sellerName}
+                {isTier1 ? "Inquire with Admin" : `Chat with ${contactLabel}`}
               </h1>
               {product && (
                 <p className="text-sm text-gray-500 truncate">
                   {product.name}
+                  {isTier1 ? " · Admin-mediated listing" : ""}
                 </p>
               )}
             </div>
           </div>
+
+          {isTier1 && (
+            <p className="mb-4 text-sm text-amber-800 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+              This is a brokered listing. Your messages go to an Injibara Market
+              admin, not the seller.
+            </p>
+          )}
 
           {/* Chat Container */}
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col h-[500px]">
@@ -151,7 +163,9 @@ function BuyerChatPage() {
                   <div className="text-center">
                     <p>No messages yet.</p>
                     <p className="mt-1 text-xs">
-                      Send a message to start the conversation.
+                      {isTier1
+                        ? "Send an inquiry to start mediation with the admin."
+                        : "Send a message to start the conversation."}
                     </p>
                   </div>
                 </div>
@@ -188,7 +202,11 @@ function BuyerChatPage() {
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                  placeholder="Write a message..."
+                  placeholder={
+                    isTier1
+                      ? "Write your inquiry to the admin..."
+                      : "Write a message..."
+                  }
                   className="flex-1 border border-gray-200 rounded-full px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-gray-50"
                   disabled={sending}
                 />

@@ -5,6 +5,7 @@ import CustomerNavbar from "../components/customer/CustomerNavbar";
 import CustomerFooter from "../components/customer/CustomerFooter";
 import { getProductById } from "../api/productApi";
 import { getToken } from "../utils/authStorage";
+import { isBrokeredProduct } from "../utils/brokeredCategories";
 import { isProductSaved, toggleSaveProduct } from "../utils/savedStorage";
 import type { Product } from "../types/Product";
 
@@ -145,6 +146,9 @@ function ProductDetailPage() {
     typeof product.category === "object" && product.category !== null
       ? product.category.name
       : product.categories?.name || (typeof product.category === "string" ? product.category : "General");
+
+  const isTier1 = isBrokeredProduct(product);
+  const chatPath = `/messages/chat/${product.id}`;
 
   const price =
     typeof product.price === "number"
@@ -300,43 +304,54 @@ function ProductDetailPage() {
                   </div>
                 </div>
 
-                {/* Actions */}
-                <div className="mt-8 pt-6 border-t border-gray-150 flex flex-col gap-3 sm:flex-row">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (!getToken()) {
-                        navigate("/login", { state: { from: `/messages/chat/${product.id}` } });
-                        return;
-                      }
-                      navigate(`/messages/chat/${product.id}`);
-                    }}
-                    className="flex-1 rounded-lg bg-brand-600 px-6 py-3 font-semibold text-white transition hover:bg-brand-700 shadow-sm cursor-pointer"
-                  >
-                    Contact Seller
-                  </button>
+                {/* Actions — Tier 1 brokered vs Tier 2 direct contact */}
+                <div className="mt-8 pt-6 border-t border-gray-150 flex flex-col gap-3">
+                  {isTier1 && (
+                    <p className="text-sm text-amber-800 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+                      High-value listing: an Injibara Market admin will mediate this inquiry.
+                      You will not message the seller directly.
+                    </p>
+                  )}
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (product) {
-                        const nextSaved = toggleSaveProduct(product);
-                        setIsSaved(nextSaved);
-                      }
-                    }}
-                    className={`flex items-center justify-center gap-2 rounded-lg border px-6 py-3 font-semibold transition cursor-pointer ${
-                      isSaved
-                        ? "border-brand-300 bg-brand-50 text-brand-700 hover:bg-brand-100"
-                        : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
-                    }`}
-                    aria-label={isSaved ? "Remove from saved items" : "Save item"}
-                  >
-                    <Heart
-                      size={18}
-                      className={isSaved ? "fill-brand-600 text-brand-600" : "text-gray-500"}
-                    />
-                    <span>{isSaved ? "Saved" : "Save Item"}</span>
-                  </button>
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!getToken()) {
+                          navigate("/login", {
+                            state: { from: { pathname: chatPath } },
+                          });
+                          return;
+                        }
+                        navigate(chatPath);
+                      }}
+                      className="flex-1 rounded-lg bg-brand-600 px-6 py-3 font-semibold text-white transition hover:bg-brand-700 shadow-sm cursor-pointer"
+                    >
+                      {isTier1 ? "Contact Admin / Inquire" : "Contact Seller"}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (product) {
+                          const nextSaved = toggleSaveProduct(product);
+                          setIsSaved(nextSaved);
+                        }
+                      }}
+                      className={`flex items-center justify-center gap-2 rounded-lg border px-6 py-3 font-semibold transition cursor-pointer ${
+                        isSaved
+                          ? "border-brand-300 bg-brand-50 text-brand-700 hover:bg-brand-100"
+                          : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                      }`}
+                      aria-label={isSaved ? "Remove from saved items" : "Save item"}
+                    >
+                      <Heart
+                        size={18}
+                        className={isSaved ? "fill-brand-600 text-brand-600" : "text-gray-500"}
+                      />
+                      <span>{isSaved ? "Saved" : "Save Item"}</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
