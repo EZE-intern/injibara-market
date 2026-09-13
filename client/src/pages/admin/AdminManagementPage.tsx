@@ -1,10 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   createAdmin,
   getManagedAdmins,
   updateAdminStatus,
   type ManagedAdmin,
 } from "../../api/adminManagementApi";
+import {
+  getAdminUsers,
+  updateUserRole,
+  type AdminUser,
+} from "../../api/userAdminApi";
 
 const initialForm = {
   full_name: "",
@@ -17,11 +22,18 @@ function AdminManagementPage() {
   const [admins, setAdmins] = useState<ManagedAdmin[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
-  const [showModal, setShowModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showPromoteModal, setShowPromoteModal] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [promotingId, setPromotingId] = useState<number | null>(null);
 
   const [form, setForm] = useState(initialForm);
+
+  const [eligibleUsers, setEligibleUsers] = useState<AdminUser[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [promoteSearch, setPromoteSearch] = useState("");
 
   const loadAdmins = async () => {
     try {
@@ -42,11 +54,52 @@ function AdminManagementPage() {
     loadAdmins();
   }, []);
 
+  const openPromoteModal = async () => {
+    setShowPromoteModal(true);
+    setPromoteSearch("");
+    setError(null);
+    setSuccess(null);
+    setLoadingUsers(true);
+
+    try {
+      const users = await getAdminUsers();
+      setEligibleUsers(
+        users.filter(
+          (user) =>
+            user.role === "CUSTOMER" || user.role === "SELLER"
+        )
+      );
+    } catch (err) {
+      console.error(err);
+      setError("Unable to load users for promotion.");
+      setShowPromoteModal(false);
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
+  const filteredEligibleUsers = useMemo(() => {
+    const value = promoteSearch.trim().toLowerCase();
+    if (!value) return eligibleUsers;
+
+    return eligibleUsers.filter(
+      (user) =>
+        user.full_name.toLowerCase().includes(value) ||
+        user.email.toLowerCase().includes(value) ||
+        user.phone?.toLowerCase().includes(value)
+    );
+  }, [eligibleUsers, promoteSearch]);
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!form.full_name.trim()) {
       setError("Full name is required.");
+      return;
+    }
+
+    if (/\d/.test(form.full_name)) {
+      setError("Full name cannot contain numbers.");
       return;
     }
 
@@ -63,6 +116,7 @@ function AdminManagementPage() {
     try {
       setSaving(true);
       setError(null);
+      setSuccess(null);
 
       const newAdmin = await createAdmin({
         full_name: form.full_name.trim(),
@@ -73,9 +127,9 @@ function AdminManagementPage() {
       });
 
       setAdmins((current) => [newAdmin, ...current]);
-
       setForm(initialForm);
-      setShowModal(false);
+      setShowCreateModal(false);
+      setSuccess("Administrator account created.");
     } catch (err) {
       console.error(err);
       setError("Unable to create administrator.");
@@ -84,14 +138,41 @@ function AdminManagementPage() {
     }
   };
 
+  const handlePromote = async (user: AdminUser) => {
+    const confirmed = window.confirm(
+      `Promote ${user.full_name} (${user.email}) to admin?`
+    );
+    if (!confirmed) return;
+
+    try {
+      setPromotingId(user.id);
+      setError(null);
+      setSuccess(null);
+
+      await updateUserRole(user.id, "admin");
+
+      setEligibleUsers((current) =>
+        current.filter((item) => item.id !== user.id)
+      );
+
+      await loadAdmins();
+      setSuccess(`${user.full_name} has been promoted to admin.`);
+      setShowPromoteModal(false);
+    } catch (err) {
+      console.error(err);
+      setError("Unable to promote user to admin.");
+    } finally {
+      setPromotingId(null);
+    }
+  };
+
   const handleStatusToggle = async (admin: ManagedAdmin) => {
     const newStatus =
-      admin.status === "ACTIVE"
-        ? "SUSPENDED"
-        : "ACTIVE";
+      admin.status === "ACTIVE" ? "SUSPENDED" : "ACTIVE";
 
     try {
       setError(null);
+      setSuccess(null);
 
       const updatedAdmin = await updateAdminStatus(
         admin.id,
@@ -101,7 +182,7 @@ function AdminManagementPage() {
       setAdmins((current) =>
         current.map((item) =>
           item.id === updatedAdmin.id
-            ? updatedAdmin
+            ? { ...item, status: newStatus }
             : item
         )
       );
@@ -113,7 +194,6 @@ function AdminManagementPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">
@@ -121,44 +201,46 @@ function AdminManagementPage() {
           </h1>
 
           <p className="mt-1 text-sm text-gray-500">
-            Manage administrators who have access to the admin panel.
+            Create admins or promote existing buyers and sellers.
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => {
-            setForm(initialForm);
-            setError(null);
-            setShowModal(true);
-          }}
-          className="rounded-xl bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-purple-700"
-        >
-          Add Admin
-        </button>
+        <div className="flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={openPromoteModal}
+            className="rounded-xl border border-purple-200 bg-white px-4 py-2.5 text-sm font-semibold text-purple-700 transition hover:bg-purple-50"
+          >
+            Promote User
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setForm(initialForm);
+              setError(null);
+              setSuccess(null);
+              setShowCreateModal(true);
+            }}
+            className="rounded-xl bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-purple-700"
+          >
+            Add Admin
+          </button>
+        </div>
       </div>
 
-      {/* Security notice */}
-      <div className="rounded-2xl border border-purple-100 bg-purple-50 p-5">
-        <p className="text-sm font-semibold text-purple-800">
-          Super Admin access
-        </p>
-
-        <p className="mt-1 text-sm leading-6 text-purple-700">
-          Only Super Admins can create or suspend administrator
-          accounts. Administrator permissions must also be enforced
-          by the backend.
-        </p>
-      </div>
-
-      {/* Error */}
       {error && (
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}
         </div>
       )}
 
-      {/* Admin table */}
+      {success && (
+        <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+          {success}
+        </div>
+      )}
+
       <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
         {loading ? (
           <div className="px-6 py-16 text-center">
@@ -173,7 +255,7 @@ function AdminManagementPage() {
             </h3>
 
             <p className="mt-1 text-sm text-gray-500">
-              Administrator accounts will appear here.
+              Promote an existing user or create a new admin account.
             </p>
           </div>
         ) : (
@@ -184,23 +266,18 @@ function AdminManagementPage() {
                   <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wide text-gray-500">
                     Administrator
                   </th>
-
                   <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wide text-gray-500">
                     Contact
                   </th>
-
                   <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wide text-gray-500">
                     Role
                   </th>
-
                   <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wide text-gray-500">
                     Status
                   </th>
-
                   <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wide text-gray-500">
                     Joined
                   </th>
-
                   <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wide text-gray-500">
                     Action
                   </th>
@@ -223,7 +300,6 @@ function AdminManagementPage() {
                       <p className="text-sm text-slate-700">
                         {admin.email}
                       </p>
-
                       {admin.phone && (
                         <p className="mt-1 text-xs text-gray-500">
                           {admin.phone}
@@ -250,17 +326,13 @@ function AdminManagementPage() {
                     </td>
 
                     <td className="px-6 py-4 text-sm text-gray-500">
-                      {new Date(
-                        admin.created_at
-                      ).toLocaleDateString()}
+                      {new Date(admin.created_at).toLocaleDateString()}
                     </td>
 
                     <td className="px-6 py-4 text-right">
                       <button
                         type="button"
-                        onClick={() =>
-                          handleStatusToggle(admin)
-                        }
+                        onClick={() => handleStatusToggle(admin)}
                         className="text-sm font-semibold text-purple-600 hover:text-purple-800"
                       >
                         {admin.status === "ACTIVE"
@@ -276,36 +348,109 @@ function AdminManagementPage() {
         )}
       </div>
 
-      {/* Add Admin Modal */}
-      {showModal && (
+      {showPromoteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="flex max-h-[85vh] w-full max-w-2xl flex-col rounded-2xl bg-white shadow-xl">
+            <div className="border-b border-gray-100 px-6 py-5">
+              <h2 className="text-lg font-bold text-slate-900">
+                Promote User to Admin
+              </h2>
+              <p className="mt-1 text-sm text-gray-500">
+                Choose an existing buyer or seller to grant admin access.
+              </p>
+            </div>
+
+            <div className="border-b border-gray-100 px-6 py-4">
+              <input
+                type="text"
+                value={promoteSearch}
+                onChange={(e) => setPromoteSearch(e.target.value)}
+                placeholder="Search by name, email or phone..."
+                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none transition focus:border-purple-400 focus:bg-white"
+              />
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-6 py-4">
+              {loadingUsers ? (
+                <p className="py-10 text-center text-sm text-gray-500">
+                  Loading users...
+                </p>
+              ) : filteredEligibleUsers.length === 0 ? (
+                <p className="py-10 text-center text-sm text-gray-500">
+                  No buyers or sellers found to promote.
+                </p>
+              ) : (
+                <ul className="divide-y divide-gray-100">
+                  {filteredEligibleUsers.map((user) => (
+                    <li
+                      key={user.id}
+                      className="flex items-center justify-between gap-4 py-4"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate font-semibold text-slate-900">
+                          {user.full_name}
+                        </p>
+                        <p className="truncate text-sm text-gray-500">
+                          {user.email}
+                        </p>
+                        <p className="mt-1 text-xs uppercase tracking-wide text-gray-400">
+                          {user.role === "CUSTOMER" ? "Buyer" : "Seller"}
+                        </p>
+                      </div>
+
+                      <button
+                        type="button"
+                        disabled={promotingId === user.id}
+                        onClick={() => handlePromote(user)}
+                        className="shrink-0 rounded-xl bg-purple-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {promotingId === user.id
+                          ? "Promoting..."
+                          : "Promote"}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            <div className="flex justify-end border-t border-gray-100 px-6 py-4">
+              <button
+                type="button"
+                onClick={() => setShowPromoteModal(false)}
+                className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-lg rounded-2xl bg-white shadow-xl">
             <div className="border-b border-gray-100 px-6 py-5">
               <h2 className="text-lg font-bold text-slate-900">
                 Add Administrator
               </h2>
-
               <p className="mt-1 text-sm text-gray-500">
-                Create an administrator account.
+                Create a new administrator account.
               </p>
             </div>
 
-            <form
-              onSubmit={handleCreate}
-              className="space-y-4 p-6"
-            >
+            <form onSubmit={handleCreate} className="space-y-4 p-6">
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-slate-700">
                   Full Name
                 </label>
-
                 <input
                   type="text"
                   value={form.full_name}
                   onChange={(e) =>
                     setForm({
                       ...form,
-                      full_name: e.target.value,
+                      full_name: e.target.value.replace(/\d/g, ""),
                     })
                   }
                   className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-purple-400"
@@ -317,7 +462,6 @@ function AdminManagementPage() {
                 <label className="mb-1.5 block text-sm font-medium text-slate-700">
                   Email
                 </label>
-
                 <input
                   type="email"
                   value={form.email}
@@ -336,7 +480,6 @@ function AdminManagementPage() {
                 <label className="mb-1.5 block text-sm font-medium text-slate-700">
                   Phone
                 </label>
-
                 <input
                   type="tel"
                   value={form.phone}
@@ -355,7 +498,6 @@ function AdminManagementPage() {
                 <label className="mb-1.5 block text-sm font-medium text-slate-700">
                   Password
                 </label>
-
                 <input
                   type="password"
                   value={form.password}
@@ -373,12 +515,11 @@ function AdminManagementPage() {
               <div className="flex justify-end gap-3 border-t border-gray-100 pt-5">
                 <button
                   type="button"
-                  onClick={() => setShowModal(false)}
+                  onClick={() => setShowCreateModal(false)}
                   className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50"
                 >
                   Cancel
                 </button>
-
                 <button
                   type="submit"
                   disabled={saving}

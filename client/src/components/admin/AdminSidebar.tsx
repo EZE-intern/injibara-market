@@ -49,6 +49,11 @@ function AdminSidebar() {
       path: "/admin/users",
       icon: Users,
     },
+    {
+      name: "Admin Management",
+      path: "/admin/admin-management",
+      icon: UserCog,
+    },
   ];
 
   const handleLogout = () => {
@@ -103,26 +108,6 @@ function AdminSidebar() {
             SEPARATOR
         ========================= */}
         <div className="my-4 border-t border-gray-100" />
-
-        {/* =========================
-            SUPER ADMIN ONLY
-        ========================= */}
-        {user?.role?.toUpperCase() === "SUPER_ADMIN" && (
-          <NavLink
-            to="/admin/admin-management"
-            className={({ isActive }) =>
-              [
-                "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition",
-                isActive
-                  ? "bg-purple-50 text-purple-700"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-slate-900",
-              ].join(" ")
-            }
-          >
-            <UserCog className="h-5 w-5 shrink-0" />
-            <span>Admin Management</span>
-          </NavLink>
-        )}
 
         {/* =========================
             SETTINGS

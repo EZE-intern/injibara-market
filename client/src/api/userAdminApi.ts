@@ -52,3 +52,27 @@ export const updateUserStatus = async (
 
   return response.data.data;
 };
+
+export type PromotableRole = "customer" | "seller" | "admin";
+
+interface UpdateUserRoleResponse {
+  message: string;
+  user: {
+    id: number;
+    full_name: string;
+    email: string;
+    role: string;
+  };
+}
+
+export const updateUserRole = async (
+  id: number,
+  role: PromotableRole
+): Promise<UpdateUserRoleResponse["user"]> => {
+  const response = await axiosClient.patch<UpdateUserRoleResponse>(
+    `/auth/users/${id}/role`,
+    { role }
+  );
+
+  return response.data.user;
+};

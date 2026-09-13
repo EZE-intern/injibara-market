@@ -76,7 +76,7 @@ function AdminUsersPage() {
       setUsers((current) =>
         current.map((item) =>
           item.id === updatedUser.id
-            ? updatedUser
+            ? { ...item, status: updatedUser.status ?? newStatus }
             : item
         )
       );
