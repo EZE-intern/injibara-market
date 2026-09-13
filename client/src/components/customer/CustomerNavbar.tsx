@@ -1,14 +1,20 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Heart, ShoppingCart } from "lucide-react";
+import { Heart } from "lucide-react";
 import { getUser, isAuthenticated, clearAuth } from "../../utils/authStorage";
 import CustomerMobileNavigation from "./CustomerMobileNavigation";
+
+function isAdminRole(role?: string | null) {
+  const normalized = role?.toLowerCase();
+  return normalized === "admin" || normalized === "super_admin";
+}
 
 function CustomerNavbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const user = getUser();
   const authenticated = isAuthenticated();
+  const isAdmin = isAdminRole(user?.role);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen((currentState) => !currentState);
@@ -87,6 +93,15 @@ function CustomerNavbar() {
           >
             Orders
           </Link>
+
+          {isAdmin && (
+            <Link
+              to="/admin"
+              className="text-sm font-semibold text-purple-700 transition-colors hover:text-purple-800"
+            >
+              Admin
+            </Link>
+          )}
         </div>
 
         {/* Desktop Actions */}
@@ -99,20 +114,12 @@ function CustomerNavbar() {
             <Heart size={20} />
           </Link>
 
-          <Link
-            to={authenticated ? "/customer/cart" : "/login"}
-            className="text-gray-600 transition-colors hover:text-brand-600"
-            aria-label="Cart"
-          >
-            <ShoppingCart size={20} />
-          </Link>
-
           {authenticated ? (
             <div className="flex items-center gap-3">
-              {(user?.role?.toLowerCase() === "admin" || user?.role?.toLowerCase() === "super_admin") && (
+              {isAdmin && (
                 <Link
                   to="/admin"
-                  className="rounded-lg bg-purple-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-purple-700"
+                  className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-purple-700"
                 >
                   Admin Panel
                 </Link>

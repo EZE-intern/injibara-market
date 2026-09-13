@@ -1,7 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
 import ProtectedAdminRoute from "./ProtectedAdminRoute";
-import ProtectedSuperAdminRoute from "./ProtectedSuperAdminRoute";
 
 import HomePage from "../pages/HomePage";
 import LoginPage from "../pages/LoginPage";
@@ -90,11 +89,7 @@ function AppRoutes() {
           <Route path="/admin/categories" element={<AdminCategoriesPage />} />
           <Route path="/admin/users" element={<AdminUsersPage />} />
           <Route path="/admin/settings" element={<AdminSettingsPage />} />
-
-          {/* Super Admin Only */}
-          <Route element={<ProtectedSuperAdminRoute />}>
-            <Route path="/admin/admin-management" element={<AdminManagementPage />} />
-          </Route>
+          <Route path="/admin/admin-management" element={<AdminManagementPage />} />
         </Route>
       </Route>
     </Routes>

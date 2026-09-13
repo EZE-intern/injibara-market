@@ -12,6 +12,12 @@ router.post('/register', authLimiter, validate(registerSchema), registerUser);
 router.post('/login', authLimiter, validate(loginSchema), loginUser);
 
 // Admin-only: change a user's role (promote to admin, demote to customer, etc.)
-router.patch('/users/:id/role', protect, authorizeRoles('admin'), validate(updateUserRoleSchema), updateUserRole);
+router.patch(
+  '/users/:id/role',
+  protect,
+  authorizeRoles('admin', 'super_admin'),
+  validate(updateUserRoleSchema),
+  updateUserRole
+);
 
 export default router;

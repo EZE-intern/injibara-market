@@ -1,10 +1,15 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getMyProducts } from "../api/productApi";
+import { getUser } from "../utils/authStorage";
 
 export default function SellerDashboardPage() {
   const [productCount, setProductCount] = useState<number>(0);
   const [userName, setUserName] = useState<string>("Seller");
+  const user = getUser();
+  const isAdmin =
+    user?.role?.toLowerCase() === "admin" ||
+    user?.role?.toLowerCase() === "super_admin";
 
   useEffect(() => {
     // Read user from localStorage if available
@@ -62,6 +67,14 @@ export default function SellerDashboardPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+              {isAdmin && (
+                <Link
+                  to="/admin"
+                  className="rounded-xl bg-purple-600 px-4 py-2.5 text-center text-sm font-bold text-white shadow-sm transition hover:bg-purple-700"
+                >
+                  Admin Panel
+                </Link>
+              )}
               <Link
                 to="/"
                 className="inline-flex items-center gap-1.5 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-center text-sm font-bold text-gray-700 shadow-sm transition hover:bg-gray-50 hover:border-gray-400"

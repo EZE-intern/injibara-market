@@ -73,18 +73,21 @@ function CustomerMobileNavigation({ isOpen, onClose }: MobileNavigationProps) {
             >
               Saved Items
             </Link>
-            <Link
-              to="/customer/cart"
-              onClick={onClose}
-              className="border-b border-gray-100 py-3 text-sm font-medium text-gray-700 hover:text-brand-600"
-            >
-              Cart
-            </Link>
           </>
         )}
 
         {authenticated ? (
           <div className="mt-4 flex flex-col gap-2">
+            {(user?.role?.toLowerCase() === "admin" ||
+              user?.role?.toLowerCase() === "super_admin") && (
+              <Link
+                to="/admin"
+                onClick={onClose}
+                className="rounded-lg bg-purple-600 py-2.5 text-center text-sm font-semibold text-white hover:bg-purple-700"
+              >
+                Admin Panel
+              </Link>
+            )}
             <Link
               to="/customer/profile"
               onClick={onClose}

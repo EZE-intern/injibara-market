@@ -23,10 +23,6 @@ function CustomerSidebar({
       path: "/products",
     },
     {
-      name: "Cart",
-      path: "/customer/cart",
-    },
-    {
       name: "My Orders",
       path: "/customer/orders",
     },

@@ -14,8 +14,28 @@ function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const handleFullNameChange = (value: string) => {
+    // Names must not contain digits
+    if (/\d/.test(value)) {
+      setError("Full name cannot contain numbers");
+      setFullName(value.replace(/\d/g, ""));
+      return;
+    }
+    if (error === "Full name cannot contain numbers") {
+      setError("");
+    }
+    setFullName(value);
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    const trimmedName = fullName.trim();
+
+    if (/\d/.test(trimmedName)) {
+      setError("Full name cannot contain numbers");
+      return;
+    }
 
     if (password !== confirmPassword) {
       setError("Passwords do not match");
@@ -33,7 +53,7 @@ function RegisterPage() {
         role: "customer" | "seller";
         phone?: string;
       } = {
-        full_name: fullName.trim(),
+        full_name: trimmedName,
         email: email.trim(),
         password,
         role: "customer",
@@ -112,9 +132,12 @@ function RegisterPage() {
                 id="fullName"
                 type="text"
                 value={fullName}
-                onChange={(event) => setFullName(event.target.value)}
+                onChange={(event) => handleFullNameChange(event.target.value)}
                 placeholder="Your full name"
                 autoComplete="name"
+                inputMode="text"
+                pattern="[^0-9]*"
+                title="Full name cannot contain numbers"
                 required
                 className="mt-1.5 w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
               />
