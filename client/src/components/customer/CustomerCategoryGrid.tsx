@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { getCategories } from "../../api/categoryApi";
 import type { Category } from "../../api/categoryApi";
+import { serverWarmup } from "../../App";
 
 export const getCategoryIconNode = (slugOrName: string): ReactNode => {
   const clean = slugOrName.toLowerCase().trim().replace(/\s+/g, "-");
@@ -50,6 +51,8 @@ function CustomerCategoryGrid() {
     const loadCategories = async () => {
       try {
         setLoading(true);
+        // Wait for the healthz ping to warm the DB connection before querying
+        await serverWarmup;
         const data = await getCategories();
         setCategories(data);
       } catch (error) {

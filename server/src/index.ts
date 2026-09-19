@@ -1,6 +1,7 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import { globalLimiter } from './middleware/rateLimiter.js';
+import { prisma } from './lib/prisma.js';
 import authRoutes from './routes/authRoutes.js';
 import productRoute from './routes/productRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
@@ -28,8 +29,17 @@ app.get('/', (req: Request, res: Response) => {
   });
 });
 
-app.get('/healthz', (req: Request, res: Response) => {
-  res.status(200).send('OK');
+// Deep health check: touches the database to warm the Prisma/TiDB connection pool.
+// The frontend fires this on mount so subsequent category/product queries hit
+// an already-warm connection instead of each paying the cold-start penalty.
+app.get('/healthz', async (req: Request, res: Response) => {
+  try {
+    await prisma.$queryRawUnsafe('SELECT 1');
+    res.status(200).send('OK');
+  } catch {
+    // Even if the DB ping fails, the server itself is alive
+    res.status(200).send('OK');
+  }
 });
 
 // Mounted Routes

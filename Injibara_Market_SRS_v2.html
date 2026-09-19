@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Software Requirements Specification (SRS) — Injibara Market</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg-alt: #f8fafc;
+    --surface: #f1f5f9;
+    --text: #0f172a;
+    --text-body: #334155;
+    --text-muted: #64748b;
+    --accent: #1d4ed8;
+    --accent-light: #dbeafe;
+    --brand: #dc2626;
+    --brand-light: #fee2e2;
+    --border: #e2e8f0;
+    --success: #16a34a;
+    --warning: #d97706;
+    --code-bg: #f1f5f9;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; font-size: 15px; }
+  body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: var(--bg);
+    color: var(--text-body);
+    line-height: 1.85;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 60px 48px 120px;
+  }
+
+  /* HEADER */
+  .doc-header {
+    text-align: center;
+    border-bottom: 3px double var(--border);
+    padding-bottom: 40px;
+    margin-bottom: 48px;
+  }
+  .doc-header .institution {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    margin-bottom: 8px;
+  }
+  .doc-header h1 {
+    font-size: 2.2rem;
+    color: var(--text);
+    margin-bottom: 4px;
+    font-weight: 700;
+  }
+  .doc-header .doc-type {
+    font-size: 1.3rem;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  .doc-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 32px;
+    max-width: 500px;
+    margin: 20px auto 0;
+    font-family: -apple-system, sans-serif;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    text-align: left;
+  }
+  .doc-meta dt { font-weight: 700; color: var(--text); }
+
+  /* HEADINGS */
+  h2 {
+    font-size: 1.6rem;
+    color: var(--text);
+    margin: 56px 0 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--accent);
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    font-family: -apple-system, sans-serif;
+  }
+  h2 .sn {
+    background: var(--accent);
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 800;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-family: -apple-system, sans-serif;
+  }
+  h3 {
+    font-size: 1.25rem;
+    color: var(--accent);
+    margin: 32px 0 12px;
+    font-family: -apple-system, sans-serif;
+  }
+  h4 {
+    font-size: 1.05rem;
+    color: var(--text);
+    margin: 20px 0 8px;
+    font-family: -apple-system, sans-serif;
+  }
+  p { margin-bottom: 16px; }
+  strong { color: var(--text); }
+
+  /* CODE */
+  code {
+    background: var(--code-bg);
+    color: var(--accent);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.88em;
+  }
+  pre {
+    background: #1e293b;
+    color: #e2e8f0;
+    border-radius: 8px;
+    padding: 20px 24px;
+    overflow-x: auto;
+    margin: 16px 0 24px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    white-space: pre;
+  }
+
+  /* TABLES */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 28px;
+    font-size: 0.9rem;
+    font-family: -apple-system, sans-serif;
+  }
+  th {
+    background: var(--accent);
+    color: white;
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tr:nth-child(even) td { background: var(--bg-alt); }
+
+  /* CALLOUTS */
+  .note {
+    background: var(--accent-light);
+    border-left: 4px solid var(--accent);
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    margin: 20px 0;
+    font-size: 0.92rem;
+    font-family: -apple-system, sans-serif;
+  }
+  .note strong { color: var(--accent); }
+  .warn {
+    background: #fef3c7;
+    border-left: 4px solid var(--warning);
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    margin: 20px 0;
+    font-size: 0.92rem;
+    font-family: -apple-system, sans-serif;
+  }
+
+  /* DIAGRAM WRAPPERS */
+  .diagram-section {
+    background: var(--bg-alt);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 16px;
+    margin: 24px 0;
+  }
+  .diagram-section .caption {
+    text-align: center;
+    font-style: italic;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-top: 12px;
+    font-family: -apple-system, sans-serif;
+  }
+  .mermaid { width: 100%; text-align: center; }
+
+  /* CODE BLOCK LABEL */
+  .code-label {
+    background: var(--accent);
+    color: white;
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 4px 4px 0 0;
+    font-size: 0.78rem;
+    font-weight: 700;
+    font-family: -apple-system, sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .code-label + pre {
+    margin-top: 0;
+    border-radius: 0 8px 8px 8px;
+  }
+
+  /* LISTS */
+  ul, ol { margin: 8px 0 16px 28px; }
+  li { margin-bottom: 6px; }
+
+  /* TOC */
+  .toc {
+    background: var(--bg-alt);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px 32px;
+    margin: 32px 0 48px;
+  }
+  .toc h3 {
+    margin: 0 0 12px;
+    color: var(--text);
+    font-size: 1.1rem;
+  }
+  .toc ol { counter-reset: toc; list-style: none; margin: 0; padding: 0; }
+  .toc li { counter-increment: toc; margin-bottom: 4px; font-family: -apple-system, sans-serif; font-size: 0.9rem; }
+  .toc li::before { content: counter(toc) ". "; font-weight: 700; color: var(--accent); }
+  .toc a { color: var(--text-body); text-decoration: none; }
+  .toc a:hover { color: var(--accent); text-decoration: underline; }
+
+  /* FOOTER */
+  .doc-footer {
+    margin-top: 64px;
+    border-top: 2px solid var(--border);
+    padding-top: 20px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    font-family: -apple-system, sans-serif;
+  }
+
+  @media print {
+    body { padding: 20px; }
+    .diagram-section { page-break-inside: avoid; }
+    h2 { page-break-before: always; }
+    pre { white-space: pre-wrap; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- TITLE PAGE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="doc-header">
+  <div class="institution">Awi Zone, Amhara Region, Ethiopia</div>
+  <h1>Injibara Market</h1>
+  <div class="doc-type">Software Requirements Specification (SRS)</div>
+  <p style="color: var(--text-muted); font-family: sans-serif; font-size: 0.9rem;">
+    A Brokered Digital Marketplace Platform for the Town of Injibara
+  </p>
+
+  <dl class="doc-meta">
+    <dt>Version:</dt><dd>2.0</dd>
+    <dt>Date:</dt><dd>September 2026</dd>
+    <dt>Repository:</dt><dd>EZE-intern/injibara-market</dd>
+    <dt>Branch:</dt><dd>develop</dd>
+    <dt>Stack:</dt><dd>React 19, Express 5, Prisma 7, TiDB</dd>
+    <dt>Currency:</dt><dd>ETB (Ethiopian Birr)</dd>
+  </dl>
+</div>
+
+<!-- TABLE OF CONTENTS -->
+<div class="toc">
+  <h3>Table of Contents</h3>
+  <ol>
+    <li><a href="#ch1">Introduction</a></li>
+    <li><a href="#ch2">System Overview & Architecture</a></li>
+    <li><a href="#ch3">Functional Requirements</a></li>
+    <li><a href="#ch4">Non-Functional Requirements</a></li>
+    <li><a href="#ch5">Data Model & Entity-Relationship Diagram</a></li>
+    <li><a href="#ch6">Use Case Diagram</a></li>
+    <li><a href="#ch7">Activity Diagram</a></li>
+    <li><a href="#ch8">External Interfaces</a></li>
+    <li><a href="#ch9">Glossary & Definitions</a></li>
+  </ol>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 1: INTRODUCTION -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<h2 id="ch1"><span class="sn">01</span> Introduction</h2>
+
+<h3>1.1 Purpose</h3>
+<p>
+  This Software Requirements Specification (SRS) defines the complete functional and non-functional requirements for <strong>Injibara Market</strong>, a brokered digital marketplace platform serving the town of Injibara in the Awi Zone of the Amhara Region, Ethiopia. This document serves as the authoritative contract between the development team and stakeholders.
+</p>
+
+<h3>1.2 Scope</h3>
+<p>
+  Injibara Market enables residents and businesses in Injibara to list, discover, and transact physical goods across two distinct operational tiers:
+</p>
+<ul>
+  <li><strong>Tier 1 (Brokered Marketplace):</strong> High-value capital assets (Property &amp; Land, Vehicles &amp; Transport, Heavy Machinery) are mediated by a platform administrator who acts as a trust broker between buyer and seller.</li>
+  <li><strong>Tier 2 (Direct Marketplace):</strong> Consumer goods (Electronics, Fashion, Food, Household) enable direct peer-to-peer messaging between buyer and seller.</li>
+</ul>
+<p>The platform supports bilingual operation in English and Amharic, accepts Ethiopian payment methods (Telebirr, CBE Birr, Bank Transfer, Cash on Delivery), and is optimized for low-bandwidth mobile networks.</p>
+
+<h3>1.3 Definitions & Acronyms</h3>
+<table>
+  <tr><th>Term</th><th>Definition</th></tr>
+  <tr><td>ETB</td><td>Ethiopian Birr — the official currency of Ethiopia</td></tr>
+  <tr><td>Tier 1 Category</td><td>Product categories requiring admin brokerage (Property, Vehicles, Machinery)</td></tr>
+  <tr><td>Tier 2 Category</td><td>Product categories with direct buyer-to-seller messaging</td></tr>
+  <tr><td>Broker Hub</td><td>Admin dashboard for managing Tier 1 buyer inquiries</td></tr>
+  <tr><td>TiDB</td><td>MySQL-compatible distributed NewSQL database (production persistence)</td></tr>
+  <tr><td>JWT</td><td>JSON Web Token — stateless authentication mechanism</td></tr>
+  <tr><td>RBAC</td><td>Role-Based Access Control</td></tr>
+  <tr><td>SPA</td><td>Single-Page Application</td></tr>
+</table>
+
+<h3>1.4 Intended Audience</h3>
+<ul>
+  <li>Development team (current and future engineers)</li>
+  <li>Project supervisors and academic evaluators</li>
+  <li>UI/UX designers extending the platform</li>
+  <li>DevOps engineers responsible for deployment</li>
+</ul>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 2: SYSTEM OVERVIEW -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<h2 id="ch2"><span class="sn">02</span> System Overview & Architecture</h2>
+
+<h3>2.1 High-Level System Architecture</h3>
+<p>
+  The system follows a three-tier client-server architecture deployed across geographically distributed cloud services:
+</p>
+
+<div class="diagram-section">
+  <div class="mermaid">
+graph TB
+    subgraph "Presentation Tier (Vercel CDN)"
+        A["React 19 SPA<br/>Vite 8 + Tailwind CSS 4<br/>React Router v7"]
+    end
+    subgraph "Application Tier (Node.js 20)"
+        B["Express 5 REST API<br/>Prisma 7 ORM<br/>JWT Authentication"]
+    end
+    subgraph "Data Tier"
+        C["TiDB Serverless<br/>AWS eu-central-1<br/>MySQL Wire Protocol"]
+        D["Cloudinary CDN<br/>Image Storage<br/>Auto WebP/AVIF"]
+    end
+
+    A -->|"HTTPS REST API<br/>Bearer JWT Token"| B
+    B -->|"@prisma/adapter-mariadb<br/>TLS Encrypted"| C
+    B -->|"Stream Upload<br/>Buffer to CDN"| D
+    D -.->|"Image URLs"| A
+  </div>
+  <div class="caption">Figure 2.1 — High-Level System Architecture Diagram</div>
+</div>
+
+<h3>2.2 User Roles</h3>
+<table>
+  <tr><th>Role</th><th>Description</th><th>Key Capabilities</th></tr>
+  <tr>
+    <td><strong>Customer</strong></td>
+    <td>Registered buyer browsing and purchasing goods</td>
+    <td>Browse products, add to cart, place orders, send messages, save favorites, write reviews</td>
+  </tr>
+  <tr>
+    <td><strong>Seller</strong></td>
+    <td>Merchant listing products for sale</td>
+    <td>Create/edit/delete product listings, manage store profile, view incoming orders, respond to buyer messages (Tier 2 only)</td>
+  </tr>
+  <tr>
+    <td><strong>Admin</strong></td>
+    <td>Platform administrator and broker</td>
+    <td>Moderate products/stores/users, manage categories, handle Tier 1 broker inquiries, create staff admins, view platform analytics</td>
+  </tr>
+</table>
+
+<h3>2.3 Technology Stack</h3>
+<table>
+  <tr><th>Layer</th><th>Technology</th><th>Version</th></tr>
+  <tr><td>Frontend Framework</td><td>React</td><td>19.x</td></tr>
+  <tr><td>Build Tool</td><td>Vite</td><td>8.x</td></tr>
+  <tr><td>CSS Framework</td><td>Tailwind CSS</td><td>4.x</td></tr>
+  <tr><td>Client Routing</td><td>React Router</td><td>v7</td></tr>
+  <tr><td>HTTP Client</td><td>Axios</td><td>1.x</td></tr>
+  <tr><td>Backend Framework</td><td>Express</td><td>5.x</td></tr>
+  <tr><td>ORM</td><td>Prisma (Driver Adapter)</td><td>7.x</td></tr>
+  <tr><td>Validation</td><td>Zod</td><td>4.x</td></tr>
+  <tr><td>Database</td><td>TiDB Serverless (MySQL-compatible)</td><td>8.0 wire</td></tr>
+  <tr><td>Image Storage</td><td>Cloudinary</td><td>v2 SDK</td></tr>
+  <tr><td>Authentication</td><td>JWT (jsonwebtoken + bcryptjs)</td><td>9.x</td></tr>
+  <tr><td>Runtime</td><td>Node.js (ESM)</td><td>20.x</td></tr>
+  <tr><td>CI/CD</td><td>GitHub Actions</td><td>-</td></tr>
+  <tr><td>Frontend Hosting</td><td>Vercel</td><td>-</td></tr>
+  <tr><td>Containerization</td><td>Docker + Docker Compose</td><td>-</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 3: FUNCTIONAL REQUIREMENTS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<h2 id="ch3"><span class="sn">03</span> Functional Requirements</h2>
+
+<h3>3.1 Authentication & User Management</h3>
+<table>
+  <tr><th>ID</th><th>Requirement</th><th>Priority</th></tr>
+  <tr><td>FR-001</td><td>The system shall allow users to register with full name, email, password, and optional Ethiopian phone number.</td><td>High</td></tr>
+  <tr><td>FR-002</td><td>Email addresses shall be unique and case-insensitive. Phone numbers shall be validated against Ethiopian format (<code>09xxxxxxxx</code> or <code>+251xxxxxxxxx</code>) and normalized to <code>09xxxxxxxx</code>.</td><td>High</td></tr>
+  <tr><td>FR-003</td><td>Passwords shall be hashed using bcrypt (salt factor 10) before storage.</td><td>High</td></tr>
+  <tr><td>FR-004</td><td>Upon successful registration or login, the system shall issue a JWT token with 30-day expiry containing user ID, role, and email.</td><td>High</td></tr>
+  <tr><td>FR-005</td><td>Users whose email matches <code>INITIAL_ADMIN_EMAILS</code> shall be auto-promoted to admin role during registration.</td><td>High</td></tr>
+  <tr><td>FR-006</td><td>Admins shall be able to change any user's role (customer, seller, admin) but shall not be able to demote themselves.</td><td>Medium</td></tr>
+  <tr><td>FR-007</td><td>Registration shall restrict role selection to <code>customer</code> or <code>seller</code> only; admin role is never self-assignable.</td><td>High</td></tr>
+</table>
+
+<h3>3.2 Product Management</h3>
+<table>
+  <tr><th>ID</th><th>Requirement</th><th>Priority</th></tr>
+  <tr><td>FR-010</td><td>Sellers shall create product listings with name, description, price (ETB), optional discount price, stock quantity, category, location, and up to 6 images (JPEG/PNG/WebP, max 5MB each).</td><td>High</td></tr>
+  <tr><td>FR-011</td><td>Discount price shall be validated to be strictly less than the regular price.</td><td>Medium</td></tr>
+  <tr><td>FR-012</td><td>Product images shall be uploaded to Cloudinary with automatic quality and format optimization (WebP/AVIF).</td><td>High</td></tr>
+  <tr><td>FR-013</td><td>A customer who creates their first product listing shall be automatically promoted to seller role.</td><td>Medium</td></tr>
+  <tr><td>FR-014</td><td>Products shall support soft deletion (logical delete via <code>deleted_at</code> timestamp).</td><td>Medium</td></tr>
+  <tr><td>FR-015</td><td>The public product listing shall support filtering by category, search term, and location with cursor-based pagination.</td><td>High</td></tr>
+  <tr><td>FR-016</td><td>Product slugs shall support Amharic Unicode characters for SEO-friendly URLs.</td><td>Low</td></tr>
+</table>
+
+<h3>3.3 Order Management</h3>
+<table>
+  <tr><th>ID</th><th>Requirement</th><th>Priority</th></tr>
+  <tr><td>FR-020</td><td>Authenticated users shall place orders containing one or more items with quantity.</td><td>High</td></tr>
+  <tr><td>FR-021</td><td>Order creation shall validate that sufficient stock exists for all items before processing.</td><td>High</td></tr>
+  <tr><td>FR-022</td><td>Stock deduction and order creation shall execute within an atomic database transaction to prevent overselling.</td><td>High</td></tr>
+  <tr><td>FR-023</td><td>Each order shall generate a unique order number in the format <code>ORD-timestamp-random</code>.</td><td>Medium</td></tr>
+  <tr><td>FR-024</td><td>The system shall support four payment methods: Telebirr, CBE Birr, Bank Transfer, and Cash on Delivery (default).</td><td>High</td></tr>
+  <tr><td>FR-025</td><td>Sellers shall view a dashboard of orders containing their products, with order summary statistics.</td><td>Medium</td></tr>
+</table>
+
+<h3>3.4 Messaging & Broker System</h3>
+<table>
+  <tr><th>ID</th><th>Requirement</th><th>Priority</th></tr>
+  <tr><td>FR-030</td><td>Buyers shall initiate messages about specific products. The system shall determine the receiver based on the product's category tier.</td><td>High</td></tr>
+  <tr><td>FR-031</td><td>For Tier 1 categories (Property, Vehicles, Machinery), messages shall be routed to the primary admin (<code>seberbel@gmail.com</code>) with fallback to any admin.</td><td>High</td></tr>
+  <tr><td>FR-032</td><td>For Tier 2 categories, messages shall be delivered directly to the product's seller.</td><td>High</td></tr>
+  <tr><td>FR-033</td><td>Tier 1 category detection shall use 22 regex patterns supporting both English and Amharic text.</td><td>Medium</td></tr>
+  <tr><td>FR-034</td><td>The system shall provide an inbox view grouping messages by unique contact with unread count badges.</td><td>Medium</td></tr>
+  <tr><td>FR-035</td><td>Opening a conversation thread shall automatically mark incoming messages as read.</td><td>Low</td></tr>
+</table>
+
+<h3>3.5 Admin & Broker Hub</h3>
+<table>
+  <tr><th>ID</th><th>Requirement</th><th>Priority</th></tr>
+  <tr><td>FR-040</td><td>The Admin Dashboard shall display aggregate platform metrics: total users, products, orders, and revenue.</td><td>Medium</td></tr>
+  <tr><td>FR-041</td><td>The Broker Hub shall list all Tier 1 inquiries deduplicated by (product_id, buyer_id) with status tracking.</td><td>High</td></tr>
+  <tr><td>FR-042</td><td>Broker inquiry status shall progress through: NEW &rarr; ASSIGNED &rarr; APPOINTMENT_SCHEDULED &rarr; MEDIATED &rarr; CLOSED.</td><td>High</td></tr>
+  <tr><td>FR-043</td><td>Admins shall be able to reply to buyer inquiries, update status, and set appointment dates.</td><td>High</td></tr>
+  <tr><td>FR-044</td><td>Admins shall moderate products (approve, reject with reason, delete) and stores (activate, deactivate).</td><td>Medium</td></tr>
+  <tr><td>FR-045</td><td>Admins shall manage categories (CRUD operations) with automatic tier classification.</td><td>Medium</td></tr>
+  <tr><td>FR-046</td><td>Admins shall create and manage staff admin accounts with activation/deactivation.</td><td>Medium</td></tr>
+  <tr><td>FR-047</td><td>Admins shall suspend/reactivate user accounts via soft deletion.</td><td>Medium</td></tr>
+</table>
+
+<h3>3.6 Additional Features</h3>
+<table>
+  <tr><th>ID</th><th>Requirement</th><th>Priority</th></tr>
+  <tr><td>FR-050</td><td>Users shall save/unsave products to a favorites list persisted in the database.</td><td>Low</td></tr>
+  <tr><td>FR-051</td><td>Users shall add products to a shopping cart with quantity management.</td><td>Medium</td></tr>
+  <tr><td>FR-052</td><td>Sellers shall create store profiles with name, description, logo image, phone, and address.</td><td>Medium</td></tr>
+  <tr><td>FR-053</td><td>Users shall submit product reviews with rating and comment (one review per user per product).</td><td>Low</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 4: NON-FUNCTIONAL REQUIREMENTS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<h2 id="ch4"><span class="sn">04</span> Non-Functional Requirements</h2>
+
+<h3>4.1 Performance</h3>
+<table>
+  <tr><th>ID</th><th>Requirement</th></tr>
+  <tr><td>NFR-001</td><td>API responses shall complete within 2 seconds under normal load (excluding cold-start).</td></tr>
+  <tr><td>NFR-002</td><td>The frontend shall implement a 60-second timeout with automatic exponential retry (up to 2 retries) to handle cloud server cold-start delays of up to 35 seconds.</td></tr>
+  <tr><td>NFR-003</td><td>Image uploads shall be streamed directly to Cloudinary without disk I/O to minimize latency and memory pressure.</td></tr>
+</table>
+
+<h3>4.2 Security</h3>
+<table>
+  <tr><th>ID</th><th>Requirement</th></tr>
+  <tr><td>NFR-010</td><td>All passwords shall be hashed using bcrypt with a minimum salt factor of 10 before database storage.</td></tr>
+  <tr><td>NFR-011</td><td>API endpoints shall enforce role-based access control (RBAC) through middleware chain verification.</td></tr>
+  <tr><td>NFR-012</td><td>Rate limiting shall be enforced: 300 requests/15min globally, 10 requests/15min for authentication, 25 requests/15min for content creation.</td></tr>
+  <tr><td>NFR-013</td><td>All database connections shall use TLS encryption.</td></tr>
+  <tr><td>NFR-014</td><td>File uploads shall be restricted to JPEG, PNG, and WebP formats with a 5MB maximum size per file.</td></tr>
+</table>
+
+<h3>4.3 Reliability & Availability</h3>
+<table>
+  <tr><th>ID</th><th>Requirement</th></tr>
+  <tr><td>NFR-020</td><td>Data deletions shall use soft-delete patterns (logical deletion via timestamp) to prevent accidental data loss.</td></tr>
+  <tr><td>NFR-021</td><td>Order creation shall use database transactions to guarantee atomicity of stock deduction.</td></tr>
+  <tr><td>NFR-022</td><td>The frontend shall display explicit error states with retry functionality rather than silent failures.</td></tr>
+</table>
+
+<h3>4.4 Usability</h3>
+<table>
+  <tr><th>ID</th><th>Requirement</th></tr>
+  <tr><td>NFR-030</td><td>The UI shall support bilingual display in English and Amharic using the Noto Sans Ethiopic font.</td></tr>
+  <tr><td>NFR-031</td><td>All monetary values shall be displayed in Ethiopian Birr (ETB).</td></tr>
+  <tr><td>NFR-032</td><td>Error messages for authentication shall be displayed in Amharic.</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 5: DATA MODEL / ER DIAGRAM -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<h2 id="ch5"><span class="sn">05</span> Data Model & Entity-Relationship Diagram</h2>
+
+<p>
+  The database schema consists of <strong>16 entity models</strong> and <strong>7 enumeration types</strong>, deployed on TiDB Serverless (MySQL-compatible). The following ER diagram illustrates all entities, their attributes, and inter-entity relationships:
+</p>
+
+<div class="diagram-section">
+  <div class="mermaid">
+erDiagram
+    users ||--o{ orders : "places"
+    users ||--o{ products : "sells"
+    users ||--o{ stores : "owns"
+    users ||--o{ reviews : "writes"
+    users ||--o{ favorites : "saves"
+    users ||--o| carts : "has one"
+    users ||--o{ addresses : "has"
+    users ||--o{ messages : "sends"
+    users ||--o{ messages : "receives"
+    users ||--o{ broker_inquiries : "submits"
+    users ||--o{ order_status_history : "changes"
+
+    products ||--o{ product_images : "has"
+    products ||--o{ cart_items : "in"
+    products ||--o{ order_items : "ordered as"
+    products ||--o{ reviews : "reviewed by"
+    products ||--o{ favorites : "saved by"
+    products ||--o{ messages : "discussed in"
+    products ||--o{ inventory_logs : "tracked by"
+    products ||--o{ broker_inquiries : "inquired for"
+    products }o--|| categories : "categorized under"
+    products }o--o| stores : "belongs to"
+
+    orders ||--o{ order_items : "contains"
+    orders ||--o{ order_status_history : "tracked by"
+    orders ||--o{ payments : "settled by"
+    orders ||--o{ messages : "discussed in"
+
+    carts ||--o{ cart_items : "holds"
+    cart_items }o--|| products : "references"
+
+    users {
+        int id PK
+        varchar full_name
+        varchar email UK
+        varchar phone UK
+        varchar password
+        enum role "customer | seller | admin"
+        datetime created_at
+        datetime updated_at
+        datetime deleted_at "nullable - soft delete"
+    }
+
+    products {
+        int id PK
+        int seller_id FK
+        int category_id FK
+        int store_id FK
+        varchar name
+        varchar slug UK
+        decimal price
+        decimal discount_price "nullable"
+        int stock "default 0"
+        varchar image "primary image URL"
+        enum status "draft|pending|approved|rejected|inactive|archived"
+        boolean is_active "default true"
+        varchar location "nullable"
+        text description "nullable"
+        datetime created_at
+        datetime deleted_at "nullable - soft delete"
+    }
+
+    categories {
+        int id PK
+        varchar name
+        varchar slug UK
+        text description "nullable"
+        varchar image "nullable"
+        datetime created_at
+        datetime deleted_at "nullable - soft delete"
+    }
+
+    stores {
+        int id PK
+        int seller_id FK
+        varchar store_name
+        varchar slug UK
+        text description "nullable"
+        varchar logo "nullable"
+        varchar phone "nullable"
+        varchar address "nullable"
+        boolean is_active "default true"
+        datetime created_at
+        datetime deleted_at "nullable - soft delete"
+    }
+
+    orders {
+        int id PK
+        int user_id FK
+        varchar order_number UK
+        decimal total_amount
+        enum status "pending|paid|processing|shipped|delivered|cancelled"
+        enum payment_method "telebirr|cbe_birr|bank_transfer|cash_on_delivery"
+        enum payment_status "pending|paid|failed"
+        text shipping_address "nullable"
+        text note "nullable"
+        datetime created_at
+    }
+
+    order_items {
+        int id PK
+        int order_id FK
+        int product_id FK
+        int quantity
+        decimal unit_price
+        decimal subtotal
+    }
+
+    order_status_history {
+        int id PK
+        int order_id FK
+        varchar status
+        int changed_by FK
+        text note "nullable"
+        datetime created_at
+    }
+
+    payments {
+        int id PK
+        int order_id FK
+        decimal amount
+        varchar currency "default ETB"
+        enum payment_method "telebirr|cbe_birr|bank_transfer|cash_on_delivery"
+        enum status "pending|completed|failed|refunded"
+        varchar transaction_ref "nullable"
+        datetime created_at
+    }
+
+    messages {
+        int id PK
+        int sender_id FK
+        int receiver_id FK
+        int product_id FK "nullable"
+        int order_id FK "nullable"
+        text message_text
+        boolean is_read "default false"
+        datetime created_at
+    }
+
+    broker_inquiries {
+        int id PK
+        int product_id FK
+        int buyer_id FK
+        varchar status "NEW|ASSIGNED|APPOINTMENT_SCHEDULED|MEDIATED|CLOSED"
+        datetime appointment_date "nullable"
+        text notes "nullable"
+        datetime created_at
+        datetime updated_at
+    }
+
+    product_images {
+        int id PK
+        int product_id FK
+        varchar image_url
+        varchar public_id "Cloudinary ref"
+        int sort_order "default 0"
+        datetime created_at
+    }
+
+    carts {
+        int id PK
+        int user_id FK UK
+        datetime created_at
+    }
+
+    cart_items {
+        int id PK
+        int cart_id FK
+        int product_id FK
+        int quantity "default 1"
+        datetime created_at
+    }
+
+    favorites {
+        int id PK
+        int user_id FK
+        int product_id FK
+        datetime created_at
+    }
+
+    reviews {
+        int id PK
+        int product_id FK
+        int user_id FK
+        int rating "1-5"
+        text comment "nullable"
+        datetime created_at
+    }
+
+    addresses {
+        int id PK
+        int user_id FK
+        varchar full_name
+        varchar phone
+        varchar city
+        varchar region "nullable"
+        text address_line
+        boolean is_default "default false"
+        datetime created_at
+    }
+
+    inventory_logs {
+        int id PK
+        int product_id FK
+        int quantity_change
+        varchar reason
+        datetime created_at
+    }
+  </div>
+  <div class="caption">Figure 5.1 — Complete Entity-Relationship Diagram (16 Entities, 7 Enums)</div>
+</div>
+
+<div class="note">
+  <strong>Compound Unique Constraints:</strong>
+  <code>broker_inquiries(product_id, buyer_id)</code>,
+  <code>cart_items(cart_id, product_id)</code>,
+  <code>favorites(user_id, product_id)</code>,
+  <code>reviews(product_id, user_id)</code>.
+  These prevent duplicate records per logical combination.
+</div>
+
+<h3>ER Diagram — Mermaid Code</h3>
+<p>Paste the code below into <strong><a href="https://mermaid.live" target="_blank">mermaid.live</a></strong> to generate and export the ER Diagram:</p>
+<div class="code-label">Mermaid Code — ER Diagram</div>
+<pre>
+erDiagram
+    users ||--o{ orders : "places"
+    users ||--o{ products : "sells"
+    users ||--o{ stores : "owns"
+    users ||--o{ reviews : "writes"
+    users ||--o{ favorites : "saves"
+    users ||--o| carts : "has one"
+    users ||--o{ addresses : "has"
+    users ||--o{ messages : "sends"
+    users ||--o{ messages : "receives"
+    users ||--o{ broker_inquiries : "submits"
+    users ||--o{ order_status_history : "changes"
+    products ||--o{ product_images : "has"
+    products ||--o{ cart_items : "in"
+    products ||--o{ order_items : "ordered as"
+    products ||--o{ reviews : "reviewed by"
+    products ||--o{ favorites : "saved by"
+    products ||--o{ messages : "discussed in"
+    products ||--o{ inventory_logs : "tracked by"
+    products ||--o{ broker_inquiries : "inquired for"
+    products }o--|| categories : "categorized under"
+    products }o--o| stores : "belongs to"
+    orders ||--o{ order_items : "contains"
+    orders ||--o{ order_status_history : "tracked by"
+    orders ||--o{ payments : "settled by"
+    orders ||--o{ messages : "discussed in"
+    carts ||--o{ cart_items : "holds"
+    cart_items }o--|| products : "references"
+
+    users {
+        int id PK
+        varchar full_name
+        varchar email UK
+        varchar phone UK
+        varchar password
+        enum role "customer | seller | admin"
+        datetime created_at
+        datetime updated_at
+        datetime deleted_at
+    }
+    products {
+        int id PK
+        int seller_id FK
+        int category_id FK
+        int store_id FK
+        varchar name
+        varchar slug UK
+        decimal price
+        decimal discount_price
+        int stock
+        varchar image
+        enum status "draft|pending|approved|rejected|inactive|archived"
+        boolean is_active
+        varchar location
+        text description
+        datetime created_at
+        datetime deleted_at
+    }
+    categories {
+        int id PK
+        varchar name
+        varchar slug UK
+        text description
+        varchar image
+        datetime created_at
+        datetime deleted_at
+    }
+    stores {
+        int id PK
+        int seller_id FK
+        varchar store_name
+        varchar slug UK
+        text description
+        varchar logo
+        varchar phone
+        varchar address
+        boolean is_active
+        datetime created_at
+        datetime deleted_at
+    }
+    orders {
+        int id PK
+        int user_id FK
+        varchar order_number UK
+        decimal total_amount
+        enum status "pending|paid|processing|shipped|delivered|cancelled"
+        enum payment_method "telebirr|cbe_birr|bank_transfer|cash_on_delivery"
+        enum payment_status "pending|paid|failed"
+        text shipping_address
+        datetime created_at
+    }
+    order_items {
+        int id PK
+        int order_id FK
+        int product_id FK
+        int quantity
+        decimal unit_price
+        decimal subtotal
+    }
+    messages {
+        int id PK
+        int sender_id FK
+        int receiver_id FK
+        int product_id FK
+        int order_id FK
+        text message_text
+        boolean is_read
+        datetime created_at
+    }
+    broker_inquiries {
+        int id PK
+        int product_id FK
+        int buyer_id FK
+        varchar status
+        datetime appointment_date
+        text notes
+        datetime created_at
+        datetime updated_at
+    }
+    payments {
+        int id PK
+        int order_id FK
+        decimal amount
+        varchar currency
+        enum payment_method
+        enum status
+        varchar transaction_ref
+        datetime created_at
+    }
+    product_images {
+        int id PK
+        int product_id FK
+        varchar image_url
+        varchar public_id
+        int sort_order
+        datetime created_at
+    }
+    carts {
+        int id PK
+        int user_id FK
+        datetime created_at
+    }
+    cart_items {
+        int id PK
+        int cart_id FK
+        int product_id FK
+        int quantity
+        datetime created_at
+    }
+    favorites {
+        int id PK
+        int user_id FK
+        int product_id FK
+        datetime created_at
+    }
+    reviews {
+        int id PK
+        int product_id FK
+        int user_id FK
+        int rating
+        text comment
+        datetime created_at
+    }
+    addresses {
+        int id PK
+        int user_id FK
+        varchar full_name
+        varchar phone
+        varchar city
+        varchar region
+        text address_line
+        boolean is_default
+        datetime created_at
+    }
+    inventory_logs {
+        int id PK
+        int product_id FK
+        int quantity_change
+        varchar reason
+        datetime created_at
+    }
+</pre>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 6: USE CASE DIAGRAM -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<h2 id="ch6"><span class="sn">06</span> Use Case Diagram</h2>
+
+<p>
+  The following UML Use Case Diagram shows the three primary actors (Customer, Seller, Admin) and their interactions with the Injibara Market system. Shared use cases accessible to multiple actors are placed at the intersection boundaries.
+</p>
+
+<div class="diagram-section">
+  <div class="mermaid">
+graph TB
+    subgraph "Actors"
+        Customer(("Customer<br/>(Buyer)"))
+        Seller(("Seller<br/>(Merchant)"))
+        Admin(("Admin<br/>(Broker)"))
+    end
+
+    subgraph "Injibara Market System"
+        subgraph "Authentication Module"
+            UC1["Register Account"]
+            UC2["Login"]
+            UC3["Logout / Session Expiry"]
+        end
+
+        subgraph "Product & Catalog Module"
+            UC4["Browse Products<br/>(Filter, Search, Paginate)"]
+            UC5["View Product Detail"]
+            UC6["Create Product Listing"]
+            UC7["Edit Product Listing"]
+            UC8["Delete Product Listing"]
+            UC9["Browse Categories"]
+        end
+
+        subgraph "Shopping & Orders Module"
+            UC10["Add to Cart"]
+            UC11["Manage Cart Items"]
+            UC12["Place Order<br/>(Atomic Stock Deduction)"]
+            UC13["View My Orders"]
+            UC14["View Order Detail"]
+        end
+
+        subgraph "Messaging Module"
+            UC15["Send Message<br/>(Auto-Routed by Category)"]
+            UC16["View Inbox"]
+            UC17["View Conversation Thread"]
+            UC18["View Unread Count"]
+        end
+
+        subgraph "Favorites & Reviews"
+            UC19["Save / Unsave Product"]
+            UC20["View Saved Products"]
+            UC21["Write Product Review"]
+        end
+
+        subgraph "Store Management"
+            UC22["Create Store Profile"]
+            UC23["View Store Directory"]
+        end
+
+        subgraph "Seller Dashboard"
+            UC24["View Seller Orders"]
+            UC25["View My Products"]
+        end
+
+        subgraph "Admin Panel"
+            UC26["View Platform Dashboard"]
+            UC27["Manage Broker Inquiries<br/>(Tier 1 Deals)"]
+            UC28["Reply to Buyer Inquiry"]
+            UC29["Set Appointment Date"]
+            UC30["Update Inquiry Status"]
+            UC31["Moderate Products<br/>(Approve/Reject/Delete)"]
+            UC32["Moderate Stores"]
+            UC33["Manage Categories<br/>(CRUD)"]
+            UC34["Manage Users<br/>(Suspend/Activate)"]
+            UC35["Manage Staff Admins"]
+        end
+    end
+
+    Customer --> UC1
+    Customer --> UC2
+    Customer --> UC4
+    Customer --> UC5
+    Customer --> UC9
+    Customer --> UC10
+    Customer --> UC11
+    Customer --> UC12
+    Customer --> UC13
+    Customer --> UC14
+    Customer --> UC15
+    Customer --> UC16
+    Customer --> UC17
+    Customer --> UC18
+    Customer --> UC19
+    Customer --> UC20
+    Customer --> UC21
+    Customer --> UC23
+
+    Seller --> UC1
+    Seller --> UC2
+    Seller --> UC6
+    Seller --> UC7
+    Seller --> UC8
+    Seller --> UC22
+    Seller --> UC24
+    Seller --> UC25
+    Seller --> UC15
+    Seller --> UC16
+    Seller --> UC17
+
+    Admin --> UC2
+    Admin --> UC26
+    Admin --> UC27
+    Admin --> UC28
+    Admin --> UC29
+    Admin --> UC30
+    Admin --> UC31
+    Admin --> UC32
+    Admin --> UC33
+    Admin --> UC34
+    Admin --> UC35
+    Admin --> UC6
+    Admin --> UC8
+  </div>
+  <div class="caption">Figure 6.1 — UML Use Case Diagram: Injibara Market System (3 Actors, 35 Use Cases)</div>
+</div>
+
+<h3>Use Case Diagram — Mermaid Code</h3>
+<p>Paste the code below into <strong><a href="https://mermaid.live" target="_blank">mermaid.live</a></strong> to generate and export:</p>
+<div class="code-label">Mermaid Code — Use Case Diagram</div>
+<pre>
+graph TB
+    subgraph "Actors"
+        Customer(("Customer (Buyer)"))
+        Seller(("Seller (Merchant)"))
+        Admin(("Admin (Broker)"))
+    end
+
+    subgraph "Injibara Market System"
+        subgraph "Authentication Module"
+            UC1["Register Account"]
+            UC2["Login"]
+            UC3["Logout / Session Expiry"]
+        end
+
+        subgraph "Product and Catalog Module"
+            UC4["Browse Products (Filter, Search, Paginate)"]
+            UC5["View Product Detail"]
+            UC6["Create Product Listing"]
+            UC7["Edit Product Listing"]
+            UC8["Delete Product Listing"]
+            UC9["Browse Categories"]
+        end
+
+        subgraph "Shopping and Orders Module"
+            UC10["Add to Cart"]
+            UC11["Manage Cart Items"]
+            UC12["Place Order (Atomic Stock Deduction)"]
+            UC13["View My Orders"]
+            UC14["View Order Detail"]
+        end
+
+        subgraph "Messaging Module"
+            UC15["Send Message (Auto-Routed by Category)"]
+            UC16["View Inbox"]
+            UC17["View Conversation Thread"]
+            UC18["View Unread Count"]
+        end
+
+        subgraph "Favorites and Reviews"
+            UC19["Save / Unsave Product"]
+            UC20["View Saved Products"]
+            UC21["Write Product Review"]
+        end
+
+        subgraph "Store Management"
+            UC22["Create Store Profile"]
+            UC23["View Store Directory"]
+        end
+
+        subgraph "Seller Dashboard"
+            UC24["View Seller Orders"]
+            UC25["View My Products"]
+        end
+
+        subgraph "Admin Panel"
+            UC26["View Platform Dashboard"]
+            UC27["Manage Broker Inquiries (Tier 1 Deals)"]
+            UC28["Reply to Buyer Inquiry"]
+            UC29["Set Appointment Date"]
+            UC30["Update Inquiry Status"]
+            UC31["Moderate Products (Approve/Reject/Delete)"]
+            UC32["Moderate Stores"]
+            UC33["Manage Categories (CRUD)"]
+            UC34["Manage Users (Suspend/Activate)"]
+            UC35["Manage Staff Admins"]
+        end
+    end
+
+    Customer --> UC1
+    Customer --> UC2
+    Customer --> UC4
+    Customer --> UC5
+    Customer --> UC9
+    Customer --> UC10
+    Customer --> UC11
+    Customer --> UC12
+    Customer --> UC13
+    Customer --> UC14
+    Customer --> UC15
+    Customer --> UC16
+    Customer --> UC17
+    Customer --> UC18
+    Customer --> UC19
+    Customer --> UC20
+    Customer --> UC21
+    Customer --> UC23
+
+    Seller --> UC1
+    Seller --> UC2
+    Seller --> UC6
+    Seller --> UC7
+    Seller --> UC8
+    Seller --> UC22
+    Seller --> UC24
+    Seller --> UC25
+    Seller --> UC15
+    Seller --> UC16
+    Seller --> UC17
+
+    Admin --> UC2
+    Admin --> UC26
+    Admin --> UC27
+    Admin --> UC28
+    Admin --> UC29
+    Admin --> UC30
+    Admin --> UC31
+    Admin --> UC32
+    Admin --> UC33
+    Admin --> UC34
+    Admin --> UC35
+    Admin --> UC6
+    Admin --> UC8
+</pre>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 7: ACTIVITY DIAGRAM -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<h2 id="ch7"><span class="sn">07</span> Activity Diagram</h2>
+
+<p>
+  The following Activity Diagram traces the complete lifecycle of a buyer placing an order, including cart validation, stock verification, atomic transaction processing, and the branching path for Tier 1 (brokered) versus Tier 2 (direct) product inquiry messaging:
+</p>
+
+<h3>7.1 Order Placement Activity Flow</h3>
+
+<div class="diagram-section">
+  <div class="mermaid">
+flowchart TD
+    Start([Start: Customer Opens Cart]) --> CheckAuth{"Is User<br/>Authenticated?"}
+    
+    CheckAuth -->|No| RedirectLogin["Redirect to Login Page"]
+    RedirectLogin --> LoginAction["User Logs In<br/>(JWT Token Issued)"]
+    LoginAction --> CheckAuth
+    
+    CheckAuth -->|Yes| ReviewCart["Review Cart Items<br/>(Quantities, Prices)"]
+    ReviewCart --> SubmitOrder["Submit Order<br/>(POST /api/orders)"]
+    
+    SubmitOrder --> ValidateSchema{"Zod Schema<br/>Validation"}
+    ValidateSchema -->|Fail| ShowErrors["Return 400<br/>Field-Level Errors"]
+    ShowErrors --> ReviewCart
+    
+    ValidateSchema -->|Pass| CheckStock{"Verify Stock<br/>for ALL Items"}
+    CheckStock -->|Insufficient Stock| StockError["Return 400<br/>'Insufficient stock for [product]'"]
+    StockError --> ReviewCart
+    
+    CheckStock -->|Stock Available| BeginTx["BEGIN Database Transaction<br/>(prisma.$transaction)"]
+    
+    BeginTx --> CreateOrder["Create Order Record<br/>(order_number, total, status: pending)"]
+    CreateOrder --> CreateItems["Create Order Items<br/>(product_id, quantity, unit_price)"]
+    CreateItems --> DeductStock["Deduct Stock<br/>(products.stock -= quantity)"]
+    DeductStock --> CreateHistory["Create Status History Entry<br/>(status: pending, changed_by: user)"]
+    CreateHistory --> CommitTx["COMMIT Transaction"]
+    
+    CommitTx -->|Success| OrderCreated["Return 201<br/>Order Created Successfully"]
+    CommitTx -->|Failure| RollbackTx["ROLLBACK Transaction<br/>No stock changes persisted"]
+    RollbackTx --> ServerError["Return 500<br/>Server Error"]
+    
+    OrderCreated --> ShowConfirmation["Display Order Confirmation<br/>to Customer"]
+    ShowConfirmation --> End([End])
+  </div>
+  <div class="caption">Figure 7.1 — Activity Diagram: Order Placement Flow with Atomic Stock Transaction</div>
+</div>
+
+<h3>7.2 Message Routing Activity Flow</h3>
+
+<div class="diagram-section">
+  <div class="mermaid">
+flowchart TD
+    MsgStart([Start: Buyer Sends Message on Product Page]) --> FetchProduct["Fetch Product Details<br/>(includes category)"]
+    
+    FetchProduct --> CheckTier{"isBrokeredCategory()<br/>Check Category Tier"}
+    
+    CheckTier -->|"Tier 1: Property, Vehicles, Machinery"| FindAdmin["resolveProductReceiver()<br/>Query: admin where email = 'seberbel@gmail.com'"]
+    FindAdmin --> AdminFound{"Primary Admin<br/>Found?"}
+    AdminFound -->|Yes| SetReceiverAdmin["Set Receiver = Primary Admin"]
+    AdminFound -->|No| FallbackAdmin["Fallback: Any user with role = admin"]
+    FallbackAdmin --> SetReceiverAdmin
+    
+    CheckTier -->|"Tier 2: Electronics, Fashion, Food, etc."| SetReceiverSeller["Set Receiver = product.seller_id"]
+    
+    SetReceiverAdmin --> CreateMessage["Create Message Record<br/>(sender, receiver, product_id, text)"]
+    SetReceiverSeller --> CreateMessage
+    
+    CreateMessage --> IsTier1{"Is Tier 1<br/>Category?"}
+    IsTier1 -->|Yes| UpsertInquiry["Upsert broker_inquiries<br/>@@unique(product_id, buyer_id)<br/>Status = NEW"]
+    IsTier1 -->|No| SkipInquiry["No broker record needed"]
+    
+    UpsertInquiry --> MsgEnd([End: Message Delivered])
+    SkipInquiry --> MsgEnd
+  </div>
+  <div class="caption">Figure 7.2 — Activity Diagram: Automated Message Routing (Tier 1 vs Tier 2)</div>
+</div>
+
+<h3>7.3 User Registration Activity Flow</h3>
+
+<div class="diagram-section">
+  <div class="mermaid">
+flowchart TD
+    RegStart([Start: User Opens Registration Page]) --> FillForm["Fill Registration Form<br/>(name, email, password, phone?, role?)"]
+    FillForm --> SubmitReg["Submit Registration<br/>(POST /api/auth/register)"]
+    
+    SubmitReg --> ZodCheck{"Zod Schema Validation<br/>(registerSchema)"}
+    ZodCheck -->|Fail| ShowRegErrors["Return 400<br/>Validation Errors"]
+    ShowRegErrors --> FillForm
+    
+    ZodCheck -->|Pass| NormalizePhone["Normalize Phone<br/>(+251/251/0 -> 09xxxxxxxx)"]
+    NormalizePhone --> CheckEmail{"Email Already<br/>Registered?"}
+    CheckEmail -->|Yes| EmailError["Return 409<br/>'Email already in use'"]
+    EmailError --> FillForm
+    
+    CheckEmail -->|No| CheckPhone{"Phone Already<br/>Registered?"}
+    CheckPhone -->|Yes| PhoneError["Return 409<br/>'Phone already in use'"]
+    PhoneError --> FillForm
+    
+    CheckPhone -->|No| HashPassword["Hash Password<br/>(bcrypt, salt factor 10)"]
+    HashPassword --> CheckAdminList{"Email in<br/>INITIAL_ADMIN_EMAILS?"}
+    
+    CheckAdminList -->|Yes| SetAdmin["Set role = 'admin'"]
+    CheckAdminList -->|No| KeepRole["Keep requested role<br/>(customer or seller)"]
+    
+    SetAdmin --> CreateUser["Create User in Database"]
+    KeepRole --> CreateUser
+    
+    CreateUser --> IssueJWT["Generate JWT Token<br/>(30-day expiry)"]
+    IssueJWT --> ReturnSuccess["Return 201<br/>{token, user}"]
+    ReturnSuccess --> StoreLocal["Client stores token in<br/>localStorage (injibara_market_token)"]
+    StoreLocal --> RegEnd([End: User is Authenticated])
+  </div>
+  <div class="caption">Figure 7.3 — Activity Diagram: User Registration Flow with Admin Auto-Promotion</div>
+</div>
+
+<h3>Activity Diagrams — Mermaid Code</h3>
+<p>Paste each code block below into <strong><a href="https://mermaid.live" target="_blank">mermaid.live</a></strong> to generate and export:</p>
+
+<div class="code-label">Mermaid Code — Order Placement Activity</div>
+<pre>
+flowchart TD
+    Start(["Start: Customer Opens Cart"]) --> CheckAuth{"Is User Authenticated?"}
+    CheckAuth -->|No| RedirectLogin["Redirect to Login Page"]
+    RedirectLogin --> LoginAction["User Logs In (JWT Token Issued)"]
+    LoginAction --> CheckAuth
+    CheckAuth -->|Yes| ReviewCart["Review Cart Items (Quantities, Prices)"]
+    ReviewCart --> SubmitOrder["Submit Order (POST /api/orders)"]
+    SubmitOrder --> ValidateSchema{"Zod Schema Validation"}
+    ValidateSchema -->|Fail| ShowErrors["Return 400: Field-Level Errors"]
+    ShowErrors --> ReviewCart
+    ValidateSchema -->|Pass| CheckStock{"Verify Stock for ALL Items"}
+    CheckStock -->|Insufficient Stock| StockError["Return 400: Insufficient stock"]
+    StockError --> ReviewCart
+    CheckStock -->|Stock Available| BeginTx["BEGIN Database Transaction (prisma.$transaction)"]
+    BeginTx --> CreateOrder["Create Order Record"]
+    CreateOrder --> CreateItems["Create Order Items"]
+    CreateItems --> DeductStock["Deduct Stock (products.stock -= quantity)"]
+    DeductStock --> CreateHistory["Create Status History Entry"]
+    CreateHistory --> CommitTx["COMMIT Transaction"]
+    CommitTx -->|Success| OrderCreated["Return 201: Order Created"]
+    CommitTx -->|Failure| RollbackTx["ROLLBACK Transaction"]
+    RollbackTx --> ServerError["Return 500: Server Error"]
+    OrderCreated --> ShowConfirmation["Display Order Confirmation"]
+    ShowConfirmation --> End(["End"])
+</pre>
+
+<div class="code-label">Mermaid Code — Message Routing Activity</div>
+<pre>
+flowchart TD
+    MsgStart(["Start: Buyer Sends Message"]) --> FetchProduct["Fetch Product Details (includes category)"]
+    FetchProduct --> CheckTier{"isBrokeredCategory() Check Category Tier"}
+    CheckTier -->|"Tier 1: Property, Vehicles, Machinery"| FindAdmin["resolveProductReceiver() Query primary admin"]
+    FindAdmin --> AdminFound{"Primary Admin Found?"}
+    AdminFound -->|Yes| SetReceiverAdmin["Set Receiver = Primary Admin"]
+    AdminFound -->|No| FallbackAdmin["Fallback: Any user with role = admin"]
+    FallbackAdmin --> SetReceiverAdmin
+    CheckTier -->|"Tier 2: Electronics, Fashion, Food"| SetReceiverSeller["Set Receiver = product.seller_id"]
+    SetReceiverAdmin --> CreateMessage["Create Message Record"]
+    SetReceiverSeller --> CreateMessage
+    CreateMessage --> IsTier1{"Is Tier 1 Category?"}
+    IsTier1 -->|Yes| UpsertInquiry["Upsert broker_inquiries record"]
+    IsTier1 -->|No| SkipInquiry["No broker record needed"]
+    UpsertInquiry --> MsgEnd(["End: Message Delivered"])
+    SkipInquiry --> MsgEnd
+</pre>
+
+<div class="code-label">Mermaid Code — User Registration Activity</div>
+<pre>
+flowchart TD
+    RegStart(["Start: User Opens Registration"]) --> FillForm["Fill Form (name, email, password, phone)"]
+    FillForm --> SubmitReg["Submit (POST /api/auth/register)"]
+    SubmitReg --> ZodCheck{"Zod Schema Validation"}
+    ZodCheck -->|Fail| ShowRegErrors["Return 400 Validation Errors"]
+    ShowRegErrors --> FillForm
+    ZodCheck -->|Pass| NormalizePhone["Normalize Phone to 09xxxxxxxx"]
+    NormalizePhone --> CheckEmail{"Email Already Registered?"}
+    CheckEmail -->|Yes| EmailError["Return 409 Email in use"]
+    EmailError --> FillForm
+    CheckEmail -->|No| CheckPhone{"Phone Already Registered?"}
+    CheckPhone -->|Yes| PhoneError["Return 409 Phone in use"]
+    PhoneError --> FillForm
+    CheckPhone -->|No| HashPassword["Hash Password (bcrypt salt 10)"]
+    HashPassword --> CheckAdminList{"Email in INITIAL_ADMIN_EMAILS?"}
+    CheckAdminList -->|Yes| SetAdmin["Set role = admin"]
+    CheckAdminList -->|No| KeepRole["Keep customer or seller role"]
+    SetAdmin --> CreateUser["Create User in Database"]
+    KeepRole --> CreateUser
+    CreateUser --> IssueJWT["Generate JWT Token (30-day expiry)"]
+    IssueJWT --> ReturnSuccess["Return 201 with token and user"]
+    ReturnSuccess --> StoreLocal["Store token in localStorage"]
+    StoreLocal --> RegEnd(["End: User Authenticated"])
+</pre>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 8: EXTERNAL INTERFACES -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<h2 id="ch8"><span class="sn">08</span> External Interfaces</h2>
+
+<h3>8.1 User Interfaces</h3>
+<table>
+  <tr><th>Interface</th><th>Description</th><th>Access Level</th></tr>
+  <tr><td>Home Page</td><td>Landing page with hero section, category grid, and featured product listings</td><td>Public</td></tr>
+  <tr><td>Product Catalog</td><td>Filterable, searchable, paginated product listing with category and location filters</td><td>Public</td></tr>
+  <tr><td>Product Detail</td><td>Full product information with image gallery, seller info, save/message actions</td><td>Public</td></tr>
+  <tr><td>Login / Register</td><td>Authentication forms with Ethiopian phone number validation and Amharic error messages</td><td>Public</td></tr>
+  <tr><td>Customer Dashboard</td><td>Order history, saved items, messages, cart, become-seller option</td><td>Authenticated</td></tr>
+  <tr><td>Seller Dashboard</td><td>Product management, incoming orders, store profile</td><td>Seller</td></tr>
+  <tr><td>Admin Panel</td><td>Overview metrics, Broker Hub, product/store/user/category moderation, staff management</td><td>Admin</td></tr>
+</table>
+
+<h3>8.2 Hardware Interfaces</h3>
+<p>The system is a web-based application accessed through standard web browsers. No specialized hardware is required. The frontend is optimized for mobile devices with responsive layouts using Tailwind CSS 4.</p>
+
+<h3>8.3 Software Interfaces</h3>
+<table>
+  <tr><th>External System</th><th>Interface Type</th><th>Purpose</th></tr>
+  <tr><td>TiDB Cloud (AWS)</td><td>MariaDB wire protocol over TLS</td><td>Primary data persistence for all entities</td></tr>
+  <tr><td>Cloudinary</td><td>REST API + Stream Upload</td><td>Product and store image storage with auto-format optimization</td></tr>
+  <tr><td>Vercel</td><td>CDN + SPA Rewrite</td><td>Frontend hosting with global edge delivery</td></tr>
+  <tr><td>GitHub Actions</td><td>CI/CD Pipeline</td><td>Automated linting, testing, building, and Docker packaging</td></tr>
+</table>
+
+<h3>8.4 Communication Interfaces</h3>
+<table>
+  <tr><th>Protocol</th><th>Usage</th><th>Details</th></tr>
+  <tr><td>HTTPS (REST)</td><td>Client-Server API communication</td><td>JSON payloads, JWT Bearer token authentication, 60s timeout</td></tr>
+  <tr><td>MariaDB Protocol</td><td>Database connection</td><td>TLS-encrypted, via @prisma/adapter-mariadb driver</td></tr>
+  <tr><td>HTTPS (Multipart)</td><td>Image upload</td><td>multipart/form-data to Express, streamed to Cloudinary</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 9: GLOSSARY -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<h2 id="ch9"><span class="sn">09</span> Glossary & Definitions</h2>
+
+<table>
+  <tr><th>Term</th><th>Definition</th></tr>
+  <tr><td>Brokered Category</td><td>A product category (Property, Vehicles, Heavy Machinery) where buyer inquiries are mediated by the platform admin rather than connecting directly to the seller.</td></tr>
+  <tr><td>Broker Hub</td><td>The admin-only dashboard component where Tier 1 deal inquiries are tracked through status stages.</td></tr>
+  <tr><td>Cold Start</td><td>The delay experienced when a cloud server instance resumes from an idle/sleep state (20-35 seconds for TiDB Serverless).</td></tr>
+  <tr><td>Soft Delete</td><td>A deletion pattern where records are not physically removed from the database; instead, a <code>deleted_at</code> timestamp is set, and queries filter for <code>deleted_at IS NULL</code>.</td></tr>
+  <tr><td>Driver Adapter</td><td>A Prisma 7 pattern where queries are executed through a JavaScript database driver instead of Prisma's native Rust query engine binary.</td></tr>
+  <tr><td>Memory Storage</td><td>Multer configuration where uploaded file bytes are held in Node.js RAM buffers rather than written to disk.</td></tr>
+  <tr><td>Telebirr</td><td>Ethiopia's mobile money platform operated by Ethio Telecom, enabling digital payments via mobile phone.</td></tr>
+  <tr><td>CBE Birr</td><td>Commercial Bank of Ethiopia's mobile banking and digital payment service.</td></tr>
+  <tr><td>Noto Sans Ethiopic</td><td>Google's open-source font family supporting the Ge'ez script used for Amharic text rendering.</td></tr>
+  <tr><td>TiKV</td><td>The distributed key-value storage engine underlying TiDB, using Raft consensus for data replication.</td></tr>
+</table>
+
+<div class="doc-footer">
+  <p>Injibara Market — Software Requirements Specification v2.0</p>
+  <p>EZE-intern/injibara-market | Branch: develop | September 2026</p>
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'default',
+    themeVariables: {
+      primaryColor: '#dbeafe',
+      primaryTextColor: '#1e293b',
+      primaryBorderColor: '#3b82f6',
+      lineColor: '#64748b',
+      secondaryColor: '#f1f5f9',
+      tertiaryColor: '#fef3c7',
+      fontFamily: '-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif',
+      fontSize: '13px',
+    },
+    flowchart: { curve: 'basis', padding: 16 },
+    er: { fontSize: 11, useMaxWidth: true },
+  });
+</script>
+
+</body>
+</html>

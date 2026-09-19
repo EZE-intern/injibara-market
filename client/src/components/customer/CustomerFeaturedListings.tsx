@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { getProducts } from "../../api/productApi";
 import ProductCard from "../common/ProductCard";
 import type { Product } from "../../types/Product";
+import { serverWarmup } from "../../App";
 
 function CustomerFeaturedListings() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -13,6 +14,8 @@ function CustomerFeaturedListings() {
     try {
       setLoading(true);
       setError(null);
+      // Wait for the healthz ping to warm the DB connection before querying
+      await serverWarmup;
       const data = await getProducts();
       setProducts(data.slice(0, 6));
     } catch (err) {

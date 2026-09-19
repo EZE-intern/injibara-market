@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Software Requirements Specification (SRS) — Injibara Market</title>
+<style>
+  :root {
+    --text: #0f172a;
+    --text-body: #334155;
+    --text-muted: #64748b;
+    --accent: #1d4ed8;
+    --accent-light: #eff6ff;
+    --border: #cbd5e1;
+    --border-light: #e2e8f0;
+    --table-header: #1e293b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 14.5px; }
+  body {
+    font-family: 'Times New Roman', Times, Georgia, serif;
+    background: #ffffff;
+    color: var(--text-body);
+    line-height: 1.7;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 36px 96px;
+  }
+
+  /* TITLE & METADATA */
+  .doc-title-block {
+    text-align: center;
+    border-bottom: 2px solid var(--text);
+    padding-bottom: 28px;
+    margin-bottom: 36px;
+  }
+  .doc-institution {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+  }
+  h1 {
+    font-size: 2.2rem;
+    color: var(--text);
+    margin-bottom: 6px;
+    font-weight: 700;
+  }
+  .doc-subtitle {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 1.15rem;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  .meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 24px;
+    max-width: 520px;
+    margin: 16px auto 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 0.85rem;
+    text-align: left;
+    color: var(--text-muted);
+  }
+  .meta-grid strong { color: var(--text); }
+
+  /* SECTION HEADERS */
+  h2 {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 1.45rem;
+    color: var(--text);
+    margin: 40px 0 14px;
+    padding-bottom: 6px;
+    border-bottom: 1.5px solid var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  h2 .num {
+    background: var(--table-header);
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  h3 {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 1.15rem;
+    color: var(--accent);
+    margin: 24px 0 10px;
+    font-weight: 700;
+  }
+  h4 {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 0.98rem;
+    color: var(--text);
+    margin: 16px 0 6px;
+    font-weight: 600;
+  }
+  p { margin-bottom: 12px; text-align: justify; }
+  strong { color: var(--text); }
+
+  /* CODE & PRE */
+  code {
+    font-family: 'Courier New', Courier, monospace;
+    background: #f1f5f9;
+    color: #0f172a;
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-size: 0.9em;
+  }
+  pre {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 18px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.83rem;
+    line-height: 1.55;
+    margin: 14px 0 18px;
+    overflow-x: auto;
+    color: #1e293b;
+  }
+
+  /* TABLES */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0 22px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 0.86rem;
+  }
+  th {
+    background: var(--table-header);
+    color: #ffffff;
+    padding: 8px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: 1px solid var(--table-header);
+  }
+  td {
+    padding: 8px 12px;
+    border: 1px solid var(--border-light);
+    vertical-align: top;
+  }
+  tr:nth-child(even) td { background: #f8fafc; }
+
+  /* CALLOUTS */
+  .rule-box {
+    background: var(--accent-light);
+    border-left: 4px solid var(--accent);
+    padding: 12px 16px;
+    border-radius: 0 6px 6px 0;
+    margin: 16px 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 0.88rem;
+  }
+  .rule-box strong { color: var(--accent); }
+
+  ul, ol { margin: 8px 0 14px 24px; }
+  li { margin-bottom: 4px; }
+
+  /* FOOTER */
+  .doc-footer {
+    margin-top: 56px;
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+    text-align: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  @media print {
+    body { padding: 0; max-width: 100%; font-size: 12pt; }
+    h2 { page-break-before: always; margin-top: 24pt; }
+    h2:first-of-type { page-break-before: avoid; }
+    table, pre, .rule-box { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="doc-title-block">
+  <div class="doc-institution">Awi Zone &bull; Amhara Region &bull; Ethiopia</div>
+  <h1>Injibara Market</h1>
+  <div class="doc-subtitle">Software Requirements Specification (SRS)</div>
+  <p style="color: #64748b; font-family: sans-serif; font-size: 0.9rem;">
+    A Brokered Multi-Tier Digital Marketplace Specification
+  </p>
+
+  <div class="meta-grid">
+    <div><strong>Standard:</strong> IEEE 830 / ISO 29148</div>
+    <div><strong>Document Version:</strong> 2.1 (Specification Text)</div>
+    <div><strong>Repository:</strong> EZE-intern/injibara-market</div>
+    <div><strong>Active Branch:</strong> develop</div>
+    <div><strong>Target Stack:</strong> React 19, Express 5, Prisma 7, TiDB</div>
+    <div><strong>Currency:</strong> ETB (Ethiopian Birr)</div>
+  </div>
+</div>
+
+<!-- SECTION 1 -->
+<h2><span class="num">01</span> Introduction</h2>
+
+<h3>1.1 Purpose</h3>
+<p>
+  This Software Requirements Specification (SRS) establishes the formal functional and non-functional requirements for the <strong>Injibara Market</strong> software system. It documents the functional scope, behavioral contracts, database schemas, access control models, and performance targets governing the development, deployment, and academic defense of the platform.
+</p>
+
+<h3>1.2 Scope of the System</h3>
+<p>
+  Injibara Market is a full-stack, cloud-native web marketplace tailored specifically to the regional trade conditions of Injibara town and the surrounding Awi administrative zone. The platform introduces a structured <strong>Two-Tier Transaction Model</strong> designed to resolve trust and verification deficits:
+</p>
+<ul>
+  <li><strong>Tier 1: Brokered Capital Marketplace:</strong> High-value physical assets (Real Estate, Land Plots, Farm Holdings, Automobiles, Bajajs, Trucks, and Heavy Agricultural/Construction Machinery). Buyer inquiries on these items bypass direct seller contact and route strictly to the municipal <strong>Admin Broker Desk</strong>. The platform admin authenticates buyer intent, coordinates physical inspections, and contacts the seller directly via telephone.</li>
+  <li><strong>Tier 2: Direct Consumer Marketplace:</strong> Standard retail and consumable goods (Electronics, Fashion, Processed Foods, Farm Produce, Furniture, Household Goods). Buyers communicate directly with verified merchants through real-time in-app threaded chat.</li>
+</ul>
+
+<h3>1.3 Definitions, Acronyms, and Abbreviations</h3>
+<table>
+  <thead>
+    <tr><th>Term / Acronym</th><th>Formal Definition</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>ETB</strong></td><td>Ethiopian Birr, the mandatory monetary unit for listing, cart calculations, and order settlement.</td></tr>
+    <tr><td><strong>Tier 1 Category</strong></td><td>High-capital asset categories subjected to administrative broker mediation.</td></tr>
+    <tr><td><strong>Tier 2 Category</strong></td><td>Standard marketplace categories permitting direct peer-to-peer buyer-seller messaging.</td></tr>
+    <tr><td><strong>Broker Hub</strong></td><td>The administrative dashboard subsystem tracking brokered inquiries through milestone statuses.</td></tr>
+    <tr><td><strong>TiDB</strong></td><td>A distributed NewSQL relational database maintaining MySQL 8.0 wire-level protocol compatibility.</td></tr>
+    <tr><td><strong>JWT</strong></td><td>JSON Web Token (RFC 7519) utilized for stateless, signature-verified client authentication.</td></tr>
+    <tr><td><strong>RBAC</strong></td><td>Role-Based Access Control enforcing permission gates across public, customer, seller, and admin routes.</td></tr>
+    <tr><td><strong>Soft Delete</strong></td><td>Data retention strategy where deletion populates <code>deleted_at</code> rather than physically executing SQL <code>DELETE</code>.</td></tr>
+  </tbody>
+</table>
+
+<!-- SECTION 2 -->
+<h2><span class="num">02</span> Overall Description</h2>
+
+<h3>2.1 Product Perspective & Runtime Architecture</h3>
+<p>
+  The system operates on an asynchronous, decoupled client-server architecture deployed across cloud services:
+</p>
+<ul>
+  <li><strong>Client Tier:</strong> Single-Page Application (SPA) built on React 19, Vite 8, and Tailwind CSS 4, deployed on Vercel's Edge CDN with URL rewriting (<code>/* &rarr; /index.html</code>).</li>
+  <li><strong>Application Tier:</strong> Node.js 20 ESM runtime hosting Express 5. Implements three-tier rate limiting, Zod schema coercion, Multer zero-disk RAM streaming, and the Prisma 7 MariaDB driver adapter.</li>
+  <li><strong>Data Persistence Tier:</strong> TiDB Cloud Serverless instance deployed in AWS Frankfurt (<code>eu-central-1</code>), providing distributed ACID transactions and TLS-encrypted connectivity.</li>
+  <li><strong>Media Storage Tier:</strong> Cloudinary object cloud, receiving binary byte streams piped directly from Node RAM buffers, delivering auto-negotiated WebP/AVIF formats to clients.</li>
+</ul>
+
+<h3>2.2 User Classes and Permissions</h3>
+<table>
+  <thead>
+    <tr><th>User Role</th><th>Description</th><th>Operational Privileges</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Guest / Public</strong></td>
+      <td>Unauthenticated visitors</td>
+      <td>Search catalog, filter by category/location, view product details, read store profiles, view customer reviews.</td>
+    </tr>
+    <tr>
+      <td><strong>Customer</strong></td>
+      <td>Registered buyer</td>
+      <td>Maintain persistent shopping cart, place orders, view order history, save favorites, send messages (Tier 2), submit broker inquiries (Tier 1).</td>
+    </tr>
+    <tr>
+      <td><strong>Seller</strong></td>
+      <td>Registered merchant</td>
+      <td>All customer rights, plus: create/edit/delete product listings (up to 6 photos), manage merchant store profile, inspect incoming seller order dashboard.</td>
+    </tr>
+    <tr>
+      <td><strong>Admin</strong></td>
+      <td>Platform staff</td>
+      <td>Access Admin Command Center: moderate listings, approve/reject stores, manage categories, moderate user accounts, manage staff admins.</td>
+    </tr>
+    <tr>
+      <td><strong>Primary Broker</strong><br/><code>seberbel@gmail.com</code></td>
+      <td>Root administrator</td>
+      <td>Priority destination for all Tier 1 broker inquiries, appointment scheduling, and physical mediation management.</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- SECTION 3 -->
+<h2><span class="num">03</span> Specific Functional Requirements</h2>
+
+<h3>3.1 Authentication & Account Management (AUTH)</h3>
+<ul>
+  <li><strong>FR-AUTH-01 (User Registration):</strong> The system shall register users with full name, unique email, password, optional phone number, and requested role (<code>customer</code> or <code>seller</code>). Admin role requests via registration payload shall be strictly rejected.</li>
+  <li><strong>FR-AUTH-02 (Phone Sanitization):</strong> The system shall validate Ethiopian phone numbers against regex <code>/^(?:\+?251|0)(9|7)\d{8}$/</code> and normalize all variants into canonical 10-digit format (<code>09xxxxxxxx</code> or <code>07xxxxxxxx</code>).</li>
+  <li><strong>FR-AUTH-03 (Password Hashing):</strong> Passwords shall be cryptographically transformed using bcrypt (salt factor 10). Plaintext passwords shall never be persisted or logged.</li>
+  <li><strong>FR-AUTH-04 (Stateless JWT Issuance):</strong> Upon valid authentication, the server shall issue an HMAC-SHA256 signed JWT containing <code>{ id, role, email }</code> with a 30-day expiration window.</li>
+  <li><strong>FR-AUTH-05 (Admin Bootstrap Whitelist):</strong> Registrations whose email matches the <code>INITIAL_ADMIN_EMAILS</code> environment variable shall be automatically promoted to <code>admin</code> upon creation.</li>
+  <li><strong>FR-AUTH-06 (Self-Demotion Guard):</strong> The system shall forbid an active administrator from revoking their own admin privileges.</li>
+</ul>
+
+<h3>3.2 Product Catalog & Inventory (PROD)</h3>
+<ul>
+  <li><strong>FR-PROD-01 (Product Publication):</strong> Authorized sellers shall create listings with: name, description, price (ETB), optional discount price, inventory count, category ID, location, and up to 6 image files.</li>
+  <li><strong>FR-PROD-02 (Discount Logic Integrity):</strong> The system shall assert that <code>discount_price &lt; price</code> using cross-field schema refinement.</li>
+  <li><strong>FR-PROD-03 (Zero-Disk Upload):</strong> Uploaded image files (JPEG, PNG, WebP; max 5MB) shall be buffered in memory and streamed directly to Cloudinary via <code>streamifier</code> without writing to local server disk.</li>
+  <li><strong>FR-PROD-04 (Auto Seller Promotion):</strong> A customer publishing their first product listing shall be automatically promoted to the <code>seller</code> role.</li>
+  <li><strong>FR-PROD-05 (Soft Deletion):</strong> Product deletions shall update <code>deleted_at = NOW()</code> and <code>is_active = false</code> to maintain historic order integrity.</li>
+  <li><strong>FR-PROD-06 (Catalog Discovery):</strong> Public listings shall support category filtering, keyword search, location filtering, and cursor-based pagination.</li>
+</ul>
+
+<h3>3.3 The Two-Tier Broker Subsystem (BRK)</h3>
+<ul>
+  <li><strong>FR-BRK-01 (Tier Evaluation):</strong> When a buyer initiates an inquiry, the server shall test the category against 22 regex rules covering English and Amharic keywords (Property, Land, Vehicles, Machinery, መሬት, መኪና, ባጃጅ, ማሽነሪ).</li>
+  <li><strong>FR-BRK-02 (Tier 1 Broker Dispatch):</strong> For Tier 1 matches, message recipient resolution shall target the primary broker (<code>seberbel@gmail.com</code>). The product seller shall receive <strong>zero in-app messages</strong>.</li>
+  <li><strong>FR-BRK-03 (Tier 2 Direct Dispatch):</strong> For non-brokered categories, messages shall route directly to the listing seller's inbox.</li>
+  <li><strong>FR-BRK-04 (Broker Pipeline Tracking):</strong> Tier 1 deals shall create/update a record in <code>broker_inquiries</code>, progressing across five lifecycle states: <code>NEW</code> &rarr; <code>ASSIGNED</code> &rarr; <code>APPOINTMENT_SCHEDULED</code> &rarr; <code>MEDIATED</code> &rarr; <code>CLOSED</code>.</li>
+  <li><strong>FR-BRK-05 (Appointment Scheduling):</strong> Administrators shall be able to record physical property inspection timestamps (<code>appointment_date</code>) and mediation notes.</li>
+  <li><strong>FR-BRK-06 (Message Deduplication):</strong> Admin responses to buyer inquiries shall update the existing inquiry thread rather than generating redundant pipeline items.</li>
+</ul>
+
+<h3>3.4 Shopping Cart & Checkout (ORD)</h3>
+<ul>
+  <li><strong>FR-ORD-01 (Persistent Cart):</strong> Authenticated customers shall add, modify, and delete cart items with database synchronization.</li>
+  <li><strong>FR-ORD-02 (Atomic Stock Transaction):</strong> Order placement shall execute within an interactive database transaction (<code>prisma.</code>). The engine shall verify available stock, decrement inventory, generate the order record, and create line items. If any item lacks stock, the entire transaction rolls back.</li>
+  <li><strong>FR-ORD-03 (Order Tracking Number):</strong> Orders shall generate a unique identifier formatted as <code>ORD-{TIMESTAMP}-{RANDOM}</code>.</li>
+  <li><strong>FR-ORD-04 (Payment Channel Selection):</strong> The checkout workflow shall accept: Telebirr, CBE Birr, Bank Wire, or Cash on Delivery.</li>
+  <li><strong>FR-ORD-05 (Seller Order Fulfillment):</strong> Sellers shall access a dedicated fulfillment view displaying orders containing items from their inventory with customer contact information.</li>
+</ul>
+
+<h3>3.5 In-App Communication (MSG)</h3>
+<ul>
+  <li><strong>FR-MSG-01 (Threaded Conversations):</strong> Messages shall be grouped into threads organized by contact ID and product reference.</li>
+  <li><strong>FR-MSG-02 (Unread Counters):</strong> The server shall provide an endpoint returning aggregate unread messages where <code>receiver_id == user.id</code> and <code>is_read == false</code>.</li>
+  <li><strong>FR-MSG-03 (Auto-Read Acknowledgment):</strong> Opening a conversation thread shall mark all incoming messages as read.</li>
+</ul>
+
+<h3>3.6 Administrative Governance (ADM)</h3>
+<ul>
+  <li><strong>FR-ADM-01 (Platform Telemetry):</strong> The admin overview dashboard shall report platform totals: registered users, active listings, order counts, and transacted gross volume (ETB).</li>
+  <li><strong>FR-ADM-02 (Listing Moderation):</strong> Administrators shall approve, reject (with mandatory reason), or archive product listings.</li>
+  <li><strong>FR-ADM-03 (Store Governance):</strong> Admins shall activate or suspend merchant store profiles.</li>
+  <li><strong>FR-ADM-04 (User Sanctioning):</strong> Admins shall toggle user account active status, preventing suspended users from signing in or transacting.</li>
+  <li><strong>FR-ADM-05 (Staff Administration):</strong> Admins shall provision, configure, and revoke staff admin accounts.</li>
+</ul>
+
+<!-- SECTION 4 -->
+<h2><span class="num">04</span> External Interface Requirements</h2>
+
+<h3>4.1 User Interfaces</h3>
+<ul>
+  <li><strong>Responsive Breakpoints:</strong> The UI shall adapt across mobile viewports (320px–480px), tablets (768px–1024px), and desktops (1280px+) without layout clipping.</li>
+  <li><strong>Bilingual Typography:</strong> Ge'ez and Amharic text rendering shall employ the <code>Noto Sans Ethiopic</code> font family with customized line-height to prevent diacritic truncation.</li>
+  <li><strong>Currency Display:</strong> All monetary values shall be suffixed with <code>ETB</code> (e.g., <code>1,450.00 ETB</code>).</li>
+</ul>
+
+<h3>4.2 Software Interfaces</h3>
+<table>
+  <thead>
+    <tr><th>Target System</th><th>Integration Protocol</th><th>Purpose</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>TiDB Cloud</strong></td><td>MariaDB Wire Protocol over TLS</td><td>Distributed transactional database persistence for all entities.</td></tr>
+    <tr><td><strong>Cloudinary</strong></td><td>HTTPS REST & Buffer Stream Upload</td><td>Remote media hosting with auto-format optimization (WebP/AVIF).</td></tr>
+    <tr><td><strong>Vercel Edge</strong></td><td>Global Anycast CDN Ingress</td><td>Static asset delivery and single-page application route rewrites.</td></tr>
+    <tr><td><strong>GitHub Actions</strong></td><td>CI Runner Automation</td><td>Automated linting, MySQL 8.0 container testing, and Docker builds.</td></tr>
+  </tbody>
+</table>
+
+<h3>4.3 Communications Interfaces</h3>
+<ul>
+  <li>Client-to-server API requests must utilize **HTTPS (TLS 1.3)**.</li>
+  <li>REST payloads must be encoded as **UTF-8 JSON**.</li>
+  <li>Image ingestion endpoints must accept **multipart/form-data** streams.</li>
+</ul>
+
+<!-- SECTION 5 -->
+<h2><span class="num">05</span> Non-Functional Requirements</h2>
+
+<h3>5.1 Performance & Cold-Start Resilience</h3>
+<ul>
+  <li><strong>NFR-PERF-01 (Response Time):</strong> Under warm server conditions, 95% of read requests shall resolve within 350ms; database writes shall commit within 800ms.</li>
+  <li><strong>NFR-COLD-01 (Extended Client Timeout):</strong> Due to serverless compute container wake-up delays (20–35s), the client Axios instance shall implement an extended timeout window of **60,000ms (60 seconds)**.</li>
+  <li><strong>NFR-COLD-02 (Exponential GET Retry):</strong> Read operations encountering connection timeouts, socket drops, or 502–504 gateway failures shall automatically retry up to 2 times with exponential backoff (1.5s, then 3.0s).</li>
+  <li><strong>NFR-COLD-03 (Proactive Wakeup Ping):</strong> The root application component shall trigger a non-blocking background ping to <code>/healthz</code> on mount to initialize server container wake-up.</li>
+  <li><strong>NFR-COLD-04 (Resilient Error UI):</strong> Network failures shall render informative error alerts featuring a manual "Retry" trigger rather than silently failing to an empty listing state.</li>
+</ul>
+
+<h3>5.2 Security & Data Integrity</h3>
+<ul>
+  <li><strong>NFR-SEC-01 (RBAC Verification):</strong> Protected administrative routes shall enforce a two-stage middleware check: JWT signature verification followed by role authorization. Unauthorized requests shall be rejected with HTTP 403 Forbidden.</li>
+  <li><strong>NFR-SEC-02 (Three-Tier Rate Limiting):</strong>
+    <ul>
+      <li>Global API: 300 requests per 15-minute rolling window per IP.</li>
+      <li>Auth Routes (<code>/login</code>, <code>/register</code>): 10 requests per 15-minute window per IP.</li>
+      <li>Content Creation (<code>POST /products</code>, <code>POST /messages</code>): 25 requests per 15-minute window per IP.</li>
+    </ul>
+  </li>
+  <li><strong>NFR-SEC-03 (Input Sanitization):</strong> All input bodies shall be coerced and validated through Zod schemas before reaching controller logic.</li>
+  <li><strong>NFR-SEC-04 (Atomic Inventory):</strong> Inventory decrementing must be executed in a database transaction to prevent overselling under high concurrency.</li>
+</ul>
+
+<h3>5.3 Usability & Localization</h3>
+<ul>
+  <li><strong>NFR-USA-01 (Bilingual Security Feedback):</strong> Authentication error messages shall be rendered in Amharic (e.g., <code>ያልተፈቀደ መዳረሻ፣ ቶከን አልተገኘም</code>).</li>
+  <li><strong>NFR-USA-02 (Toast Deduplication):</strong> Notification dispatchers shall suppress identical error toasts within a 5-second window to prevent notification spam during network interruptions.</li>
+</ul>
+
+<!-- SECTION 6 -->
+<h2><span class="num">06</span> Data Dictionary & Schema Specifications</h2>
+
+<h3>6.1 Entity-Relationship Table Catalog (16 Models)</h3>
+<table>
+  <thead>
+    <tr><th>Table Name</th><th>Primary Key</th><th>Foreign Keys</th><th>Critical Attributes</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>users</code></td><td><code>id</code> (Int, Auto)</td><td>None</td><td>full_name, email (UQ), phone (UQ), password, role, deleted_at</td></tr>
+    <tr><td><code>stores</code></td><td><code>id</code> (Int, Auto)</td><td>seller_id &rarr; users</td><td>store_name, slug (UQ), description, logo, is_active</td></tr>
+    <tr><td><code>categories</code></td><td><code>id</code> (Int, Auto)</td><td>None</td><td>name, slug (UQ), description, image, deleted_at</td></tr>
+    <tr><td><code>products</code></td><td><code>id</code> (Int, Auto)</td><td>seller_id, category_id, store_id</td><td>name, slug (UQ), price, discount_price, stock, status, is_active</td></tr>
+    <tr><td><code>product_images</code></td><td><code>id</code> (Int, Auto)</td><td>product_id &rarr; products</td><td>image_url, public_id, side_angle, is_primary, sort_order</td></tr>
+    <tr><td><code>orders</code></td><td><code>id</code> (Int, Auto)</td><td>user_id &rarr; users</td><td>order_number (UQ), total_amount, status, payment_method, shipping_address</td></tr>
+    <tr><td><code>order_items</code></td><td><code>id</code> (Int, Auto)</td><td>order_id, product_id</td><td>quantity, unit_price, subtotal</td></tr>
+    <tr><td><code>order_status_history</code></td><td><code>id</code> (Int, Auto)</td><td>order_id, changed_by &rarr; users</td><td>status, note, created_at</td></tr>
+    <tr><td><code>payments</code></td><td><code>id</code> (Int, Auto)</td><td>order_id &rarr; orders</td><td>amount, currency, payment_method, status, transaction_ref</td></tr>
+    <tr><td><code>messages</code></td><td><code>id</code> (Int, Auto)</td><td>sender_id, receiver_id, product_id</td><td>message_text, is_read, created_at</td></tr>
+    <tr><td><code>broker_inquiries</code></td><td><code>id</code> (Int, Auto)</td><td>product_id, buyer_id (UQ compound)</td><td>status, appointment_date, notes, updated_at</td></tr>
+    <tr><td><code>carts</code></td><td><code>id</code> (Int, Auto)</td><td>user_id (UQ) &rarr; users</td><td>created_at</td></tr>
+    <tr><td><code>cart_items</code></td><td><code>id</code> (Int, Auto)</td><td>cart_id, product_id (UQ compound)</td><td>quantity, created_at</td></tr>
+    <tr><td><code>favorites</code></td><td><code>id</code> (Int, Auto)</td><td>user_id, product_id (UQ compound)</td><td>created_at</td></tr>
+    <tr><td><code>reviews</code></td><td><code>id</code> (Int, Auto)</td><td>product_id, user_id (UQ compound)</td><td>rating (1–5), comment, created_at</td></tr>
+    <tr><td><code>addresses</code></td><td><code>id</code> (Int, Auto)</td><td>user_id &rarr; users</td><td>full_name, phone, city, address_line, is_default</td></tr>
+  </tbody>
+</table>
+
+<h3>6.2 Ethiopian Phone Number Normalization Algorithm</h3>
+<pre>
+Algorithm: NormalizeEthiopianPhone(raw_input: string) -> string:
+  1. Remove all whitespace, hyphens, parentheses: sanitized = raw_input.replace(/[\s\-\(\)]/g, '')
+  2. If sanitized starts with '+', remove '+': sanitized = sanitized.slice(1)
+  3. If sanitized starts with '251', replace with '0': sanitized = '0' + sanitized.slice(3)
+  4. If sanitized length == 9 and starts with '9' or '7': sanitized = '0' + sanitized
+  5. Validate against regex: /^(09|07)[0-9]{8}$/
+  6. Return canonical 10-digit format (e.g., '0911223344')
+</pre>
+
+<h3>6.3 Two-Tier Broker Category Classification Algorithm</h3>
+<pre>
+Algorithm: IsBrokeredCategory(category_name: string, category_slug: string) -> boolean:
+  1. Combine test target: target = (category_name + ' ' + category_slug).toLowerCase()
+  2. Rule 1 (Property): /land|property|real.?estate|house|plot|farm.?land|ቦታ|መሬት|ቤት/i
+  3. Rule 2 (Vehicles): /vehicle|car|truck|tractor|motorcycle|bajaj|auto|መኪና|ባጃጅ|ሞተር/i
+  4. Rule 3 (Heavy Machinery): /machinery|equipment|generator|harvester|ማሽነሪ|ትራክተር/i
+  5. If target matches Rule 1, 2, or 3:
+       Return TRUE  -> Route to Admin Broker Desk (seberbel@gmail.com)
+     Else:
+       Return FALSE -> Route directly to Seller Inbox
+</pre>
+
+<div class="doc-footer">
+  <p>Injibara Market Platform &bull; Software Requirements Specification v2.1</p>
+  <p>EZE-intern/injibara-market &bull; develop branch &bull; September 2026</p>
+</div>
+
+</body>
+</html>

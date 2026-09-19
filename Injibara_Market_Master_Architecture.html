@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Injibara Market — Master Architecture & Systems Reference</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --brand: #dc2626;
+    --brand-glow: rgba(220, 38, 38, 0.25);
+    --brand-dark: #991b1b;
+    --bg: #0b0f19;
+    --surface-0: #111827;
+    --surface-1: #1e293b;
+    --surface-2: #334155;
+    --text-main: #f1f5f9;
+    --text-muted: #94a3b8;
+    --accent: #38bdf8;
+    --accent-glow: rgba(56, 189, 248, 0.2);
+    --border: #334155;
+    --border-light: #475569;
+    --code-bg: #070b14;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --purple: #a855f7;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; font-size: 15px; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text-main);
+    line-height: 1.8;
+    display: flex;
+  }
+
+  /* SIDEBAR TOC */
+  aside.sidebar {
+    width: 320px;
+    height: 100vh;
+    position: fixed;
+    top: 0; left: 0;
+    background: var(--surface-0);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 28px 16px;
+    z-index: 50;
+  }
+  aside.sidebar .brand-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(220, 38, 38, 0.15);
+    color: var(--brand);
+    padding: 6px 12px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(220, 38, 38, 0.3);
+  }
+  aside.sidebar h2 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  aside.sidebar nav a {
+    display: block;
+    color: var(--text-muted);
+    text-decoration: none;
+    padding: 7px 10px;
+    font-size: 12.5px;
+    border-radius: 6px;
+    margin-bottom: 2px;
+    transition: all 0.15s ease-in-out;
+  }
+  aside.sidebar nav a:hover {
+    color: var(--text-main);
+    background: var(--surface-1);
+    transform: translateX(4px);
+  }
+  aside.sidebar nav a.ch {
+    font-weight: 700;
+    color: var(--accent);
+    margin-top: 14px;
+    font-size: 13px;
+    border-left: 2px solid var(--accent);
+    border-radius: 0 6px 6px 0;
+  }
+
+  /* MAIN CONTENT */
+  main.content {
+    margin-left: 320px;
+    flex: 1;
+    max-width: 1100px;
+    padding: 56px 64px 140px;
+  }
+  .header-meta {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .meta-chip {
+    background: var(--surface-1);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  h1 {
+    font-size: 2.8rem;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1.15;
+    margin-bottom: 12px;
+    letter-spacing: -1px;
+  }
+  h1 span {
+    background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .lead {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    margin-bottom: 48px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 32px;
+    line-height: 1.6;
+  }
+
+  h2 {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #fff;
+    margin: 64px 0 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  h2 .num {
+    background: var(--accent);
+    color: #0b0f19;
+    font-size: 1rem;
+    font-weight: 900;
+    padding: 2px 10px;
+    border-radius: 6px;
+  }
+  h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin: 36px 0 14px;
+  }
+  h4 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #cbd5e1;
+    margin: 24px 0 10px;
+  }
+  p { margin-bottom: 18px; color: #cbd5e1; }
+  strong { color: #fff; }
+  em { color: var(--warning); font-style: normal; font-weight: 600; }
+
+  /* CODE & PRE */
+  code {
+    background: var(--code-bg);
+    color: #38bdf8;
+    padding: 2px 6px;
+    border-radius: 5px;
+    font-family: 'JetBrains Mono', 'Fira Code', 'SFMono-Regular', Consolas, monospace;
+    font-size: 0.88em;
+    border: 1px solid rgba(56, 189, 248, 0.2);
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    overflow-x: auto;
+    margin: 20px 0 28px;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.86rem;
+    line-height: 1.65;
+    color: #e2e8f0;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  }
+
+  /* CALLOUT BOXES */
+  .callout {
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 24px 0;
+    border-left: 4px solid;
+    background: var(--surface-0);
+  }
+  .callout.info {
+    border-color: var(--accent);
+    background: rgba(56, 189, 248, 0.07);
+  }
+  .callout.warn {
+    border-color: var(--warning);
+    background: rgba(245, 158, 11, 0.07);
+  }
+  .callout.danger {
+    border-color: var(--danger);
+    background: rgba(239, 68, 68, 0.07);
+  }
+  .callout.success {
+    border-color: var(--success);
+    background: rgba(16, 185, 129, 0.07);
+  }
+  .callout .title {
+    font-weight: 800;
+    font-size: 1.05rem;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .callout.info .title { color: var(--accent); }
+  .callout.warn .title { color: var(--warning); }
+  .callout.danger .title { color: var(--danger); }
+  .callout.success .title { color: var(--success); }
+
+  /* TABLES */
+  .table-wrapper {
+    overflow-x: auto;
+    margin: 24px 0 32px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface-0);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    text-align: left;
+  }
+  th {
+    background: var(--surface-1);
+    color: var(--text-main);
+    padding: 12px 16px;
+    font-weight: 700;
+    border-bottom: 1px solid var(--border);
+    text-transform: uppercase;
+    font-size: 11.5px;
+    letter-spacing: 0.8px;
+  }
+  td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    color: #cbd5e1;
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* BADGES */
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .badge-tier1 { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
+  .badge-tier2 { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+  .badge-post { background: rgba(56, 189, 248, 0.2); color: #38bdf8; }
+  .badge-get { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+  .badge-put { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+  .badge-delete { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+  .badge-patch { background: rgba(168, 85, 247, 0.2); color: #c084fc; }
+
+  /* MERMAID */
+  .mermaid-wrapper {
+    background: var(--surface-0);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 16px;
+    margin: 28px 0;
+    display: flex;
+    justify-content: center;
+  }
+  .mermaid { width: 100%; }
+
+  ul, ol { margin: 12px 0 20px 24px; color: #cbd5e1; }
+  li { margin-bottom: 8px; }
+
+  /* FOOTER */
+  footer {
+    margin-top: 80px;
+    border-top: 1px solid var(--border);
+    padding-top: 32px;
+    color: var(--text-muted);
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  @media (max-width: 960px) {
+    aside.sidebar { display: none; }
+    main.content { margin-left: 0; padding: 32px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="brand-badge">Injibara Market</div>
+  <h2>Master Reference</h2>
+  <nav>
+    <a href="#ch1" class="ch">1. System Topology</a>
+    <a href="#s1-1">1.1 Distributed Runtime Topology</a>
+    <a href="#s1-2">1.2 Full HTTP Request Lifecycle</a>
+    <a href="#s1-3">1.3 Architectural Patterns</a>
+    <a href="#s1-4">1.4 Two-Tier Broker Business Model</a>
+
+    <a href="#ch2" class="ch">2. Directory & File Ecosystem</a>
+    <a href="#s2-1">2.1 Server Architecture Matrix</a>
+    <a href="#s2-2">2.2 Client Architecture Matrix</a>
+    <a href="#s2-3">2.3 DevOps & Config Matrix</a>
+
+    <a href="#ch3" class="ch">3. Data Layer & TiDB Handshake</a>
+    <a href="#s3-1">3.1 TiDB Serverless Internals</a>
+    <a href="#s3-2">3.2 Dual Connection String Architecture</a>
+    <a href="#s3-3">3.3 Complete Prisma ERD</a>
+    <a href="#s3-4">3.4 Atomic Transactions & Stock Logic</a>
+    <a href="#s3-5">3.5 Zod Validation Pipeline</a>
+
+    <a href="#ch4" class="ch">4. Security & Authentication</a>
+    <a href="#s4-1">4.1 Cryptographic JWT Lifecycle</a>
+    <a href="#s4-2">4.2 RBAC Guard Chain</a>
+    <a href="#s4-3">4.3 Multi-Tier Rate Limiting</a>
+    <a href="#s4-4">4.4 Admin Bootstrapping</a>
+
+    <a href="#ch5" class="ch">5. Media & Cloudinary Pipeline</a>
+    <a href="#s5-1">5.1 The Ephemeral Storage Dilemma</a>
+    <a href="#s5-2">5.2 Memory Buffer Streaming Mechanics</a>
+    <a href="#s5-3">5.3 Auto Format & Quality CDN Delivery</a>
+
+    <a href="#ch6" class="ch">6. Frontend Integration</a>
+    <a href="#s6-1">6.1 Centralized Axios Interceptor</a>
+    <a href="#s6-2">6.2 Cold-Start Resilience Architecture</a>
+    <a href="#s6-3">6.3 Routing & Route Guards</a>
+    <a href="#s6-4">6.4 State Flow & Component Sync</a>
+    <a href="#s6-5">6.5 Admin Broker Hub Engine</a>
+
+    <a href="#ch7" class="ch">7. Containerization & DevOps</a>
+    <a href="#s7-1">7.1 Docker Compose Environment</a>
+    <a href="#s7-2">7.2 Dockerfile Multi-Stage Builds</a>
+    <a href="#s7-3">7.3 GitHub Actions CI/CD Pipeline</a>
+    <a href="#s7-4">7.4 Vercel Production Ingress</a>
+    <a href="#s7-5">7.5 Environment Variable Matrix</a>
+
+    <a href="#appendix" class="ch">Appendix: API Route Map</a>
+  </nav>
+</aside>
+
+<main class="content">
+
+  <div class="header-meta">
+    <span class="meta-chip">Version 1.0.0</span>
+    <span class="meta-chip">Node 20 ESM</span>
+    <span class="meta-chip">Prisma 7 / MariaDB Adapter</span>
+    <span class="meta-chip">TiDB Cloud AWS eu-central-1</span>
+    <span class="meta-chip">React 19 / Vite 8 / Tailwind 4</span>
+  </div>
+
+  <h1>Injibara Market <span>Architecture Master Reference</span></h1>
+  <p class="lead">
+    An exhaustive, publication-grade systems debrief detailing the operational mechanics, network lifecycles, database handshake protocols, security boundaries, and software design patterns governing the Injibara Market platform.
+  </p>
+
+  <!-- CHAPTER 1 -->
+  <h2 id="ch1"><span class="num">01</span> Global System Topology & High-Level Architecture</h2>
+
+  <h3 id="s1-1">1.1 Distributed Runtime Topology</h3>
+  <p>
+    Injibara Market operates across a geographically distributed cloud topology designed to bridge high-latency regional mobile clients in Injibara, Ethiopia, with modern cloud-native persistence and media CDNs. The architecture divides responsibilities cleanly across three decoupled tiers: Edge Static Delivery, Stateless Application Compute, and Distributed Serverless Persistence.
+  </p>
+
+  <div class="mermaid-wrapper">
+    <div class="mermaid">
+graph TB
+    subgraph "Client Tier — Edge Global CDN (Vercel)"
+        ClientBrowser["Web Browser / Mobile PWA<br/>React 19 + Tailwind CSS 4<br/>HTML5 / JS / Wasm"]
+        VercelCDN["Vercel Edge Network<br/>Static Assets + SPA Rewrite<br/>injibara-market-client.vercel.app"]
+        ClientBrowser <-->|"HTTPS / HTTP2 / TLS 1.3"| VercelCDN
+    end
+
+    subgraph "Application Gateway & Compute Tier (Docker / Railway / Node.js 20)"
+        ExpressApp["Express 5 API Server (ESM)<br/>Port: 5000 | Reverse Proxy Trust<br/>Rate Limiting + Zod Validation"]
+        MulterRAM["Multer Memory Buffer<br/>In-RAM Byte Streaming"]
+        PrismaAdapter["Prisma 7 Client<br/>@prisma/adapter-mariadb<br/>Connection Pooler"]
+        
+        ExpressApp --> MulterRAM
+        ExpressApp --> PrismaAdapter
+    end
+
+    subgraph "Persistence & Media Storage Tier"
+        TiDBServerless["TiDB Serverless Cluster<br/>AWS eu-central-1 (Frankfurt)<br/>MySQL 8.0 Protocol Wire + TLS"]
+        CloudinaryCDN["Cloudinary Media Cloud<br/>Direct Stream Ingestion<br/>Auto WebP/AVIF CDN"]
+    end
+
+    ClientBrowser <==>|"JSON REST API (JWT Bearer)<br/>Cold-Start Retried via Axios"| ExpressApp
+    MulterRAM ==>|"streamifier.createReadStream()<br/>Pipe Upload Stream"| CloudinaryCDN
+    PrismaAdapter <==>|"MariaDB Wire Protocol<br/>TLS Handshake + AWS CA Cert"| TiDBServerless
+    CloudinaryCDN -.->|"Dynamic Optimized CDN URLs<br/>res.cloudinary.com/..."| ClientBrowser
+    </div>
+  </div>
+
+  <h3 id="s1-2">1.2 Full End-to-End HTTP Request Lifecycle</h3>
+  <p>
+    The lifecycle of every mutating request adheres to strict architectural boundaries. The sequence below illustrates the complete traversal of a product creation request containing binary media:
+  </p>
+
+  <div class="mermaid-wrapper">
+    <div class="mermaid">
+sequenceDiagram
+    autonumber
+    participant Browser as Client Browser (Axios)
+    participant Edge as Network / Reverse Proxy
+    participant Express as Express Gateway (src/index.ts)
+    participant RateLimit as RateLimiter (middleware)
+    participant Auth as AuthGuard (authMiddleware)
+    participant Multer as Multer (uploadMiddleware)
+    participant Zod as Zod Validation (validate)
+    participant Controller as ProductController
+    participant Stream as Streamifier / Cloudinary
+    participant Prisma as Prisma MariaDB Adapter
+    participant TiDB as TiDB Serverless (AWS)
+
+    Browser->>Edge: POST /api/products (FormData + Bearer JWT)
+    Edge->>Express: Forward request (X-Forwarded-For injected)
+    Express->>Express: app.set('trust proxy', 1) resolves client IP
+    Express->>RateLimit: globalLimiter (300/15m check)
+    RateLimit->>Auth: protect() interceptor
+    Auth->>Auth: jwt.verify(token, JWT_SECRET)
+    Auth->>Auth: Injects decoded claims {id, role, email} into req.user
+    Auth->>Auth: authorizeRoles('seller', 'admin') check
+    Auth->>Multer: upload.array('images', 6)
+    Multer->>Multer: Buffer files into RAM (MemoryStorage)
+    Multer->>Zod: validate(createProductSchema)
+    Zod->>Zod: Coerce fields, check discount < price, sanitize
+    Zod->>Controller: createProduct(req, res)
+    Controller->>Prisma: prisma.products.create({ data })
+    Prisma->>TiDB: SQL INSERT INTO products ...
+    TiDB-->>Prisma: Row created (product.id)
+    Controller->>Stream: uploadToCloudinary(file.buffer) [Parallel Promise.all]
+    Stream->>Stream: Cloudinary upload_stream pipe
+    Stream-->>Controller: Returns secure_url & metadata
+    Controller->>Prisma: prisma.product_images.createMany()
+    Prisma->>TiDB: SQL INSERT INTO product_images ...
+    TiDB-->>Prisma: Image rows committed
+    Controller-->>Express: res.status(201).json({ success: true, data })
+    Express-->>Browser: HTTP 201 Response
+    </div>
+  </div>
+
+  <h3 id="s1-3">1.3 Architectural Patterns & Design Paradigms</h3>
+  <p>
+    The Injibara Market codebase intentionally adopts six structural design patterns to ensure reliability, separation of concerns, and type-safety:
+  </p>
+  <ul>
+    <li><strong>Layered Architecture (Controller-Model-Route Separation):</strong> Routes declare URL topologies and attach middleware chains; controllers handle HTTP orchestration and business rules; models wrap specialized Prisma queries; Prisma models map physical database entities.</li>
+    <li><strong>Driver Adapter Pattern (Prisma 7):</strong> Instead of bundling Prisma's heavy Rust-based native query engine binary, the server uses <code>@prisma/adapter-mariadb</code>. This adapter executes queries via the pure JavaScript/C++ <code>mariadb</code> driver, significantly shrinking the deployment footprint and cold-start overhead.</li>
+    <li><strong>Middleware Pipeline (Chain of Responsibility):</strong> Express middleware chains enforce orthogonal concerns sequentially: <code>Rate Limit &rarr; Authentication &rarr; RBAC Authorization &rarr; Multer RAM Ingestion &rarr; Zod Schema Validation &rarr; Controller Execution</code>.</li>
+    <li><strong>Zero-Disk Stream Pipelining:</strong> Multer stores files strictly in memory buffers, while <code>streamifier</code> adapts raw memory into NodeJS Readable streams to pipe directly into Cloudinary's TLS socket. No temporary file cleanup or inode leaks can occur.</li>
+    <li><strong>Client Interceptor Facade:</strong> <code>axiosClient.ts</code> encapsulates token injection, session expiration redirects, proactive server cold-start pinging, exponential retry backoff for network drops, and toast notification throttling.</li>
+    <li><strong>Native Browser Event Bus:</strong> Real-time cross-component synchronization (e.g., updating wishlist badges across disparate components) uses native browser CustomEvents (<code>saved_products_updated</code>), eliminating unnecessary global state libraries.</li>
+  </ul>
+
+  <h3 id="s1-4">1.4 The Two-Tier Broker Business Model</h3>
+  <p>
+    Injibara Market solves a fundamental trust deficit in rural Ethiopian eCommerce. High-capital physical assets (land, vehicles, agricultural machinery) cannot safely transact via anonymous direct messaging or unverified peer-to-peer agreements. The platform partitions product categories into two distinct operational tiers:
+  </p>
+
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Dimension</th>
+          <th><span class="badge badge-tier1">Tier 1: High-Value Brokered Deals</span></th>
+          <th><span class="badge badge-tier2">Tier 2: Direct Marketplace</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Eligible Categories</strong></td>
+          <td>Property & Land, Vehicles & Transport, Heavy Machinery, Construction Equipment</td>
+          <td>Electronics, Fashion, Food, Farm Produce, Furniture, Household Goods</td>
+        </tr>
+        <tr>
+          <td><strong>Buyer Inquiries</strong></td>
+          <td>Automagically routed to the <strong>Admin Broker Desk</strong> (primary target: <code>seberbel@gmail.com</code>)</td>
+          <td>Delivered directly into the product <strong>Seller's in-app inbox</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Seller Interaction</strong></td>
+          <td>Seller receives <strong>zero buyer messages</strong>. Admin verifies buyer legitimacy and contacts seller via phone call</td>
+          <td>Seller chats directly with buyer within the app</td>
+        </tr>
+        <tr>
+          <td><strong>State Tracking</strong></td>
+          <td>Tracked in <code>broker_inquiries</code> DB table: <code>NEW &rarr; ASSIGNED &rarr; APPOINTMENT_SCHEDULED &rarr; MEDIATED &rarr; CLOSED</code></td>
+          <td>Standard order statuses: <code>pending &rarr; processing &rarr; shipped &rarr; delivered</code></td>
+        </tr>
+        <tr>
+          <td><strong>Detection Mechanism</strong></td>
+          <td>22 RegExp rules in <code>brokeredCategories.ts</code> covering English & Amharic Unicode tokens</td>
+          <td>Fallback category classification</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="mermaid-wrapper">
+    <div class="mermaid">
+flowchart TD
+    BuyerMsg["Buyer initiates message on Product Page"] --> CatCheck{"isBrokeredCategory(categoryName, slug)?"}
+    
+    CatCheck -->|Match Tier 1 Patterns| BrokeredFlow["Tier 1: Capital Asset"]
+    CatCheck -->|No Match| DirectFlow["Tier 2: Standard Consumer Good"]
+    
+    BrokeredFlow --> ResolveAdmin["resolveProductReceiver()<br/>Query admin: seberbel@gmail.com<br/>Fallback: Any User with role: admin"]
+    ResolveAdmin --> CreateInquiry["Create Message & Upsert broker_inquiries record"]
+    CreateInquiry --> AdminHub["Admin Broker Desk (BrokerHubPage.tsx)<br/>Admin coordinates physical inspection"]
+    AdminHub --> CallSeller["Admin phones Seller to negotiate escrow/visit"]
+
+    DirectFlow --> DirectSeller["resolveProductReceiver()<br/>Query product.seller_id"]
+    DirectSeller --> SellerInbox["Message dispatched directly to Seller Inbox"]
+    </div>
+  </div>
+
+  <!-- CHAPTER 2 -->
+  <h2 id="ch2"><span class="num">02</span> Complete Directory & File Ecosystem Map</h2>
+
+  <h3 id="s2-1">2.1 Server Architecture Matrix</h3>
+  <p>
+    Below is the exhaustive dependency, causality, and contract mapping for every file in <code>server/src/</code>:
+  </p>
+
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Module File</th>
+          <th>Causality & Trigger</th>
+          <th>Inputs Consumed</th>
+          <th>Outputs / Emitted Contracts</th>
+          <th>Downstream Callee / Target</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>src/index.ts</code></td>
+          <td>Application entry point triggered by <code>node dist/index.js</code> or <code>npm run dev</code></td>
+          <td>Environment variables (<code>PORT</code>), Express middleware, Route modules</td>
+          <td>HTTP Server listening on 0.0.0.0:5000, <code>/healthz</code> endpoint, Global Error handler</td>
+          <td>Mounts routes: <code>/api/auth</code>, <code>/api/products</code>, <code>/api/orders</code>, <code>/api/messages</code>, <code>/api/admin</code>, etc.</td>
+        </tr>
+        <tr>
+          <td><code>src/lib/prisma.ts</code></td>
+          <td>Imported on-demand by controllers, models, and middleware requiring database access</td>
+          <td><code>process.env.DATABASE_URL</code> (mariadb:// protocol string)</td>
+          <td>Exported singleton <code>prisma</code> instance instantiated with <code>PrismaMariaDb</code> adapter</td>
+          <td>Directly talks to TiDB Cloud AWS eu-central-1 via MariaDB wire protocol</td>
+        </tr>
+        <tr>
+          <td><code>src/lib/cloudinary.ts</code></td>
+          <td>Invoked by <code>productController</code> and <code>storeController</code> during image ingestion</td>
+          <td>Memory buffer (<code>Buffer</code>), folder string, Cloudinary API credentials</td>
+          <td>Promise resolving to <code>CloudinaryUploadResult</code> (secure_url, public_id, dimensions)</td>
+          <td>Cloudinary REST API / Upload Stream Socket</td>
+        </tr>
+        <tr>
+          <td><code>src/middleware/authMiddleware.ts</code></td>
+          <td>Attached to private route chains via Express <code>router.use()</code> or route handlers</td>
+          <td>HTTP <code>Authorization: Bearer &lt;token&gt;</code> header</td>
+          <td>Decoded user token injected into <code>req.user</code>; or HTTP 401/403 JSON error response</td>
+          <td>Calls <code>next()</code> to grant execution to downstream middleware or controllers</td>
+        </tr>
+        <tr>
+          <td><code>src/middleware/rateLimiter.ts</code></td>
+          <td>Evaluated on incoming HTTP connections before route handling</td>
+          <td>Client IP address (resolved via <code>req.ip</code> with <code>trust proxy</code> enabled)</td>
+          <td>Pass-through to <code>next()</code>, or HTTP 429 JSON response with RateLimit headers</td>
+          <td>Protects downstream route handlers from resource exhaustion</td>
+        </tr>
+        <tr>
+          <td><code>src/middleware/validate.ts</code></td>
+          <td>Factory middleware wrapping route controllers: <code>validate(schema)</code></td>
+          <td><code>req.body</code> raw object</td>
+          <td>Mutates <code>req.body</code> with sanitized/coerced Zod output, or returns HTTP 400 with field errors</td>
+          <td>Invokes downstream controller handler if schema validation succeeds</td>
+        </tr>
+        <tr>
+          <td><code>src/middleware/uploadMiddleware.ts</code></td>
+          <td>Attached to endpoints consuming multipart/form-data: <code>upload.array()</code> / <code>upload.single()</code></td>
+          <td>Binary HTTP stream with MIME verification (JPEG, PNG, WebP)</td>
+          <td>Populates <code>req.files</code> or <code>req.file</code> as in-memory Buffers (max 5MB each)</td>
+          <td>Hands execution to controller with validated in-memory byte buffers</td>
+        </tr>
+        <tr>
+          <td><code>src/schemas/index.ts</code></td>
+          <td>Imported by routes and controllers to enforce declarative validation contracts</td>
+          <td>Raw inputs: strings, numbers, FormData text representations</td>
+          <td>Zod schema types, normalized Ethiopian phone strings (<code>09xxxxxxxx</code>), parsed numbers</td>
+          <td>Consumed by <code>validate.ts</code> middleware</td>
+        </tr>
+        <tr>
+          <td><code>src/utils/generateToken.ts</code></td>
+          <td>Called by <code>authController</code> upon successful user registration or login</td>
+          <td>User identity parameters: <code>id</code>, <code>role</code>, <code>email</code></td>
+          <td>Signed JWT token string with 30-day expiration signed by <code>JWT_SECRET</code></td>
+          <td>Returned to client in authentication JSON response</td>
+        </tr>
+        <tr>
+          <td><code>src/utils/brokeredCategories.ts</code></td>
+          <td>Evaluated by <code>messageController</code> and <code>adminController</code> during routing decisions</td>
+          <td>Category <code>name</code> and <code>slug</code> strings</td>
+          <td>Boolean flag: <code>true</code> if Tier 1 capital asset, <code>false</code> otherwise</td>
+          <td>Determines whether inquiry receiver is Admin broker desk or direct Seller</td>
+        </tr>
+        <tr>
+          <td><code>src/models/messageModel.ts</code></td>
+          <td>Data access layer abstraction called by <code>messageController</code></td>
+          <td>Message parameters: sender ID, receiver ID, product ID, message text</td>
+          <td>Database queries for conversations, unread badge counters, and thread messages</td>
+          <td>Queries TiDB through <code>prisma.messages</code></td>
+        </tr>
+        <tr>
+          <td><code>src/controllers/authController.ts</code></td>
+          <td>Handles <code>/api/auth/register</code>, <code>/login</code>, and <code>/users/:id/role</code></td>
+          <td>Validated credentials, <code>INITIAL_ADMIN_EMAILS</code> environment variable</td>
+          <td>HTTP 200/201 with JWT token and user object, or HTTP 400/401 error</td>
+          <td>Queries <code>prisma.users</code> and hashes passwords with <code>bcryptjs</code></td>
+        </tr>
+        <tr>
+          <td><code>src/controllers/productController.ts</code></td>
+          <td>Handles CRUD operations on products and seller listings</td>
+          <td>Query parameters (category, search, location, pagination), multipart files</td>
+          <td>Paginated product listings, created product objects with Cloudinary URLs</td>
+          <td>Queries <code>prisma.products</code>, auto-promotes customers to sellers upon first listing</td>
+        </tr>
+        <tr>
+          <td><code>src/controllers/orderController.ts</code></td>
+          <td>Handles order placement and seller/customer order retrieval</td>
+          <td>Order items array, shipping address, payment method</td>
+          <td>Atomic stock deduction, order record creation with generated order number</td>
+          <td>Executes <code>prisma.$transaction</code> across <code>orders</code> and <code>products</code></td>
+        </tr>
+        <tr>
+          <td><code>src/controllers/messageController.ts</code></td>
+          <td>Handles sending messages and conversation listing</td>
+          <td>Message payload, target product ID or receiver ID</td>
+          <td>Dispatched message records, conversation lists with unread counters</td>
+          <td>Routes to admin or seller via <code>resolveProductReceiver()</code></td>
+        </tr>
+        <tr>
+          <td><code>src/controllers/adminController.ts</code></td>
+          <td>1,219-line administrative command center controller</td>
+          <td>Moderation actions, status updates, appointment scheduling, staff admin creation</td>
+          <td>Aggregated platform metrics, broker inquiry pipeline state, moderated entity states</td>
+          <td>Queries <code>prisma.broker_inquiries</code>, <code>products</code>, <code>stores</code>, <code>users</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="s2-2">2.2 Client Architecture Matrix</h3>
+  <p>
+    Frontend components and API modules mapped by responsibility and network interaction:
+  </p>
+
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Frontend Module</th>
+          <th>Component / Class Type</th>
+          <th>Upstream Dependencies</th>
+          <th>Downstream Callee / Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>src/api/axiosClient.ts</code></td>
+          <td>HTTP Client Singleton</td>
+          <td>Axios, <code>notify.ts</code>, <code>authStorage.ts</code></td>
+          <td>Injects JWT into headers; handles 60s timeout, exponential retry, and session expiry</td>
+        </tr>
+        <tr>
+          <td><code>src/App.tsx</code></td>
+          <td>Root Application Wrapper</td>
+          <td>React Router, ErrorBoundary, Toaster</td>
+          <td>Fires background <code>fetch('/healthz')</code> on mount; mounts <code>AppRoutes</code></td>
+        </tr>
+        <tr>
+          <td><code>src/routes/AppRoutes.tsx</code></td>
+          <td>Declarative Router Definition</td>
+          <td>React Router v7, Page Components, Route Guards</td>
+          <td>Enforces 3 access boundaries: Public, <code>ProtectedRoute</code>, <code>ProtectedAdminRoute</code></td>
+        </tr>
+        <tr>
+          <td><code>src/pages/HomePage.tsx</code></td>
+          <td>Customer Landing Page</td>
+          <td>HeroSection, CategoryGrid, FeaturedListings</td>
+          <td>Triggers initial product and category data hydration</td>
+        </tr>
+        <tr>
+          <td><code>src/pages/admin/BrokerHubPage.tsx</code></td>
+          <td>Admin Brokerage Dashboard</td>
+          <td><code>adminApi.ts</code></td>
+          <td>Displays brokered deals deduplicated per buyer-product; updates appointment dates</td>
+        </tr>
+        <tr>
+          <td><code>src/pages/seller/SellerOrdersPage.tsx</code></td>
+          <td>Seller Fulfillment Dashboard</td>
+          <td><code>orderApi.ts</code> (<code>getSellerOrders</code>)</td>
+          <td>Displays incoming customer orders scoped to items sold by logged-in seller</td>
+        </tr>
+        <tr>
+          <td><code>src/utils/authStorage.ts</code></td>
+          <td>Storage Facade</td>
+          <td>Browser <code>localStorage</code></td>
+          <td>Stores and clears <code>injibara_market_token</code> and <code>injibara_market_user</code></td>
+        </tr>
+        <tr>
+          <td><code>src/utils/notify.ts</code></td>
+          <td>Notification Facade</td>
+          <td><code>react-hot-toast</code></td>
+          <td>Emits styled success, error, and warning toast notifications across the UI</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- CHAPTER 3 -->
+  <h2 id="ch3"><span class="num">03</span> Data Layer, TiDB Handshake & Prisma Engine</h2>
+
+  <h3 id="s3-1">3.1 TiDB Serverless Internals vs. Traditional MySQL</h3>
+  <p>
+    Although the application connects to TiDB using the standard MySQL wire protocol, the underlying database engine is fundamentally different from a monolithic MySQL 8.0 instance:
+  </p>
+  <ul>
+    <li><strong>Separation of Compute and Storage:</strong> The TiDB stateless SQL layer (compute) receives queries, validates permissions, and compiles SQL parse trees into distributed execution plans. It does not store physical table pages.</li>
+    <li><strong>Distributed Storage Engine (TiKV):</strong> Data is stored in distributed key-value storage engines called TiKV. Tables and indexes are partitioned into continuous key-range segments called <em>Regions</em> (typically 96MB in size), replicated via the Raft consensus algorithm across multiple availability zones.</li>
+    <li><strong>Placement Driver (PD):</strong> Acts as the cluster brain, managing Raft group allocations, region rebalancing, and global timestamp allocation (TSO) for multi-version concurrency control (MVCC).</li>
+    <li><strong>Behavioral Implications for Injibara Market:</strong>
+      <ol>
+        <li><em>Latency Profile:</em> Because cross-node network hops and Raft consensus are required for write commits, single-row INSERT/UPDATE operations have higher base latency (~30-60ms) than local MySQL (~1-2ms), but horizontal scalability and fault tolerance are substantially superior.</li>
+        <li><em>Serverless Sleep Mode:</em> TiDB Serverless clusters scale to zero when idle to conserve cloud credits. The first query after an idle window incurs a compute-node spin-up delay (hence the frontend's 60s timeout and exponential backoff retry).</li>
+      </ol>
+    </li>
+  </ul>
+
+  <h3 id="s3-2">3.2 Dual Connection String Architecture</h3>
+  <p>
+    A critical engineering characteristic of the project is the requirement for two distinct connection string configurations:
+  </p>
+  <pre>
+# Runtime Connection (Consumed by server/src/lib/prisma.ts via @prisma/adapter-mariadb)
+DATABASE_URL="mariadb://P72QN5HKUg2yUAS.root:password@gateway01.eu-central-1.prod.aws.tidbcloud.com:4000/injibara_db?ssl={\"rejectUnauthorized\":true}"
+
+# CLI Engine Connection (Consumed by server/prisma.config.ts for 'prisma db push' & 'prisma generate')
+DATABASE_URL_MYSQL="mysql://P72QN5HKUg2yUAS.root:password@gateway01.eu-central-1.prod.aws.tidbcloud.com:4000/injibara_db?sslaccept=strict"
+  </pre>
+
+  <p>
+    <strong>Why both are required:</strong> The Prisma runtime adapter (<code>PrismaMariaDb</code>) uses the native Node MariaDB driver which expects a <code>mariadb://</code> URI scheme and parses SSL parameters as a JSON object. Conversely, the Prisma CLI's internal Rust binary engine only recognizes the standard <code>mysql://</code> URI scheme with query parameters like <code>sslaccept=strict</code>.
+  </p>
+
+  <h3 id="s3-3">3.3 Complete Prisma Entity-Relationship Diagram</h3>
+  <p>
+    The complete relational schema modeling users, stores, listings, broker pipelines, carts, and payment states:
+  </p>
+
+  <div class="mermaid-wrapper">
+    <div class="mermaid">
+erDiagram
+    users ||--o{ orders : "places"
+    users ||--o{ products : "sells"
+    users ||--o{ stores : "owns"
+    users ||--o{ reviews : "writes"
+    users ||--o{ favorites : "saves"
+    users ||--o| carts : "has"
+    users ||--o{ addresses : "has"
+    users ||--o{ messages : "sends (sender_id)"
+    users ||--o{ messages : "receives (receiver_id)"
+    users ||--o{ broker_inquiries : "submits (buyer_id)"
+    users ||--o{ order_status_history : "modifies (changed_by)"
+
+    products ||--o{ product_images : "has"
+    products ||--o{ cart_items : "contains"
+    products ||--o{ order_items : "ordered_in"
+    products ||--o{ reviews : "receives"
+    products ||--o{ favorites : "saved_in"
+    products ||--o{ messages : "referenced_by"
+    products ||--o{ inventory_logs : "logs"
+    products ||--o{ broker_inquiries : "inquired_for"
+    products }o--|| categories : "categorized_under"
+    products }o--o| stores : "belongs_to"
+
+    orders ||--o{ order_items : "consists_of"
+    orders ||--o{ order_status_history : "status_tracked_by"
+    orders ||--o{ payments : "settled_by"
+    orders ||--o{ messages : "referenced_in"
+
+    carts ||--o{ cart_items : "holds"
+    cart_items }o--|| products : "references"
+
+    users {
+        int id PK
+        string full_name
+        string email UK
+        string phone UK
+        string password
+        enum role "customer, seller, admin"
+        datetime created_at
+        datetime deleted_at
+    }
+
+    products {
+        int id PK
+        int store_id FK
+        int seller_id FK
+        int category_id FK
+        string name
+        string slug
+        decimal price
+        decimal discount_price
+        int stock
+        enum status "draft, pending, approved, rejected, inactive, archived"
+        string image
+        boolean is_active
+        datetime deleted_at
+    }
+
+    broker_inquiries {
+        int id PK
+        int product_id FK
+        int buyer_id FK
+        string status "NEW, ASSIGNED, APPOINTMENT_SCHEDULED, MEDIATED, CLOSED"
+        datetime appointment_date
+        string notes
+        datetime created_at
+        datetime updated_at
+    }
+
+    orders {
+        int id PK
+        int user_id FK
+        string order_number UK
+        decimal total_amount
+        enum status "pending, paid, processing, shipped, delivered, cancelled"
+        enum payment_method "telebirr, cbe_birr, bank_transfer, cash_on_delivery"
+        enum payment_status "pending, paid, failed"
+        datetime created_at
+    }
+    </div>
+  </div>
+
+  <h3 id="s3-4">3.4 Atomic Transaction Mechanics: Stock Validation and Deduction</h3>
+  <p>
+    When an order is created, the system must guarantee that inventory cannot be oversold under concurrent traffic. The <code>orderController.createOrder</code> function executes inside an atomic Prisma interactive transaction (<code>prisma.$transaction</code>):
+  </p>
+  <pre>
+// Atomic transaction execution in server/src/controllers/orderController.ts
+const newOrder = await prisma.$transaction(async (tx) => {
+  // 1. Create the parent order record
+  const created = await tx.orders.create({
+    data: {
+      user_id: userId,
+      order_number: orderNumber,
+      total_amount: totalAmount,
+      status: 'pending',
+      payment_method: payment_method || 'cash_on_delivery',
+      payment_status: 'pending',
+      shipping_address: shipping_address || null,
+      order_items: { create: orderItemsData },
+      order_status_history: {
+        create: { status: 'pending', changed_by: userId },
+      },
+    },
+    include: { order_items: true },
+  });
+
+  // 2. Atomically deduct inventory for every purchased product
+  for (const p of productsToUpdate) {
+    await tx.products.update({
+      where: { id: p.id },
+      data: { stock: p.newStock },
+    });
+  }
+
+  return created;
+});
+  </pre>
+  <p>
+    If any single product update fails or if a network disconnect occurs mid-loop, TiDB rolls back the entire transaction, guaranteeing no orphaned order items or desynchronized stock levels.
+  </p>
+
+  <h3 id="s3-5">3.5 Zod Validation Pipeline</h3>
+  <p>
+    The server rejects invalid data before controllers are invoked. A dedicated factory middleware <code>validate(schema)</code> parses <code>req.body</code> against Zod schemas in <code>src/schemas/index.ts</code>:
+  </p>
+  <ul>
+    <li><strong>Ethiopian Phone Number Normalization:</strong> Strips formatting characters, validates against <code>/^(?:\+?251|0)(9|7)\d{8}$/</code>, and normalizes inputs to canonical <code>09xxxxxxxx</code> or <code>07xxxxxxxx</code> format.</li>
+    <li><strong>Sanitized Emails:</strong> Lowercases and trims all email strings, preventing casing-based account duplication.</li>
+    <li><strong>Discount Logic Refinement:</strong> The product schema applies a cross-field <code>.refine()</code> assertion guaranteeing that <code>discount_price &lt; price</code>.</li>
+    <li><strong>Role Escalation Defense:</strong> The registration schema restricts incoming roles to <code>customer</code> or <code>seller</code> only; any attempt to supply <code>admin</code> is stripped at parse time.</li>
+  </ul>
+
+  <!-- CHAPTER 4 -->
+  <h2 id="ch4"><span class="num">04</span> Security, Authentication & Session Boundaries</h2>
+
+  <h3 id="s4-1">4.1 Cryptographic JWT Lifecycle</h3>
+  <p>
+    Authentication relies on stateless JSON Web Tokens signed with HMAC-SHA256:
+  </p>
+  <ol>
+    <li><strong>Password Hashing:</strong> During registration, raw passwords undergo one-way hashing via <code>bcryptjs</code> with a salt work factor of 10 (<code>bcrypt.genSalt(10)</code>), generating a 60-character bcrypt hash.</li>
+    <li><strong>Token Issuance:</strong> Upon credential verification, <code>generateToken.ts</code> constructs a signed JWT payload:
+      <pre>{ "id": user.id, "role": user.role, "email": user.email, "exp": Date.now() + 30d }</pre>
+    </li>
+    <li><strong>Secret Management:</strong> Tokens are signed using <code>JWT_SECRET</code> loaded from environment variables, backed by a safety fallback constant to guarantee system continuity.</li>
+    <li><strong>Storage & Delivery:</strong> The client stores the token in <code>localStorage</code> under <code>injibara_market_token</code> and attaches it as an HTTP header: <code>Authorization: Bearer &lt;token&gt;</code>.</li>
+  </ol>
+
+  <h3 id="s4-2">4.2 RBAC Guard Chain</h3>
+  <p>
+    Access control is enforced through composable higher-order middleware functions:
+  </p>
+  <div class="mermaid-wrapper">
+    <div class="mermaid">
+flowchart TD
+    Req["Incoming Request to Protected Route"] --> ProtectCheck{"protect() Middleware<br/>Header has Bearer Token?"}
+    
+    ProtectCheck -->|No| Reject401["HTTP 401 Unauthorized<br/>ያልተፈቀደ መዳረሻ፣ ቶከን አልተገኘም"]
+    ProtectCheck -->|Yes| VerifySig{"jwt.verify(token, JWT_SECRET)"}
+    
+    VerifySig -->|Invalid Signature / Expired| Reject401Sig["HTTP 401 Unauthorized<br/>ቶከን ልክ አይደለም"]
+    VerifySig -->|Valid| InjectUser["Inject decoded payload<br/>req.user = { id, role, email }"]
+    
+    InjectUser --> RBACCheck{"authorizeRoles(...roles)<br/>req.user.role in allowed list?"}
+    RBACCheck -->|Unauthorized Role| Reject403["HTTP 403 Forbidden<br/>Insufficient permissions"]
+    RBACCheck -->|Authorized Role| GrantNext["next() &rarr; Hand off to Controller"]
+    </div>
+  </div>
+
+  <h3 id="s4-3">4.3 Multi-Tier Rate Limiting Strategy</h3>
+  <p>
+    To prevent resource exhaustion and brute-force credential stuffing, three distinct rate limiting policies are enforced via <code>express-rate-limit</code>:
+  </p>
+  <ul>
+    <li><strong>Global Guard (<code>globalLimiter</code>):</strong> Restricts all traffic across <code>/api/*</code> to 300 requests per 15-minute rolling window per IP.</li>
+    <li><strong>Authentication Guard (<code>authLimiter</code>):</strong> Restricts <code>/api/auth/login</code> and <code>/api/auth/register</code> to 10 attempts per 15 minutes per IP.</li>
+    <li><strong>Listing & Message Guard (<code>creationLimiter</code>):</strong> Caps listing creations and message transmissions to 25 requests per 15 minutes per IP to protect Cloudinary bandwidth and prevent database spamming.</li>
+  </ul>
+
+  <h3 id="s4-4">4.4 Admin Bootstrapping & Privilege Escalation Defenses</h3>
+  <p>
+    Because public registration schemas forbid self-assigning the <code>admin</code> role, the system uses two secure elevation vectors:
+  </p>
+  <ol>
+    <li><strong>Initial Admin Seeding:</strong> <code>authController.ts</code> parses the <code>INITIAL_ADMIN_EMAILS</code> environment variable. Any registration matching this whitelist (e.g., <code>seberbel@gmail.com</code>) is automatically promoted to <code>admin</code> upon creation.</li>
+    <li><strong>Role Modification Endpoint:</strong> <code>PATCH /api/auth/users/:id/role</code> permits existing authenticated admins to promote or demote other users, with a hardcoded guard preventing an admin from accidentally stripping their own admin privileges.</li>
+  </ol>
+
+  <!-- CHAPTER 5 -->
+  <h2 id="ch5"><span class="num">05</span> Media Streaming & Cloudinary Memory Pipeline</h2>
+
+  <h3 id="s5-1">5.1 The Ephemeral Storage Dilemma</h3>
+  <p>
+    Traditional web apps save uploaded files to local disk paths (e.g., <code>/uploads</code>). In containerized cloud environments (Docker, Railway, AWS ECS), this pattern is fundamentally broken:
+  </p>
+  <ul>
+    <li><strong>Ephemeral Filesystems:</strong> When a container restarts, crashes, or is rescheduled across nodes, all local disk modifications are destroyed.</li>
+    <li><strong>Multi-Instance Desync:</strong> If multiple API instances run behind a load balancer, an image uploaded to Node A cannot be served by Node B.</li>
+    <li><strong>Solution:</strong> Injibara Market bypasses disk storage entirely, streaming image bytes directly from incoming TCP sockets to Cloudinary's global media storage.</li>
+  </ul>
+
+  <h3 id="s5-2">5.2 Step-by-Step Memory Buffer Streaming Architecture</h3>
+  <div class="mermaid-wrapper">
+    <div class="mermaid">
+sequenceDiagram
+    autonumber
+    participant Browser
+    participant Multer as Multer (RAM Buffer)
+    participant Controller as productController.ts
+    participant Streamifier as streamifier
+    participant Cloudinary as Cloudinary upload_stream
+    participant TiDB as TiDB Cloud
+
+    Browser->>Multer: Multipart form stream (up to 6 files, max 5MB each)
+    Multer->>Multer: Validates MIME type (image/jpeg, png, webp)
+    Multer->>Controller: req.files[] (Byte buffers stored in Node RAM)
+    
+    par For each file buffer concurrently
+        Controller->>Streamifier: streamifier.createReadStream(file.buffer)
+        Streamifier->>Cloudinary: Pipe readable stream to Cloudinary TLS socket
+        Note over Cloudinary: Folder: injibara-market/products<br/>Transformation: quality auto, fetch_format auto
+        Cloudinary-->>Controller: Return { secure_url, public_id, dimensions }
+    end
+
+    Controller->>TiDB: Batch insert product_images records
+    Controller->>TiDB: Update products.image with primary image URL
+    Controller-->>Browser: JSON payload with CDN image links
+    </div>
+  </div>
+
+  <h3 id="s5-3">5.3 Automated Format & Quality Optimization</h3>
+  <p>
+    The upload stream applies automatic Cloudinary delivery transformations:
+  </p>
+  <pre>
+// server/src/lib/cloudinary.ts
+const uploadStream = cloudinary.uploader.upload_stream(
+  {
+    folder: `injibara-market/${folder}`,
+    resource_type: 'image',
+    transformation: [
+      { quality: 'auto', fetch_format: 'auto' },
+    ],
+  },
+  ...
+);
+  </pre>
+  <p>
+    This guarantees that Chrome/Android users automatically receive optimized <code>WebP</code> or <code>AVIF</code> compressed assets, reducing mobile data consumption across Ethiopian cellular networks while serving standard JPEG formats to older Safari browsers.
+  </p>
+
+  <!-- CHAPTER 6 -->
+  <h2 id="ch6"><span class="num">06</span> Frontend Integration & State Synchronization</h2>
+
+  <h3 id="s6-1">6.1 Centralized Axios Interceptor Architecture</h3>
+  <p>
+    The frontend isolates all network interaction within <code>client/src/api/axiosClient.ts</code>:
+  </p>
+  <ul>
+    <li><strong>Request Interceptor:</strong> Inspects <code>localStorage</code> for <code>injibara_market_token</code> and injects the <code>Authorization: Bearer &lt;token&gt;</code> header on all outbound requests.</li>
+    <li><strong>Session Expiration Interceptor:</strong> On HTTP 401 responses, the client automatically clears credentials (<code>clearAuth()</code>), alerts the user via a toast message, and forces a window redirect to <code>/login</code>.</li>
+    <li><strong>Toast Deduplication:</strong> The <code>notifyThrottled()</code> helper prevents notification flooding during network disconnects by suppressing identical error toasts within a 5-second cooldown window.</li>
+  </ul>
+
+  <h3 id="s6-2">6.2 Cold-Start Resilience Architecture</h3>
+  <p>
+    Because free/serverless cloud infrastructure sleeps after periods of inactivity, a naive user experience results in timeout failures during cold starts. Injibara Market implements four layers of cold-start fortification:
+  </p>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Layer</th>
+          <th>Implementation File</th>
+          <th>Mechanism</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>1. Proactive Wake-up Ping</strong></td>
+          <td><code>client/src/App.tsx</code></td>
+          <td>On root component mount, sends a non-blocking background <code>fetch('/healthz')</code> to initiate server wake-up before the user navigates to catalog data.</td>
+        </tr>
+        <tr>
+          <td><strong>2. Extended Timeout Window</strong></td>
+          <td><code>client/src/api/axiosClient.ts</code></td>
+          <td>Global timeout increased from 15s to <strong>60,000ms (60s)</strong> to allow cloud containers and TiDB nodes to complete cold-boot sequences without client termination.</td>
+        </tr>
+        <tr>
+          <td><strong>3. Exponential GET Retry</strong></td>
+          <td><code>client/src/api/axiosClient.ts</code></td>
+          <td>Idempotent GET requests experiencing network timeouts, connection drops, or 502-504 gateway errors are automatically retried up to 2 times with exponential delays (1.5s &rarr; 3s).</td>
+        </tr>
+        <tr>
+          <td><strong>4. Resilient Fallback UI</strong></td>
+          <td><code>CustomerFeaturedListings.tsx</code>, <code>CategoriesPage.tsx</code></td>
+          <td>Network failures display an explicit error alert with a manual <strong>Retry</strong> trigger rather than silently collapsing into a false "No products found" empty state.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="s6-3">6.3 Routing & Route Guards</h3>
+  <p>
+    Frontend routes are structured into three distinct protection levels within <code>client/src/routes/AppRoutes.tsx</code>:
+  </p>
+  <div class="mermaid-wrapper">
+    <div class="mermaid">
+graph TD
+    UserNav["User navigates to URL"] --> RouteType{"Route Protection Level"}
+    
+    RouteType -->|Public Routes| PublicView["HomePage, ProductsPage, ProductDetailPage, CategoriesPage, Login, Register"]
+    RouteType -->|ProtectedRoute| CustCheck{"Token in localStorage?"}
+    RouteType -->|ProtectedAdminRoute| AdminCheck{"Token present AND user.role == 'admin'?"}
+    
+    CustCheck -->|No| RedirectLogin["Redirect to /login"]
+    CustCheck -->|Yes| CustView["Customer & Seller Pages (Dashboard, Orders, Cart, AddProduct)"]
+    
+    AdminCheck -->|No| RedirectHome["Redirect to / (Access Denied)"]
+    AdminCheck -->|Yes| AdminLayout["AdminLayout + AdminSidebar<br/>(BrokerHub, AdminProducts, AdminStores, Users)"]
+    </div>
+  </div>
+
+  <h3 id="s6-4">6.4 State Flow & Component Synchronization</h3>
+  <p>
+    The application avoids heavy state management libraries, favoring explicit state mechanisms:
+  </p>
+  <ul>
+    <li><strong>URL Search Parameters as State:</strong> In <code>ProductsPage.tsx</code>, active search queries, category filters, and location selections are mirrored into URL query parameters (<code>useSearchParams</code>), enabling shareable deep links and browser back-button navigation.</li>
+    <li><strong>CustomEvent Synchronization:</strong> When a user favorites a product in <code>ProductDetailPage</code>, it writes to <code>savedStorage.ts</code> and fires <code>window.dispatchEvent(new Event('saved_products_updated'))</code>. Global navigation components listen for this event and immediately update their badge counts.</li>
+  </ul>
+
+  <h3 id="s6-5">6.5 Admin Broker Hub Engine</h3>
+  <p>
+    The Broker Hub (<code>server/src/controllers/adminController.ts</code> & <code>client/src/pages/admin/BrokerHubPage.tsx</code>) manages high-value brokered negotiations. Its core technical achievement is <strong>transactional message deduplication</strong>:
+  </p>
+  <div class="callout info">
+    <div class="title">Admin Reply Deduplication Rule</div>
+    Historically, when an admin replied to a buyer's inquiry, the naive message query generated a duplicate inquiry card in the dashboard. The current architecture groups messages into a unique key <code>${product_id}_${buyer_id}</code>. Admin responses are folded directly into the conversation history of the original inquiry group, updating the <code>latest_message_text</code> and setting <code>has_admin_reply = true</code> without creating redundant pipeline items. Status changes and appointment dates are persisted directly to the <code>broker_inquiries</code> database table.
+  </div>
+
+  <!-- CHAPTER 7 -->
+  <h2 id="ch7"><span class="num">07</span> Containerization & DevOps Mechanics</h2>
+
+  <h3 id="s7-1">7.1 Docker Compose Local Development Environment</h3>
+  <p>
+    The local container topology in <code>docker-compose.yml</code> coordinates three isolated container services:
+  </p>
+  <ul>
+    <li><strong><code>mysql</code> Service:</strong> Runs official MySQL 8.0 on host port <code>3307</code> (mapped to container <code>3306</code>) with a recurring healthcheck pinging <code>mysqladmin ping -h localhost</code>.</li>
+    <li><strong><code>api</code> Service:</strong> Builds from <code>api.Dockerfile</code>. Configured with <code>depends_on: mysql: condition: service_healthy</code> to prevent Node startup race conditions before database socket availability.</li>
+    <li><strong><code>client</code> Service:</strong> Runs Vite development server exposing port <code>5173</code>, bound to <code>0.0.0.0</code> host interfaces for external container access.</li>
+  </ul>
+
+  <h3 id="s7-2">7.2 Dockerfile Multi-Stage Build Analysis</h3>
+  <p>
+    The production API image (<code>docker/api.Dockerfile</code>) utilizes multi-stage Docker build mechanics:
+  </p>
+  <pre>
+# Multi-stage build in docker/api.Dockerfile
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+COPY server/package*.json ./server/
+RUN npm ci --workspace=server
+COPY server/ ./server/
+WORKDIR /app/server
+RUN npx prisma generate
+RUN npm run build
+
+FROM node:20-alpine AS runner
+WORKDIR /app
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/server/node_modules ./server/node_modules
+COPY --from=builder /app/server/dist ./server/dist
+COPY --from=builder /app/server/package.json ./server/package.json
+EXPOSE 5000
+CMD ["node", "server/dist/index.js"]
+  </pre>
+  <p>
+    This pattern ensures compiler tooling, source TypeScript files, and intermediate build artifacts are discarded, leaving only compiled JavaScript and production runtime dependencies in the final deployment image.
+  </p>
+
+  <h3 id="s7-3">7.3 GitHub Actions CI/CD Pipeline</h3>
+  <p>
+    The automated CI pipeline (<code>.github/workflows/ci.yml</code>) executes on all pushes and pull requests targeting <code>develop</code> and <code>main</code>:
+  </p>
+
+  <div class="mermaid-wrapper">
+    <div class="mermaid">
+graph LR
+    Push["Git Push / PR (develop, main)"] --> LintJob["Job 1: Lint & Format<br/>Node 20 | npm ci<br/>npm run lint"]
+    
+    LintJob --> TestJob["Job 2: Backend Tests<br/>Service: MySQL 8.0 container<br/>prisma generate<br/>Vitest Suite (43 tests)"]
+    
+    TestJob --> BuildJob["Job 3: Project Compilation<br/>client: npm run build (Vite)<br/>server: npm run build (tsc)"]
+    
+    BuildJob --> DockerJob["Job 4: Container Packaging<br/>docker build -f docker/api.Dockerfile"]
+    </div>
+  </div>
+
+  <h3 id="s7-4">7.4 Vercel Production Ingress</h3>
+  <p>
+    The frontend SPA is hosted on Vercel's global edge network. Client-side routing is enabled by <code>vercel.json</code>:
+  </p>
+  <pre>
+{
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
+  </pre>
+  <p>
+    All HTTP requests entering Vercel's edge resolve directly to <code>index.html</code>, permitting React Router's browser history API to handle dynamic route mounting without generating HTTP 404s on page refresh.
+  </p>
+
+  <h3 id="s7-5">7.5 Environment Variable & Secret Matrix</h3>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Variable Identifier</th>
+          <th>Runtime Scope</th>
+          <th>Security Classification</th>
+          <th>Functional Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>DATABASE_URL</code></td>
+          <td>Backend Runtime</td>
+          <td><span class="badge badge-tier1">Critical Secret</span></td>
+          <td>MariaDB connection string for <code>@prisma/adapter-mariadb</code> connecting to TiDB Cloud</td>
+        </tr>
+        <tr>
+          <td><code>DATABASE_URL_MYSQL</code></td>
+          <td>Backend CLI</td>
+          <td><span class="badge badge-tier1">Critical Secret</span></td>
+          <td>Standard MySQL connection string consumed by Prisma CLI for schema push and migrations</td>
+        </tr>
+        <tr>
+          <td><code>JWT_SECRET</code></td>
+          <td>Backend Runtime</td>
+          <td><span class="badge badge-tier1">Critical Secret</span></td>
+          <td>Cryptographic HMAC key used to sign and verify customer/admin authentication tokens</td>
+        </tr>
+        <tr>
+          <td><code>CLOUDINARY_CLOUD_NAME</code></td>
+          <td>Backend Runtime</td>
+          <td><span class="badge badge-get">Configuration</span></td>
+          <td>Target Cloudinary namespace for product and store image uploads</td>
+        </tr>
+        <tr>
+          <td><code>CLOUDINARY_API_KEY</code></td>
+          <td>Backend Runtime</td>
+          <td><span class="badge badge-tier1">Critical Secret</span></td>
+          <td>API identification key for Cloudinary SDK authentication</td>
+        </tr>
+        <tr>
+          <td><code>CLOUDINARY_API_SECRET</code></td>
+          <td>Backend Runtime</td>
+          <td><span class="badge badge-tier1">Critical Secret</span></td>
+          <td>API signature secret authorizing image stream ingestion and deletions</td>
+        </tr>
+        <tr>
+          <td><code>INITIAL_ADMIN_EMAILS</code></td>
+          <td>Backend Runtime</td>
+          <td><span class="badge badge-put">Sensitive Policy</span></td>
+          <td>Comma-delimited email whitelist auto-promoted to admin upon registration</td>
+        </tr>
+        <tr>
+          <td><code>PORT</code></td>
+          <td>Backend Runtime</td>
+          <td><span class="badge badge-get">Configuration</span></td>
+          <td>Network port on which Express binds (defaults to 5000)</td>
+        </tr>
+        <tr>
+          <td><code>VITE_API_BASE_URL</code></td>
+          <td>Frontend Build</td>
+          <td><span class="badge badge-get">Configuration</span></td>
+          <td>Base HTTP address injected into Axios client pointing to API gateway</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- APPENDIX -->
+  <h2 id="appendix"><span class="num">08</span> Appendix: Comprehensive API Route Map</h2>
+
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>HTTP Method</th>
+          <th>Endpoint Path</th>
+          <th>Access Level</th>
+          <th>Controller Handler</th>
+          <th>Primary Middleware Pipeline</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="badge badge-post">POST</span></td><td><code>/api/auth/register</code></td><td>Public</td><td><code>registerUser</code></td><td><code>authLimiter &rarr; validate(registerSchema)</code></td></tr>
+        <tr><td><span class="badge badge-post">POST</span></td><td><code>/api/auth/login</code></td><td>Public</td><td><code>loginUser</code></td><td><code>authLimiter &rarr; validate(loginSchema)</code></td></tr>
+        <tr><td><span class="badge badge-patch">PATCH</span></td><td><code>/api/auth/users/:id/role</code></td><td>Admin</td><td><code>updateUserRole</code></td><td><code>protect &rarr; authorizeRoles('admin') &rarr; validate(updateUserRoleSchema)</code></td></tr>
+        <tr><td><span class="badge badge-get">GET</span></td><td><code>/api/products</code></td><td>Public</td><td><code>getProducts</code></td><td>None (Public catalog query)</td></tr>
+        <tr><td><span class="badge badge-get">GET</span></td><td><code>/api/products/my-products</code></td><td>Seller / Admin</td><td><code>getMyProducts</code></td><td><code>protect &rarr; authorizeRoles('seller', 'admin')</code></td></tr>
+        <tr><td><span class="badge badge-get">GET</span></td><td><code>/api/products/:id</code></td><td>Public</td><td><code>getProductById</code></td><td>None (Public product detail)</td></tr>
+        <tr><td><span class="badge badge-post">POST</span></td><td><code>/api/products</code></td><td>Seller / Admin</td><td><code>createProduct</code></td><td><code>protect &rarr; authorizeRoles &rarr; upload.array('images', 6) &rarr; validate(createProductSchema)</code></td></tr>
+        <tr><td><span class="badge badge-put">PUT</span></td><td><code>/api/products/:id</code></td><td>Owner / Admin</td><td><code>updateProduct</code></td><td><code>protect &rarr; upload.array('images', 6) &rarr; validate(updateProductSchema)</code></td></tr>
+        <tr><td><span class="badge badge-delete">DELETE</span></td><td><code>/api/products/:id</code></td><td>Owner / Admin</td><td><code>deleteProduct</code></td><td><code>protect</code> (Soft deletes record)</td></tr>
+        <tr><td><span class="badge badge-get">GET</span></td><td><code>/api/categories</code></td><td>Public</td><td><code>getCategories</code></td><td>None (Public category listing)</td></tr>
+        <tr><td><span class="badge badge-post">POST</span></td><td><code>/api/categories</code></td><td>Admin</td><td><code>createCategory</code></td><td><code>protect &rarr; authorizeRoles('admin') &rarr; validate(createCategorySchema)</code></td></tr>
+        <tr><td><span class="badge badge-get">GET</span></td><td><code>/api/orders/my-orders</code></td><td>Authenticated User</td><td><code>getMyOrders</code></td><td><code>protect</code> (Paginated customer orders)</td></tr>
+        <tr><td><span class="badge badge-post">POST</span></td><td><code>/api/orders</code></td><td>Authenticated User</td><td><code>createOrder</code></td><td><code>protect &rarr; validate(createOrderSchema) &rarr; $transaction</code></td></tr>
+        <tr><td><span class="badge badge-get">GET</span></td><td><code>/api/orders/seller-orders</code></td><td>Seller / Admin</td><td><code>getSellerOrders</code></td><td><code>protect &rarr; authorizeRoles('seller', 'admin')</code></td></tr>
+        <tr><td><span class="badge badge-get">GET</span></td><td><code>/api/orders/:id</code></td><td>Owner / Admin</td><td><code>getOrderById</code></td><td><code>protect</code></td></tr>
+        <tr><td><span class="badge badge-post">POST</span></td><td><code>/api/messages/send</code></td><td>Authenticated User</td><td><code>sendMessage</code></td><td><code>creationLimiter &rarr; protect &rarr; resolveProductReceiver()</code></td></tr>
+        <tr><td><span class="badge badge-get">GET</span></td><td><code>/api/messages/inbox</code></td><td>Authenticated User</td><td><code>getConversationsList</code></td><td><code>protect</code> (Grouped unique contact threads)</td></tr>
+        <tr><td><span class="badge badge-get">GET</span></td><td><code>/api/messages/unread-count</code></td><td>Authenticated User</td><td><code>getUnreadBadgeCount</code></td><td><code>protect</code></td></tr>
+        <tr><td><span class="badge badge-get">GET</span></td><td><code>/api/messages/chat/:productId</code></td><td>Authenticated User</td><td><code>getConversationByProduct</code></td><td><code>protect</code> (Resolves broker or seller thread)</td></tr>
+        <tr><td><span class="badge badge-get">GET</span></td><td><code>/api/messages/thread/:contactId</code></td><td>Authenticated User</td><td><code>getConversation</code></td><td><code>protect</code> (Auto-marks incoming messages read)</td></tr>
+        <tr><td><span class="badge badge-get">GET</span></td><td><code>/api/admin/overview</code></td><td>Admin</td><td><code>getOverview</code></td><td><code>protect &rarr; authorizeRoles('admin', 'super_admin')</code></td></tr>
+        <tr><td><span class="badge badge-get">GET</span></td><td><code>/api/admin/broker-inquiries</code></td><td>Admin</td><td><code>getBrokerInquiries</code></td><td><code>protect &rarr; authorizeRoles('admin')</code> (Deduplicated per deal)</td></tr>
+        <tr><td><span class="badge badge-get">GET</span></td><td><code>/api/admin/broker-inquiries/:id/messages</code></td><td>Admin</td><td><code>getInquiryMessages</code></td><td><code>protect &rarr; authorizeRoles('admin')</code></td></tr>
+        <tr><td><span class="badge badge-post">POST</span></td><td><code>/api/admin/broker-inquiries/:id/messages</code></td><td>Admin</td><td><code>sendInquiryReply</code></td><td><code>protect &rarr; authorizeRoles('admin') &rarr; Auto-advance ASSIGNED</code></td></tr>
+        <tr><td><span class="badge badge-put">PUT</span></td><td><code>/api/admin/broker-inquiries/:id/status</code></td><td>Admin</td><td><code>updateBrokerInquiryStatus</code></td><td><code>protect &rarr; authorizeRoles('admin') &rarr; Upserts DB record</code></td></tr>
+        <tr><td><span class="badge badge-put">PUT</span></td><td><code>/api/admin/broker-inquiries/:id/appointment</code></td><td>Admin</td><td><code>setBrokerAppointment</code></td><td><code>protect &rarr; authorizeRoles('admin') &rarr; Upserts appointment date</code></td></tr>
+        <tr><td><span class="badge badge-get">GET</span></td><td><code>/api/admin/products</code></td><td>Admin</td><td><code>getProducts</code></td><td><code>protect &rarr; authorizeRoles('admin')</code></td></tr>
+        <tr><td><span class="badge badge-put">PUT</span></td><td><code>/api/admin/products/:id/status</code></td><td>Admin</td><td><code>updateProductStatus</code></td><td><code>protect &rarr; authorizeRoles('admin')</code></td></tr>
+        <tr><td><span class="badge badge-put">PUT</span></td><td><code>/api/admin/products/:id/reject</code></td><td>Admin</td><td><code>rejectProduct</code></td><td><code>protect &rarr; authorizeRoles('admin')</code></td></tr>
+        <tr><td><span class="badge badge-delete">DELETE</span></td><td><code>/api/admin/products/:id</code></td><td>Admin</td><td><code>deleteProduct</code></td><td><code>protect &rarr; authorizeRoles('admin')</code></td></tr>
+        <tr><td><span class="badge badge-get">GET</span></td><td><code>/api/admin/stores</code></td><td>Admin</td><td><code>getStores</code></td><td><code>protect &rarr; authorizeRoles('admin')</code></td></tr>
+        <tr><td><span class="badge badge-put">PUT</span></td><td><code>/api/admin/stores/:id/status</code></td><td>Admin</td><td><code>updateStoreStatus</code></td><td><code>protect &rarr; authorizeRoles('admin')</code></td></tr>
+        <tr><td><span class="badge badge-get">GET</span></td><td><code>/api/admin/categories</code></td><td>Admin</td><td><code>getCategories</code></td><td><code>protect &rarr; authorizeRoles('admin')</code></td></tr>
+        <tr><td><span class="badge badge-post">POST</span></td><td><code>/api/admin/categories</code></td><td>Admin</td><td><code>createCategory</code></td><td><code>protect &rarr; authorizeRoles('admin')</code></td></tr>
+        <tr><td><span class="badge badge-put">PUT</span></td><td><code>/api/admin/categories/:id</code></td><td>Admin</td><td><code>updateCategory</code></td><td><code>protect &rarr; authorizeRoles('admin')</code></td></tr>
+        <tr><td><span class="badge badge-put">PUT</span></td><td><code>/api/admin/categories/:id/status</code></td><td>Admin</td><td><code>updateCategoryStatus</code></td><td><code>protect &rarr; authorizeRoles('admin')</code></td></tr>
+        <tr><td><span class="badge badge-get">GET</span></td><td><code>/api/admin/users</code></td><td>Admin</td><td><code>getUsers</code></td><td><code>protect &rarr; authorizeRoles('admin')</code></td></tr>
+        <tr><td><span class="badge badge-put">PUT</span></td><td><code>/api/admin/users/:id/status</code></td><td>Admin</td><td><code>updateUserStatus</code></td><td><code>protect &rarr; authorizeRoles('admin')</code> (Toggles suspension)</td></tr>
+        <tr><td><span class="badge badge-get">GET</span></td><td><code>/api/admin/management/admins</code></td><td>Admin</td><td><code>getStaffAdmins</code></td><td><code>protect &rarr; authorizeRoles('admin')</code></td></tr>
+        <tr><td><span class="badge badge-post">POST</span></td><td><code>/api/admin/management/admins</code></td><td>Admin</td><td><code>createStaffAdmin</code></td><td><code>protect &rarr; authorizeRoles('admin')</code></td></tr>
+        <tr><td><span class="badge badge-put">PUT</span></td><td><code>/api/admin/management/admins/:id/status</code></td><td>Admin</td><td><code>updateStaffAdminStatus</code></td><td><code>protect &rarr; authorizeRoles('admin')</code></td></tr>
+        <tr><td><span class="badge badge-get">GET</span></td><td><code>/api/stores</code></td><td>Public</td><td><code>getStores</code></td><td>None (Public store directory)</td></tr>
+        <tr><td><span class="badge badge-post">POST</span></td><td><code>/api/stores</code></td><td>Seller / Admin</td><td><code>createStore</code></td><td><code>protect &rarr; upload.single('logo') &rarr; validate(createStoreSchema)</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <footer>
+    <div>Injibara Market Master Architecture Briefing &mdash; Monorepo EZE-intern/injibara-market</div>
+    <div>Confidential &bull; Prepared for Senior Technical Presentation</div>
+  </footer>
+
+</main>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      primaryColor: '#1e293b',
+      primaryTextColor: '#f1f5f9',
+      primaryBorderColor: '#38bdf8',
+      lineColor: '#38bdf8',
+      secondaryColor: '#111827',
+      tertiaryColor: '#0b0f19',
+      fontFamily: '-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif',
+      fontSize: '13px',
+    },
+    flowchart: { curve: 'basis', padding: 24 },
+    sequence: { actorMargin: 60, messageFontSize: 12, boxMargin: 10 },
+    er: { fontSize: 12, useMaxWidth: true }
+  });
+</script>
+
+</body>
+</html>
