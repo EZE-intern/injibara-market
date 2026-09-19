@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { BrowserRouter } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
+import { Analytics } from "@vercel/analytics/react";
 import ErrorBoundary from "./components/common/ErrorBoundary";
 import AppRoutes from "./routes/AppRoutes";
 
@@ -28,6 +29,7 @@ function App() {
     <BrowserRouter>
       <ErrorBoundary>
         <AppRoutes />
+        <Analytics />
         <Toaster
           position="top-right"
           toastOptions={{
