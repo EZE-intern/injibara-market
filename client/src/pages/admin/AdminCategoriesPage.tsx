@@ -211,18 +211,39 @@ function AdminCategoriesPage() {
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => {
-            setEditingCategory(null);
-            setForm(emptyForm);
-            setError(null);
-            setShowModal(true);
-          }}
-          className="rounded-xl bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-purple-700"
-        >
-          Add Category
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              const csvData = categories.map((c) => ({
+                ID: c.id,
+                Name: c.name,
+                Slug: c.slug,
+                Products: c.product_count,
+                Tier: c.tier,
+                Status: c.is_active ? "Active" : "Inactive",
+                "Created Date": new Date(c.created_at).toLocaleDateString(),
+              }));
+              exportToCSV(csvData, "categories.csv");
+            }}
+            className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition"
+          >
+            Export CSV
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setEditingCategory(null);
+              setForm(emptyForm);
+              setError(null);
+              setShowModal(true);
+            }}
+            className="rounded-xl bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-purple-700"
+          >
+            Add Category
+          </button>
+        </div>
       </div>
 
       {/* Error */}

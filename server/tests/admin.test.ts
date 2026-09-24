@@ -19,6 +19,10 @@ describe('Admin Routes & Security Tests', () => {
     vi.spyOn((prisma as any).broker_inquiries, 'findMany').mockResolvedValue([]);
     vi.spyOn((prisma as any).broker_inquiries, 'findUnique').mockResolvedValue(null);
     vi.spyOn((prisma as any).broker_inquiries, 'upsert').mockResolvedValue({} as any);
+    vi.spyOn(prisma.categories, 'count').mockResolvedValue(0 as any);
+    vi.spyOn(prisma.users, 'count').mockResolvedValue(0 as any);
+    vi.spyOn(prisma.stores, 'count').mockResolvedValue(0 as any);
+    vi.spyOn(prisma.products, 'count').mockResolvedValue(0 as any);
   });
 
   it('should reject unauthenticated requests to /api/admin/overview with 401', async () => {
@@ -75,6 +79,7 @@ describe('Admin Routes & Security Tests', () => {
   });
 
   it('should allow admin to get categories with tier classification', async () => {
+    vi.spyOn(prisma.categories, 'count').mockResolvedValue(2 as any);
     vi.spyOn(prisma.categories, 'findMany').mockResolvedValue([
       {
         id: 1,
@@ -108,6 +113,7 @@ describe('Admin Routes & Security Tests', () => {
   });
 
   it('should allow admin to get users list', async () => {
+    vi.spyOn(prisma.users, 'count').mockResolvedValue(1 as any);
     vi.spyOn(prisma.users, 'findMany').mockResolvedValue([
       {
         id: 1,
@@ -131,6 +137,7 @@ describe('Admin Routes & Security Tests', () => {
   });
 
   it('should allow admin to get stores list', async () => {
+    vi.spyOn(prisma.stores, 'count').mockResolvedValue(1 as any);
     vi.spyOn(prisma.stores, 'findMany').mockResolvedValue([
       {
         id: 1,

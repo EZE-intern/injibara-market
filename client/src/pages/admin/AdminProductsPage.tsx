@@ -248,14 +248,36 @@ function AdminProductsPage() {
           HEADER
       ========================= */}
 
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">
-          Products
-        </h1>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">
+            Products
+          </h1>
 
-        <p className="mt-1 text-sm text-gray-500">
-          Review and moderate marketplace listings.
-        </p>
+          <p className="mt-1 text-sm text-gray-500">
+            Review and moderate marketplace listings.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            const csvData = filteredProducts.map((p) => ({
+              ID: p.id,
+              Name: p.name,
+              Seller: p.seller?.full_name || "Unknown",
+              Category: p.category?.name || "Uncategorized",
+              Price: p.price,
+              Stock: p.stock ?? 0,
+              Status: p.status,
+              "Created Date": new Date(p.created_at).toLocaleDateString(),
+            }));
+            exportToCSV(csvData, "products.csv");
+          }}
+          className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition"
+        >
+          Export CSV
+        </button>
       </div>
 
       {/* =========================
