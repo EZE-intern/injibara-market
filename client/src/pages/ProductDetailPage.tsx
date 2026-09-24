@@ -162,15 +162,15 @@ function ProductDetailPage() {
       : [];
 
   return (
-    <div className="min-h-screen bg-white flex flex-col justify-between">
+    <div className="min-h-screen bg-white dark:bg-[#0b0f19] flex flex-col justify-between">
       <CustomerNavbar />
 
-      <main className="flex-1 bg-gray-50">
+      <main className="flex-1 bg-gray-50 dark:bg-[#0b0f19]">
         {/* Back Navigation */}
         <div className="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
           <Link
             to="/products"
-            className="text-sm font-medium text-gray-500 transition hover:text-brand-600 flex items-center gap-1"
+            className="text-sm font-medium text-gray-500 dark:text-gray-400 transition hover:text-brand-600 dark:hover:text-brand-400 flex items-center gap-1"
           >
             <span>&larr;</span> Back to Marketplace
           </Link>
@@ -178,12 +178,12 @@ function ProductDetailPage() {
 
         {/* Product Details */}
         <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          <div className="overflow-hidden rounded-2xl bg-white shadow-sm border border-gray-150">
+          <div className="overflow-hidden rounded-2xl bg-white dark:bg-slate-900 shadow-sm border border-gray-150 dark:border-slate-800">
             <div className="grid lg:grid-cols-2">
               {/* Media Gallery */}
-              <div className="flex flex-col bg-gray-50 p-6 lg:p-8 border-b lg:border-b-0 lg:border-r border-gray-150">
+              <div className="flex flex-col bg-gray-50 dark:bg-slate-900/60 p-6 lg:p-8 border-b lg:border-b-0 lg:border-r border-gray-150 dark:border-slate-800">
                 {/* Main Active Image */}
-                <div className="flex aspect-square w-full items-center justify-center overflow-hidden rounded-xl bg-white shadow-inner border border-gray-200">
+                <div className="flex aspect-square w-full items-center justify-center overflow-hidden rounded-xl bg-white dark:bg-slate-800 shadow-inner border border-gray-200 dark:border-slate-700">
                   {selectedImage ? (
                     <img
                       src={selectedImage}
@@ -192,7 +192,7 @@ function ProductDetailPage() {
                     />
                   ) : (
                     <div className="text-center text-gray-400">
-                      <svg className="mx-auto h-12 w-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="mx-auto h-12 w-12 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
                       <p className="mt-2 text-sm">No photo available</p>
@@ -208,10 +208,10 @@ function ProductDetailPage() {
                         key={img.id || idx}
                         type="button"
                         onClick={() => setSelectedImage(img.image_url)}
-                        className={`relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg border-2 bg-white transition cursor-pointer ${
+                        className={`relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg border-2 bg-white dark:bg-slate-800 transition cursor-pointer ${
                           selectedImage === img.image_url
-                            ? "border-brand-600 shadow-md ring-2 ring-brand-100"
-                            : "border-gray-200 hover:border-gray-300"
+                            ? "border-brand-600 shadow-md ring-2 ring-brand-100 dark:ring-brand-950"
+                            : "border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600"
                         }`}
                       >
                         <img
@@ -235,11 +235,11 @@ function ProductDetailPage() {
                 <div>
                   {/* Category */}
                   <div className="flex flex-wrap gap-2">
-                    <span className="rounded-full bg-brand-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-brand-700">
+                    <span className="rounded-full bg-brand-50 dark:bg-brand-950/60 px-3 py-1 text-xs font-bold uppercase tracking-wider text-brand-700 dark:text-brand-400">
                       {categoryName}
                     </span>
                     {product.subCategory && (
-                      <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
+                      <span className="rounded-full bg-gray-100 dark:bg-slate-800 px-3 py-1 text-xs font-medium text-gray-600 dark:text-gray-300">
                         {product.subCategory}
                       </span>
                     )}
@@ -247,65 +247,65 @@ function ProductDetailPage() {
 
                   {/* Brand if exists */}
                   {product.brand && (
-                    <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-gray-400">
+                    <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-400">
                       {product.brand}
                     </p>
                   )}
 
                   {/* Product name */}
-                  <h1 className="mt-2 text-2xl font-bold text-gray-900 sm:text-3xl tracking-tight">
+                  <h1 className="mt-2 text-2xl font-bold text-gray-900 dark:text-white sm:text-3xl tracking-tight">
                     {product.name}
                   </h1>
 
                   {/* Price */}
                   <div className="mt-4">
-                    <span className="text-3xl font-extrabold text-gray-900">
-                      {price} <span className="text-brand-600 text-xl font-bold">ETB</span>
+                    <span className="text-3xl font-extrabold text-gray-900 dark:text-white">
+                      {price} <span className="text-brand-600 dark:text-brand-400 text-xl font-bold">ETB</span>
                     </span>
                   </div>
 
                   {/* Divider */}
-                  <div className="my-6 border-t border-gray-150" />
+                  <div className="my-6 border-t border-gray-150 dark:border-slate-800" />
 
                   {/* Description */}
                   <div>
-                    <h2 className="text-sm font-bold uppercase tracking-wider text-gray-900">
+                    <h2 className="text-sm font-bold uppercase tracking-wider text-gray-900 dark:text-white">
                       Description
                     </h2>
-                    <p className="mt-2 text-sm leading-relaxed text-gray-600 whitespace-pre-line">
+                    <p className="mt-2 text-base leading-relaxed text-gray-700 dark:text-gray-200 whitespace-pre-line font-normal">
                       {product.description || "No description provided for this product."}
                     </p>
                   </div>
 
                   {/* Product Details Table */}
                   <div className="mt-6">
-                    <h2 className="text-sm font-bold uppercase tracking-wider text-gray-900">
+                    <h2 className="text-sm font-bold uppercase tracking-wider text-gray-900 dark:text-white">
                       Listing Summary
                     </h2>
 
-                    <div className="mt-3 divide-y divide-gray-100 rounded-xl border border-gray-150 bg-gray-50/50 text-xs">
+                    <div className="mt-3 divide-y divide-gray-100 dark:divide-slate-800 rounded-xl border border-gray-150 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/80 text-xs">
                       <div className="flex justify-between px-4 py-2.5">
-                        <span className="text-gray-500">Category</span>
-                        <span className="font-semibold text-gray-900">{categoryName}</span>
+                        <span className="text-gray-500 dark:text-gray-400 font-medium">Category</span>
+                        <span className="font-semibold text-gray-900 dark:text-white">{categoryName}</span>
                       </div>
 
                       {product.location && (
                         <div className="flex justify-between px-4 py-2.5">
-                          <span className="text-gray-500">Location</span>
-                          <span className="font-semibold text-gray-900">{product.location}</span>
+                          <span className="text-gray-500 dark:text-gray-400 font-medium">Location</span>
+                          <span className="font-semibold text-gray-900 dark:text-white">{product.location}</span>
                         </div>
                       )}
 
                       <div className="flex justify-between px-4 py-2.5">
-                        <span className="text-gray-500">Listing Reference</span>
-                        <span className="font-mono text-gray-700">#{product.id}</span>
+                        <span className="text-gray-500 dark:text-gray-400 font-medium">Listing Reference</span>
+                        <span className="font-mono text-gray-700 dark:text-gray-200">#{product.id}</span>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Actions — Tier 1 brokered vs Tier 2 direct contact */}
-                <div className="mt-8 pt-6 border-t border-gray-150 flex flex-col gap-3">
+                <div className="mt-8 pt-6 border-t border-gray-150 dark:border-slate-800 flex flex-col gap-3">
                   {isTier1 && (
                     <p className="text-sm text-amber-800 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
                       High-value listing: an Injibara Market admin will mediate this inquiry.
@@ -340,8 +340,8 @@ function ProductDetailPage() {
                       }}
                       className={`flex items-center justify-center gap-2 rounded-lg border px-6 py-3 font-semibold transition cursor-pointer ${
                         isSaved
-                          ? "border-brand-300 bg-brand-50 text-brand-700 hover:bg-brand-100"
-                          : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                          ? "border-brand-300 dark:border-brand-800 bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-400 hover:bg-brand-100 dark:hover:bg-brand-900/60"
+                          : "border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700"
                       }`}
                       aria-label={isSaved ? "Remove from saved items" : "Save item"}
                     >

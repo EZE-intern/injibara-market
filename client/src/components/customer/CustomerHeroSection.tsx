@@ -2,9 +2,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, MapPin, Grid, Plus } from "lucide-react";
 import { isAuthenticated } from "../../utils/authStorage";
+import { useTheme } from "../../context/ThemeContext";
 
 function CustomerHeroSection() {
   const navigate = useNavigate();
+  const { isDark } = useTheme();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchLocation, setSearchLocation] = useState("");
   const authenticated = isAuthenticated();
@@ -42,12 +44,13 @@ function CustomerHeroSection() {
         />
       </div>
 
-      {/* Gradient overlay: solid white on the left fading to transparent on the right */}
+      {/* Gradient overlay: adaptive white in light mode, deep dark in dark mode fading to transparent */}
       <div
-        className="absolute inset-0"
+        className="absolute inset-0 transition-opacity duration-300"
         style={{
-          background:
-            "linear-gradient(to right, rgba(255,255,255,0.97) 0%, rgba(255,255,255,0.85) 20%, rgba(255,255,255,0.60) 45%, rgba(255,255,255,0.25) 70%, rgba(255,255,255,0) 100%)",
+          background: isDark
+            ? "linear-gradient(to right, rgba(11,15,25,0.98) 0%, rgba(11,15,25,0.92) 25%, rgba(11,15,25,0.70) 55%, rgba(11,15,25,0.25) 80%, rgba(11,15,25,0) 100%)"
+            : "linear-gradient(to right, rgba(255,255,255,0.97) 0%, rgba(255,255,255,0.85) 20%, rgba(255,255,255,0.60) 45%, rgba(255,255,255,0.25) 70%, rgba(255,255,255,0) 100%)",
         }}
       />
 
@@ -67,24 +70,24 @@ function CustomerHeroSection() {
       {/* Content */}
       <div className="relative z-10 mx-auto w-full max-w-7xl px-6 py-12 md:px-12 lg:px-16">
         <div className="max-w-2xl">
-          <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
+          <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-5xl lg:text-6xl">
             Your marketplace.
-            <span className="block text-brand-600 mt-1">Your community.</span>
+            <span className="block text-brand-600 dark:text-brand-500 mt-1">Your community.</span>
           </h1>
 
-          <p className="mt-4 text-base text-gray-700 sm:text-lg">
+          <p className="mt-4 text-base text-gray-700 dark:text-gray-200 sm:text-lg font-medium">
             Buy and sell products and services
             <br className="hidden sm:block" />
             from people around Injibara.
           </p>
-          <p className="mt-1.5 text-sm text-brand-700 font-medium">
+          <p className="mt-1.5 text-sm text-brand-700 dark:text-brand-400 font-semibold">
             በእንጅባራ የሚሸጡና የሚገዙትን ያግኙ።
           </p>
         </div>
 
         {/* Search Bar */}
         <form onSubmit={handleSearchSubmit} className="mt-8 max-w-2xl">
-          <div className="flex flex-col gap-2 rounded-xl bg-white p-2 shadow-lg sm:flex-row sm:items-center border border-gray-200">
+          <div className="flex flex-col gap-2 rounded-xl bg-white dark:bg-slate-900/90 p-2 shadow-lg sm:flex-row sm:items-center border border-gray-200 dark:border-slate-700 backdrop-blur-md">
             {/* Product Search Input */}
             <div className="flex flex-1 items-center gap-2 px-3">
               <Search size={18} className="text-gray-400 shrink-0" />
@@ -93,17 +96,17 @@ function CustomerHeroSection() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search products, services, vehicles..."
-                className="w-full py-2 text-sm text-gray-800 placeholder-gray-400 outline-none"
+                className="w-full py-2 text-sm text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none bg-transparent"
               />
             </div>
 
             {/* Location Filter */}
-            <div className="flex items-center gap-2 border-t border-gray-100 px-3 py-2 sm:border-t-0 sm:border-l sm:py-0 shrink-0">
-              <MapPin size={18} className="text-brand-600 shrink-0" />
+            <div className="flex items-center gap-2 border-t border-gray-100 dark:border-slate-800 px-3 py-2 sm:border-t-0 sm:border-l sm:py-0 shrink-0">
+              <MapPin size={18} className="text-brand-600 dark:text-brand-400 shrink-0" />
               <select
                 value={searchLocation}
                 onChange={(e) => setSearchLocation(e.target.value)}
-                className="bg-transparent text-sm font-medium text-gray-700 outline-none py-1.5 cursor-pointer"
+                className="bg-transparent text-sm font-medium text-gray-700 dark:text-gray-200 outline-none py-1.5 cursor-pointer dark:bg-slate-900"
               >
                 <option value="">All Locations</option>
                 <option value="injibara">Injibara</option>
@@ -139,7 +142,7 @@ function CustomerHeroSection() {
           <button
             type="button"
             onClick={handleSellClick}
-            className="flex items-center gap-2 rounded-lg border border-brand-600 bg-white/80 backdrop-blur-sm px-5 py-3 text-sm font-semibold text-brand-700 transition hover:bg-white cursor-pointer"
+            className="flex items-center gap-2 rounded-lg border border-brand-600 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm px-5 py-3 text-sm font-semibold text-brand-700 dark:text-brand-300 transition hover:bg-white dark:hover:bg-slate-900 cursor-pointer"
           >
             <Plus size={16} />
             Sell Something

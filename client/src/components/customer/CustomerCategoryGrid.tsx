@@ -102,7 +102,7 @@ function CustomerCategoryGrid() {
               <button
                 type="button"
                 onClick={() => setShowAll(!showAll)}
-                className="inline-flex items-center gap-1 text-xs font-bold text-brand-600 hover:text-brand-700 bg-brand-50 hover:bg-brand-100 px-3 py-1.5 rounded-lg transition cursor-pointer"
+                className="inline-flex items-center gap-1 text-xs font-bold text-brand-600 hover:text-brand-700 bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/60 dark:text-brand-400 dark:hover:bg-brand-900/60 px-3 py-1.5 rounded-lg transition cursor-pointer"
               >
                 {showAll ? (
                   <>
@@ -128,15 +128,15 @@ function CustomerCategoryGrid() {
               <Link
                 key={category.id}
                 to={`/products?category=${encodeURIComponent(category.name)}`}
-                className="group relative flex flex-col items-center justify-center rounded-2xl border border-gray-200 bg-white p-5 text-center transition hover:border-brand-600 hover:shadow-md"
+                className="group relative flex flex-col items-center justify-center rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 text-center transition hover:border-brand-600 dark:hover:border-brand-500 hover:shadow-md"
               >
                 {/* Icon Container */}
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-50 transition-transform group-hover:scale-110 group-hover:bg-brand-100">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-50 dark:bg-slate-800 transition-transform group-hover:scale-110 group-hover:bg-brand-100 dark:group-hover:bg-slate-700">
                   {getCategoryIconNode(category.slug || category.name)}
                 </div>
 
                 {/* Name */}
-                <h3 className="mt-3 text-sm font-bold text-gray-900 transition-colors group-hover:text-brand-700 truncate max-w-full">
+                <h3 className="mt-3 text-sm font-bold text-gray-900 dark:text-white transition-colors group-hover:text-brand-700 dark:group-hover:text-brand-400 truncate max-w-full">
                   {category.name}
                 </h3>
 

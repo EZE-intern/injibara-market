@@ -40,9 +40,9 @@ function ProductCard({ product }: ProductCardProps) {
       : product.categories?.name || (typeof product.category === "string" ? product.category : null);
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
+    <article className="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
       {/* Product Image */}
-      <Link to={`/products/${product.id}`} className="aspect-square overflow-hidden bg-gray-100 block relative">
+      <Link to={`/products/${product.id}`} className="aspect-square overflow-hidden bg-gray-100 dark:bg-slate-800 block relative">
         <img
           src={imageUrl}
           alt={product.name}
@@ -61,21 +61,21 @@ function ProductCard({ product }: ProductCardProps) {
         <div>
           {/* Category Badge */}
           {categoryName && (
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-brand-600 truncate">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-400 truncate">
               {categoryName}
             </p>
           )}
 
           {/* Product Name */}
           <Link to={`/products/${product.id}`}>
-            <h3 className="mt-1 text-sm font-semibold text-gray-900 line-clamp-1 hover:text-brand-600 transition-colors">
+            <h3 className="mt-1 text-sm font-semibold text-gray-900 dark:text-white line-clamp-1 hover:text-brand-600 dark:hover:text-brand-400 transition-colors">
               {product.name}
             </h3>
           </Link>
 
           {/* Location */}
           {product.location && (
-            <p className="mt-1 flex items-center gap-1 text-xs text-gray-400">
+            <p className="mt-1 flex items-center gap-1 text-xs text-gray-400 dark:text-gray-400">
               <svg
                 className="h-3.5 w-3.5 text-gray-400 shrink-0"
                 fill="none"
@@ -101,13 +101,13 @@ function ProductCard({ product }: ProductCardProps) {
         </div>
 
         {/* Price + View Button */}
-        <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
+        <div className="mt-3 pt-3 border-t border-gray-100 dark:border-slate-800 flex items-center justify-between">
           <div>
-            <span className="text-base font-bold text-gray-900">
+            <span className="text-base font-bold text-gray-900 dark:text-white">
               {discountPrice !== null && discountPrice < price
                 ? discountPrice.toLocaleString()
                 : price.toLocaleString()}{" "}
-              <span className="text-xs text-brand-600 font-semibold">ETB</span>
+              <span className="text-xs text-brand-600 dark:text-brand-400 font-semibold">ETB</span>
             </span>
             {discountPrice !== null && discountPrice < price && (
               <span className="block text-[11px] text-gray-400 line-through">
@@ -118,7 +118,7 @@ function ProductCard({ product }: ProductCardProps) {
 
           <Link
             to={`/products/${product.id}`}
-            className="rounded-lg bg-brand-50 px-3 py-1.5 text-xs font-bold text-brand-700 transition hover:bg-brand-600 hover:text-white"
+            className="rounded-lg bg-brand-50 dark:bg-brand-950/60 px-3 py-1.5 text-xs font-bold text-brand-700 dark:text-brand-400 transition hover:bg-brand-600 dark:hover:bg-brand-600 hover:text-white dark:hover:text-white"
           >
             View
           </Link>
