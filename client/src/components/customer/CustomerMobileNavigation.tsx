@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { getUser, isAuthenticated, clearAuth } from "../../utils/authStorage";
 import { getSavedProducts } from "../../utils/savedStorage";
 import { getUnreadCount } from "../../api/messageApi";
+import ThemeToggle from "../common/ThemeToggle";
 
 interface MobileNavigationProps {
   isOpen: boolean;
@@ -118,6 +119,11 @@ function CustomerMobileNavigation({ isOpen, onClose }: MobileNavigationProps) {
             </Link>
           </>
         )}
+
+        <div className="py-2 border-b border-gray-100 flex items-center justify-between">
+          <span className="text-sm font-medium text-gray-700">Appearance</span>
+          <ThemeToggle showLabel={true} />
+        </div>
 
         {authenticated ? (
           <div className="mt-4 flex flex-col gap-2">

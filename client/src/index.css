@@ -1,5 +1,7 @@
 @import 'tailwindcss';
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: 'Inter', 'Noto Sans Ethiopic', sans-serif;
 
@@ -21,6 +23,7 @@
   background: #ffffff;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
+  color-scheme: light;
 }
 
 html {
@@ -44,7 +47,126 @@ button {
   cursor: pointer;
 }
 
-/* a {
-  color: inherit;
-  text-decoration: none;
-} */
+/* =========================================================
+   COMPREHENSIVE DARK MODE COMPATIBILITY
+   Ensures existing UI seamlessly transforms into dark mode
+========================================================= */
+
+html.dark {
+  color-scheme: dark;
+  background-color: #0b0f19;
+  color: #f1f5f9;
+}
+
+html.dark body {
+  background-color: #0b0f19;
+  color: #f1f5f9;
+}
+
+/* Page containers and background surfaces */
+html.dark .bg-white {
+  background-color: #151d2f;
+}
+
+html.dark .bg-gray-50,
+html.dark .bg-slate-50 {
+  background-color: #0b0f19;
+}
+
+html.dark .bg-gray-100,
+html.dark .bg-slate-100 {
+  background-color: #1f293d;
+}
+
+/* Borders & Dividers */
+html.dark .border-gray-100,
+html.dark .border-gray-200,
+html.dark .border-gray-300,
+html.dark .border-slate-100,
+html.dark .border-slate-200 {
+  border-color: #243048;
+}
+
+html.dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]),
+html.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #243048;
+}
+
+/* Text elements */
+html.dark .text-slate-900,
+html.dark .text-gray-900,
+html.dark .text-black {
+  color: #f8fafc;
+}
+
+html.dark .text-slate-800,
+html.dark .text-gray-800 {
+  color: #f1f5f9;
+}
+
+html.dark .text-slate-700,
+html.dark .text-gray-700 {
+  color: #cbd5e1;
+}
+
+html.dark .text-slate-600,
+html.dark .text-gray-600 {
+  color: #94a3b8;
+}
+
+html.dark .text-slate-500,
+html.dark .text-gray-500 {
+  color: #8292ab;
+}
+
+html.dark .text-slate-400,
+html.dark .text-gray-400 {
+  color: #64748b;
+}
+
+/* Form Inputs, Selects, and Textareas */
+html.dark input:not([type='checkbox']):not([type='radio']),
+html.dark select,
+html.dark textarea {
+  background-color: #151d2f;
+  border-color: #2d3b55;
+  color: #f8fafc;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #556885;
+}
+
+/* Interactive & Hover states */
+html.dark .hover\:bg-gray-50:hover,
+html.dark .hover\:bg-slate-50:hover {
+  background-color: #1b253b;
+}
+
+html.dark .hover\:bg-gray-100:hover,
+html.dark .hover\:bg-slate-100:hover {
+  background-color: #243048;
+}
+
+html.dark .hover\:text-slate-900:hover,
+html.dark .hover\:text-gray-900:hover {
+  color: #ffffff;
+}
+
+/* Specific component surfaces: tables, modals, cards */
+html.dark table thead {
+  background-color: #101625;
+}
+
+html.dark thead.bg-gray-50,
+html.dark thead.bg-slate-50 {
+  background-color: #101625;
+}
+
+html.dark .shadow-sm,
+html.dark .shadow-md,
+html.dark .shadow-lg,
+html.dark .shadow-xl {
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+}

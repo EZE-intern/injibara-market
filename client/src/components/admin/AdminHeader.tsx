@@ -1,5 +1,6 @@
 import { Search, Bell } from "lucide-react";
 import { getUser } from "../../utils/authStorage";
+import ThemeToggle from "../common/ThemeToggle";
 
 function AdminHeader() {
   const user = getUser();
@@ -48,6 +49,11 @@ function AdminHeader() {
 
             <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500" />
           </button>
+
+          {/* Dark Mode Toggle */}
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-gray-200 bg-white">
+            <ThemeToggle />
+          </div>
 
           {/* User */}
           <div className="flex items-center gap-3 rounded-xl border border-gray-200 px-3 py-2">

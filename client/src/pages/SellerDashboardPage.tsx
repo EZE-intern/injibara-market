@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getMyProducts } from "../api/productApi";
 import { getUser } from "../utils/authStorage";
+import ThemeToggle from "../components/common/ThemeToggle";
 
 export default function SellerDashboardPage() {
   const [productCount, setProductCount] = useState<number>(0);
@@ -67,6 +68,7 @@ export default function SellerDashboardPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+              <ThemeToggle />
               {isAdmin && (
                 <Link
                   to="/admin"

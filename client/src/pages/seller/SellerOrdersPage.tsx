@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getSellerOrders, type Order } from "../../api/orderApi";
 import { Package, User, Phone, MapPin } from "lucide-react";
+import ThemeToggle from "../../components/common/ThemeToggle";
 
 const getStatusBadge = (status: string) => {
   switch (status?.toLowerCase()) {
@@ -80,6 +81,7 @@ export default function SellerOrdersPage() {
           >
             <span>&larr;</span> Back to Seller Hub
           </Link>
+          <ThemeToggle />
         </div>
 
         {/* Header */}

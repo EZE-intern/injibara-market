@@ -4,6 +4,7 @@ import { getMyProducts, deleteProduct } from "../../api/productApi";
 import type { Product } from "../../types/Product";
 import { notify } from "../../utils/notify";
 import { isAuthenticated } from "../../utils/authStorage";
+import ThemeToggle from "../../components/common/ThemeToggle";
 
 export default function SellerProductsPage() {
   const navigate = useNavigate();
@@ -84,12 +85,15 @@ export default function SellerProductsPage() {
             </p>
           </div>
 
-          <Link
-            to="/seller/products/new"
-            className="inline-flex items-center justify-center rounded-xl bg-brand-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brand-700 cursor-pointer"
-          >
-            + አዲስ ምርት ጨምር (Add Product)
-          </Link>
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <Link
+              to="/seller/products/new"
+              className="inline-flex items-center justify-center rounded-xl bg-brand-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brand-700 cursor-pointer"
+            >
+              + አዲስ ምርት ጨምር (Add Product)
+            </Link>
+          </div>
         </div>
 
         {/* Content Table / Cards */}

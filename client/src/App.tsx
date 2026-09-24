@@ -4,6 +4,7 @@ import { Toaster } from "react-hot-toast";
 import { Analytics } from "@vercel/analytics/react";
 import ErrorBoundary from "./components/common/ErrorBoundary";
 import AppRoutes from "./routes/AppRoutes";
+import { ThemeProvider } from "./context/ThemeContext";
 
 // Shared warm-up promise: fires a healthz ping that touches the database,
 // warming the Prisma/TiDB connection pool. Homepage data components
@@ -26,23 +27,25 @@ function App() {
   }, []);
 
   return (
-    <BrowserRouter>
-      <ErrorBoundary>
-        <AppRoutes />
-        <Analytics />
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            duration: 4000,
-            style: {
-              maxWidth: 420,
-              borderRadius: "0.75rem",
-              padding: "12px 16px",
-            },
-          }}
-        />
-      </ErrorBoundary>
-    </BrowserRouter>
+    <ThemeProvider>
+      <BrowserRouter>
+        <ErrorBoundary>
+          <AppRoutes />
+          <Analytics />
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              duration: 4000,
+              style: {
+                maxWidth: 420,
+                borderRadius: "0.75rem",
+                padding: "12px 16px",
+              },
+            }}
+          />
+        </ErrorBoundary>
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }
 
