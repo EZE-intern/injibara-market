@@ -101,10 +101,10 @@ function ProductDetailPage() {
                 Try Again
               </button>
               <Link
-                to="/products"
-                className="rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+                to="/"
+                className="rounded-lg border border-gray-300 dark:border-slate-700 px-5 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-200 transition hover:bg-gray-50 dark:hover:bg-slate-800"
               >
-                Back to Marketplace
+                Return to Homepage
               </Link>
             </div>
           </div>
@@ -130,10 +130,10 @@ function ProductDetailPage() {
               The product you are looking for does not exist or has been removed.
             </p>
             <Link
-              to="/products"
+              to="/"
               className="mt-6 inline-block rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700 shadow-sm"
             >
-              Back to Marketplace
+              Return to Homepage
             </Link>
           </div>
         </main>
@@ -169,10 +169,10 @@ function ProductDetailPage() {
         {/* Back Navigation */}
         <div className="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
           <Link
-            to="/products"
+            to="/"
             className="text-sm font-medium text-gray-500 dark:text-gray-400 transition hover:text-brand-600 dark:hover:text-brand-400 flex items-center gap-1"
           >
-            <span>&larr;</span> Back to Marketplace
+            <span>&larr;</span> Return to Homepage
           </Link>
         </div>
 

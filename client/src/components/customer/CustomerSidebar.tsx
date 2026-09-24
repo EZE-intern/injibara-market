@@ -23,8 +23,8 @@ function CustomerSidebar({
       path: "/products",
     },
     {
-      name: "My Orders",
-      path: "/customer/orders",
+      name: "Messages",
+      path: "/customer/messages",
     },
     {
       name: "Saved Products",

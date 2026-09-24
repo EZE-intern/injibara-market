@@ -40,7 +40,7 @@ function CustomerFooter() {
               <li><Link to="/products" className="hover:text-white transition">Browse Listings</Link></li>
               <li><Link to="/categories" className="hover:text-white transition">Categories</Link></li>
               <li><Link to="/seller" className="hover:text-white transition">Seller Hub</Link></li>
-              <li><Link to="/customer/orders" className="hover:text-white transition">My Orders</Link></li>
+              <li><Link to="/customer/saved" className="hover:text-white transition">Saved Items</Link></li>
             </ul>
           </div>
 

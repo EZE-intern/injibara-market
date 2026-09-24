@@ -119,13 +119,6 @@ function CustomerNavbar() {
             Sell
           </button>
 
-          <Link
-            to="/customer/orders"
-            className="text-sm font-medium text-gray-700 transition-colors hover:text-brand-600"
-          >
-            Orders
-          </Link>
-
           {isAdmin && (
             <Link
               to="/admin"

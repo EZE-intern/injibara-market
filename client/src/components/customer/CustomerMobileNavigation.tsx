@@ -83,14 +83,6 @@ function CustomerMobileNavigation({ isOpen, onClose }: MobileNavigationProps) {
           Sell
         </button>
 
-        <Link
-          to="/customer/orders"
-          onClick={onClose}
-          className="border-b border-gray-100 py-3 text-sm font-medium text-gray-700 hover:text-brand-600"
-        >
-          My Orders
-        </Link>
-
         {authenticated && (
           <>
             <Link
