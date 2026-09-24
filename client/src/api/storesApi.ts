@@ -17,16 +17,28 @@ export interface AdminStore {
   created_at: string;
 }
 
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
 interface StoresResponse {
   success: boolean;
   count: number;
   data: AdminStore[];
+  pagination: PaginationMeta;
 }
 
-export const getAdminStores = async (): Promise<AdminStore[]> => {
-  const response = await axiosClient.get<StoresResponse>("/admin/stores");
-
-  return response.data.data;
+export const getAdminStores = async (
+  params?: { page?: number; limit?: number }
+): Promise<{ data: AdminStore[]; pagination: PaginationMeta }> => {
+  const response = await axiosClient.get<StoresResponse>("/admin/stores", { params });
+  return {
+    data: response.data.data,
+    pagination: response.data.pagination,
+  };
 };
 
 interface StoreResponse {

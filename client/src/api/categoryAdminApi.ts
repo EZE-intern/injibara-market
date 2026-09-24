@@ -15,18 +15,31 @@ export interface AdminCategory {
   created_at: string;
 }
 
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
 interface CategoriesResponse {
   success: boolean;
   count: number;
   data: AdminCategory[];
+  pagination: PaginationMeta;
 }
 
-export const getAdminCategories = async (): Promise<AdminCategory[]> => {
+export const getAdminCategories = async (
+  params?: { page?: number; limit?: number }
+): Promise<{ data: AdminCategory[]; pagination: PaginationMeta }> => {
   const response = await axiosClient.get<CategoriesResponse>(
-    "/admin/categories"
+    "/admin/categories",
+    { params }
   );
-
-  return response.data.data;
+  return {
+    data: response.data.data,
+    pagination: response.data.pagination,
+  };
 };
 
 interface CategoryResponse {

@@ -1,5 +1,8 @@
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getUser, isAuthenticated, clearAuth } from "../../utils/authStorage";
+import { getSavedProducts } from "../../utils/savedStorage";
+import { getUnreadCount } from "../../api/messageApi";
 
 interface MobileNavigationProps {
   isOpen: boolean;
@@ -10,6 +13,29 @@ function CustomerMobileNavigation({ isOpen, onClose }: MobileNavigationProps) {
   const navigate = useNavigate();
   const user = getUser();
   const authenticated = isAuthenticated();
+
+  const [savedCount, setSavedCount] = useState(0);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    setSavedCount(getSavedProducts().length);
+    const handleUpdate = () => setSavedCount(getSavedProducts().length);
+    window.addEventListener('saved_products_updated', handleUpdate);
+    return () => window.removeEventListener('saved_products_updated', handleUpdate);
+  }, []);
+
+  useEffect(() => {
+    if (!authenticated) return;
+    const fetchUnread = async () => {
+      try {
+        const count = await getUnreadCount();
+        setUnreadCount(count);
+      } catch (err) {
+        console.error('Failed to fetch unread count', err);
+      }
+    };
+    fetchUnread();
+  }, [authenticated]);
 
   if (!isOpen) {
     return null;
@@ -69,9 +95,26 @@ function CustomerMobileNavigation({ isOpen, onClose }: MobileNavigationProps) {
             <Link
               to="/customer/saved"
               onClick={onClose}
-              className="border-b border-gray-100 py-3 text-sm font-medium text-gray-700 hover:text-brand-600"
+              className="border-b border-gray-100 py-3 text-sm font-medium text-gray-700 hover:text-brand-600 flex items-center justify-between"
             >
-              Saved Items
+              <span>Saved Items</span>
+              {savedCount > 0 && (
+                <span className="rounded-full bg-brand-600 px-2 py-0.5 text-xs font-bold text-white">
+                  {savedCount}
+                </span>
+              )}
+            </Link>
+            <Link
+              to="/customer/messages"
+              onClick={onClose}
+              className="border-b border-gray-100 py-3 text-sm font-medium text-gray-700 hover:text-brand-600 flex items-center justify-between"
+            >
+              <span>Messages</span>
+              {unreadCount > 0 && (
+                <span className="rounded-full bg-red-500 px-2 py-0.5 text-xs font-bold text-white">
+                  {unreadCount}
+                </span>
+              )}
             </Link>
           </>
         )}

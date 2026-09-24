@@ -77,7 +77,8 @@ const messageController = {
         // First contact — resolve receiver from product
         productIdNum = Number(product_id);
         const userRole = req.user.role?.toLowerCase();
-        if ((userRole === 'admin' || userRole === 'super_admin') && !receiver_id) {
+        const asCustomer = req.body.as_customer === true;
+        if ((userRole === 'admin' || userRole === 'super_admin') && !receiver_id && !asCustomer) {
           const initialMsg = await prisma.messages.findFirst({
             where: { product_id: productIdNum, NOT: { sender_id: senderId } },
             orderBy: { created_at: 'asc' },

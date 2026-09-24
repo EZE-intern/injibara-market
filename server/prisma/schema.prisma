@@ -269,6 +269,7 @@ model users {
   reviews                              reviews[]
   stores                               stores[]
   broker_inquiries                     broker_inquiries[]
+  admin_permissions                    admin_permissions[]
 }
 
 model broker_inquiries {
@@ -346,3 +347,15 @@ enum products_status {
   inactive
   archived
 }
+
+model admin_permissions {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  permission String   @db.VarChar(50)
+  created_at DateTime @default(now()) @db.Timestamp(0)
+  users      users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
+
+  @@unique([user_id, permission])
+  @@index([user_id])
+}
+

@@ -20,17 +20,39 @@ export interface AdminUser {
   created_at: string;
 }
 
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
 interface UsersResponse {
   success: boolean;
   count: number;
   data: AdminUser[];
+  pagination: PaginationMeta;
 }
 
-export const getAdminUsers = async (): Promise<AdminUser[]> => {
+export const getAdminUsers = async (
+  params?: { page?: number; limit?: number }
+): Promise<{ data: AdminUser[]; pagination: PaginationMeta }> => {
   const response = await axiosClient.get<UsersResponse>(
-    "/admin/users"
+    "/admin/users",
+    { params }
   );
 
+  return {
+    data: response.data.data,
+    pagination: response.data.pagination,
+  };
+};
+
+export const getAllAdminUsers = async (): Promise<AdminUser[]> => {
+  const response = await axiosClient.get<UsersResponse>(
+    "/admin/users",
+    { params: { page: 1, limit: 10000 } }
+  );
   return response.data.data;
 };
 

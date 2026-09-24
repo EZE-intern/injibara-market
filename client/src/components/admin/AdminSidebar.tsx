@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -13,48 +14,71 @@ import {
   User,
 } from "lucide-react";
 import { clearAuth, getUser } from "../../utils/authStorage";
+import { getMyPermissions } from "../../api/permissionsApi";
 
 function AdminSidebar() {
   const user = getUser();
   const navigate = useNavigate();
+  const [permissions, setPermissions] = useState<string[] | null>(null);
+
+  useEffect(() => {
+    getMyPermissions()
+      .then((perms) => setPermissions(perms))
+      .catch((err) => {
+        console.error("Failed to load admin permissions", err);
+        setPermissions([]);
+      });
+  }, []);
 
   const navigation = [
     {
       name: "Overview",
       path: "/admin",
       icon: LayoutDashboard,
+      permission: "overview",
     },
     {
       name: "Broker Hub",
       path: "/admin/broker-hub",
       icon: Briefcase,
+      permission: "broker_hub",
     },
     {
       name: "Products",
       path: "/admin/products",
       icon: Package,
+      permission: "products",
     },
     {
       name: "Stores",
       path: "/admin/stores",
       icon: Store,
+      permission: "stores",
     },
     {
       name: "Categories",
       path: "/admin/categories",
       icon: Layers,
+      permission: "categories",
     },
     {
       name: "Users",
       path: "/admin/users",
       icon: Users,
+      permission: "users",
     },
     {
       name: "Admin Management",
       path: "/admin/admin-management",
       icon: UserCog,
+      permission: "admin_management",
     },
   ];
+
+  const visibleNavigation =
+    permissions === null || permissions.length === 0
+      ? navigation
+      : navigation.filter((item) => permissions.includes(item.permission));
 
   const handleLogout = () => {
     clearAuth();
@@ -82,7 +106,7 @@ function AdminSidebar() {
           NAVIGATION
       ========================= */}
       <nav className="space-y-1 px-4 py-6 overflow-y-auto max-h-[calc(100vh-180px)]">
-        {navigation.map((item) => {
+        {visibleNavigation.map((item) => {
           const Icon = item.icon;
           return (
             <NavLink
@@ -112,8 +136,9 @@ function AdminSidebar() {
         {/* =========================
             SETTINGS
         ========================= */}
-        <NavLink
-          to="/admin/settings"
+        {(permissions === null || permissions.length === 0 || permissions.includes('settings')) && (
+          <NavLink
+            to="/admin/settings"
           className={({ isActive }) =>
             [
               "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition",
@@ -125,7 +150,8 @@ function AdminSidebar() {
         >
           <Settings className="h-5 w-5 shrink-0" />
           <span>Settings</span>
-        </NavLink>
+          </NavLink>
+        )}
 
         {/* =========================
             EXIT ADMIN / SWITCH PORTALS

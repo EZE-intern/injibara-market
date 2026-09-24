@@ -5,10 +5,34 @@ import {
   type AdminUser,
   type AdminUserRole,
   type AdminUserStatus,
+  type PaginationMeta,
 } from "../../api/userAdminApi";
+
+function exportToCSV(data: Record<string, unknown>[], filename: string) {
+  if (data.length === 0) return;
+  const headers = Object.keys(data[0]);
+  const csvRows = [
+    headers.join(','),
+    ...data.map(row =>
+      headers.map(h => {
+        const val = String(row[h] ?? '');
+        return `"${val.replace(/"/g, '""')}"`;
+      }).join(',')
+    ),
+  ];
+  const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 function AdminUsersPage() {
   const [users, setUsers] = useState<AdminUser[]>([]);
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState<PaginationMeta | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -25,8 +49,9 @@ function AdminUsersPage() {
         setLoading(true);
         setError(null);
 
-        const data = await getAdminUsers();
+        const { data, pagination: meta } = await getAdminUsers({ page, limit: 10 });
         setUsers(data);
+        setPagination(meta);
       } catch (err) {
         console.error(err);
         setError("Unable to load users.");
@@ -36,7 +61,7 @@ function AdminUsersPage() {
     };
 
     loadUsers();
-  }, []);
+  }, [page]);
 
   const filteredUsers = useMemo(() => {
     const value = search.trim().toLowerCase();
@@ -110,7 +135,8 @@ function AdminUsersPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
+      <div className="flex items-center justify-between">
+        <div>
         <h1 className="text-2xl font-bold text-slate-900">
           Users
         </h1>
@@ -118,6 +144,26 @@ function AdminUsersPage() {
         <p className="mt-1 text-sm text-gray-500">
           View and manage registered marketplace users.
         </p>
+      </div>
+      
+      <button
+        type="button"
+        onClick={() => {
+          const csvData = filteredUsers.map(u => ({
+            ID: u.id,
+            'Full Name': u.full_name,
+            Email: u.email,
+            Phone: u.phone || '',
+            Role: u.role,
+            Status: u.status,
+            'Joined Date': new Date(u.created_at).toLocaleDateString(),
+          }));
+          exportToCSV(csvData, 'users.csv');
+        }}
+        className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition"
+      >
+        Export CSV
+      </button>
       </div>
 
       {/* Filters */}
@@ -181,6 +227,7 @@ function AdminUsersPage() {
             </p>
           </div>
         ) : (
+          <>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[950px] text-left">
               <thead className="border-b border-gray-100 bg-gray-50">
@@ -284,6 +331,35 @@ function AdminUsersPage() {
               </tbody>
             </table>
           </div>
+          {pagination && (
+            <div className="flex items-center justify-between border-t border-gray-100 px-6 py-4">
+              <p className="text-sm text-gray-500">
+                Showing {((pagination.page - 1) * pagination.limit) + 1}–{Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total}
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={pagination.page <= 1}
+                  onClick={() => setPage(p => p - 1)}
+                  className="rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Previous
+                </button>
+                <span className="px-3 py-2 text-sm font-medium text-slate-900">
+                  {pagination.page} / {pagination.totalPages}
+                </span>
+                <button
+                  type="button"
+                  disabled={pagination.page >= pagination.totalPages}
+                  onClick={() => setPage(p => p + 1)}
+                  className="rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
+          </>
         )}
       </div>
     </div>

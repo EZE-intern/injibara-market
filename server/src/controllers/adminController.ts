@@ -666,17 +666,28 @@ export const adminController = {
    */
   async getProducts(req: AuthRequest, res: Response): Promise<Response> {
     try {
-      const products = await prisma.products.findMany({
-        where: { deleted_at: null },
-        include: {
-          product_images: {
-            orderBy: [{ is_primary: 'desc' }, { sort_order: 'asc' }],
+      const page = Math.max(1, Number(req.query.page) || 1);
+      const limit = Math.max(1, Math.min(100, Number(req.query.limit) || 10));
+      const skip = (page - 1) * limit;
+
+      const where = { deleted_at: null };
+
+      const [products, total] = await Promise.all([
+        prisma.products.findMany({
+          where,
+          include: {
+            product_images: {
+              orderBy: [{ is_primary: 'desc' }, { sort_order: 'asc' }],
+            },
+            categories: true,
+            users: true,
           },
-          categories: true,
-          users: true,
-        },
-        orderBy: { created_at: 'desc' },
-      });
+          orderBy: { created_at: 'desc' },
+          skip,
+          take: limit,
+        }),
+        prisma.products.count({ where }),
+      ]);
 
       const formatted = products.map((p) => {
         let statusStr = 'PENDING';
@@ -722,6 +733,12 @@ export const adminController = {
         success: true,
         count: formatted.length,
         data: formatted,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
       });
     } catch (error) {
       console.error('Error fetching admin products:', error);
@@ -825,16 +842,27 @@ export const adminController = {
    */
   async getStores(req: AuthRequest, res: Response): Promise<Response> {
     try {
-      const stores = await prisma.stores.findMany({
-        where: { deleted_at: null },
-        include: {
-          users: true,
-          _count: {
-            select: { products: true },
+      const page = Math.max(1, Number(req.query.page) || 1);
+      const limit = Math.max(1, Math.min(100, Number(req.query.limit) || 10));
+      const skip = (page - 1) * limit;
+
+      const where = { deleted_at: null };
+
+      const [stores, total] = await Promise.all([
+        prisma.stores.findMany({
+          where,
+          include: {
+            users: true,
+            _count: {
+              select: { products: true },
+            },
           },
-        },
-        orderBy: { created_at: 'desc' },
-      });
+          orderBy: { created_at: 'desc' },
+          skip,
+          take: limit,
+        }),
+        prisma.stores.count({ where }),
+      ]);
 
       const formatted = stores.map((s) => ({
         id: s.id,
@@ -857,6 +885,12 @@ export const adminController = {
         success: true,
         count: formatted.length,
         data: formatted,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
       });
     } catch (error) {
       console.error('Error fetching admin stores:', error);
@@ -898,15 +932,26 @@ export const adminController = {
    */
   async getCategories(req: AuthRequest, res: Response): Promise<Response> {
     try {
-      const categories = await prisma.categories.findMany({
-        where: { deleted_at: null },
-        include: {
-          _count: {
-            select: { products: true },
+      const page = Math.max(1, Number(req.query.page) || 1);
+      const limit = Math.max(1, Math.min(100, Number(req.query.limit) || 10));
+      const skip = (page - 1) * limit;
+
+      const where = { deleted_at: null };
+
+      const [categories, total] = await Promise.all([
+        prisma.categories.findMany({
+          where,
+          include: {
+            _count: {
+              select: { products: true },
+            },
           },
-        },
-        orderBy: { name: 'asc' },
-      });
+          orderBy: { name: 'asc' },
+          skip,
+          take: limit,
+        }),
+        prisma.categories.count({ where }),
+      ]);
 
       const formatted = categories.map((c) => ({
         id: c.id,
@@ -925,6 +970,12 @@ export const adminController = {
         success: true,
         count: formatted.length,
         data: formatted,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
       });
     } catch (error) {
       console.error('Error fetching admin categories:', error);
@@ -1047,9 +1098,18 @@ export const adminController = {
    */
   async getUsers(req: AuthRequest, res: Response): Promise<Response> {
     try {
-      const users = await prisma.users.findMany({
-        orderBy: { created_at: 'desc' },
-      });
+      const page = Math.max(1, Number(req.query.page) || 1);
+      const limit = Math.max(1, Math.min(100, Number(req.query.limit) || 10));
+      const skip = (page - 1) * limit;
+
+      const [users, total] = await Promise.all([
+        prisma.users.findMany({
+          orderBy: { created_at: 'desc' },
+          skip,
+          take: limit,
+        }),
+        prisma.users.count(),
+      ]);
 
       const formatted = users.map((u) => ({
         id: u.id,
@@ -1065,6 +1125,12 @@ export const adminController = {
         success: true,
         count: formatted.length,
         data: formatted,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
       });
     } catch (error) {
       console.error('Error fetching admin users:', error);
@@ -1166,6 +1232,27 @@ export const adminController = {
         },
       });
 
+      // Store permissions if provided
+      const { permissions } = req.body;
+      let savedPermissions: string[] = [];
+      if (Array.isArray(permissions) && permissions.length > 0) {
+        const validPermissions = [
+          'overview', 'broker_hub', 'products', 'stores',
+          'categories', 'users', 'admin_management', 'settings',
+        ];
+        const filtered = permissions.filter((p: string) => validPermissions.includes(p));
+        if (filtered.length > 0) {
+          await Promise.all(
+            filtered.map((permission: string) =>
+              prisma.admin_permissions.create({
+                data: { user_id: created.id, permission },
+              })
+            )
+          );
+          savedPermissions = filtered;
+        }
+      }
+
       return res.status(201).json({
         success: true,
         message: 'Administrator created successfully.',
@@ -1176,6 +1263,7 @@ export const adminController = {
           phone: created.phone,
           role: 'ADMIN',
           status: 'ACTIVE',
+          permissions: savedPermissions,
           created_at: created.created_at.toISOString(),
         },
       });
@@ -1215,4 +1303,81 @@ export const adminController = {
       return res.status(500).json({ success: false, message: 'Failed to update admin status.' });
     }
   },
+
+  /**
+   * GET /api/admin/permissions/:userId
+   * Get permissions for a specific admin user.
+   */
+  async getAdminPermissions(req: AuthRequest, res: Response): Promise<Response> {
+    try {
+      const userId = Number(req.params.userId);
+      const records = await prisma.admin_permissions.findMany({
+        where: { user_id: userId },
+      });
+      const permissions = records.map((r) => r.permission);
+      return res.json({ success: true, permissions });
+    } catch (error) {
+      console.error('Error fetching admin permissions:', error);
+      return res.status(500).json({ success: false, message: 'Failed to load permissions.' });
+    }
+  },
+
+  /**
+   * PUT /api/admin/permissions/:userId
+   * Set permissions for an admin user. Replaces all existing permissions.
+   */
+  async setAdminPermissions(req: AuthRequest, res: Response): Promise<Response> {
+    try {
+      const userId = Number(req.params.userId);
+      const { permissions } = req.body;
+
+      if (!Array.isArray(permissions)) {
+        return res.status(400).json({ success: false, message: 'Permissions must be an array.' });
+      }
+
+      const validPermissions = [
+        'overview', 'broker_hub', 'products', 'stores',
+        'categories', 'users', 'admin_management', 'settings',
+      ];
+
+      const filtered = permissions.filter((p: string) => validPermissions.includes(p));
+
+      // Delete existing permissions and insert new ones in a transaction
+      await prisma.$transaction([
+        prisma.admin_permissions.deleteMany({ where: { user_id: userId } }),
+        ...filtered.map((permission: string) =>
+          prisma.admin_permissions.create({
+            data: { user_id: userId, permission },
+          })
+        ),
+      ]);
+
+      return res.json({ success: true, permissions: filtered });
+    } catch (error) {
+      console.error('Error setting admin permissions:', error);
+      return res.status(500).json({ success: false, message: 'Failed to update permissions.' });
+    }
+  },
+
+  /**
+   * GET /api/admin/my-permissions
+   * Get the logged-in admin's own permissions.
+   */
+  async getMyPermissions(req: AuthRequest, res: Response): Promise<Response> {
+    try {
+      const userId = Number(req.user?.id);
+      const records = await prisma.admin_permissions.findMany({
+        where: { user_id: userId },
+      });
+      const permissions = records.map((r) => r.permission);
+      // If no permissions are set, it means the admin has NO explicit permissions stored.
+      // We return an empty array; the frontend treats empty as 'no restrictions' for backward compatibility
+      // with existing admins who were created before the permissions system.
+      return res.json({ success: true, permissions });
+    } catch (error) {
+      console.error('Error fetching own permissions:', error);
+      return res.status(500).json({ success: false, message: 'Failed to load permissions.' });
+    }
+  },
 };
+

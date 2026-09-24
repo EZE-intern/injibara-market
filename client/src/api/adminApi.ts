@@ -263,20 +263,32 @@ export interface AdminProduct {
   updated_at?: string;
 }
 
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
 interface AdminProductsResponse {
   success: boolean;
   count: number;
   data: AdminProduct[];
+  pagination: PaginationMeta;
 }
 
 export const getAdminProducts =
-  async (): Promise<AdminProduct[]> => {
+  async (params?: { page?: number; limit?: number }): Promise<{ data: AdminProduct[]; pagination: PaginationMeta }> => {
     const response =
       await axiosClient.get<AdminProductsResponse>(
-        "/admin/products"
+        "/admin/products",
+        { params }
       );
 
-    return response.data.data;
+    return {
+      data: response.data.data,
+      pagination: response.data.pagination,
+    };
   };
 
 interface UpdateProductStatusResponse {

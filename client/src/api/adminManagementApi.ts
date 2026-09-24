@@ -30,6 +30,7 @@ export interface CreateAdminData {
   password: string;
   phone?: string;
   role: "ADMIN";
+  permissions?: string[];
 }
 
 interface AdminResponse {

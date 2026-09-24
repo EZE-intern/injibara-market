@@ -6,7 +6,7 @@ import {
   type ManagedAdmin,
 } from "../../api/adminManagementApi";
 import {
-  getAdminUsers,
+  getAllAdminUsers,
   updateUserRole,
   type AdminUser,
 } from "../../api/userAdminApi";
@@ -18,8 +18,21 @@ const initialForm = {
   phone: "",
 };
 
+
+const PERMISSION_OPTIONS = [
+  { value: 'overview', label: 'Overview' },
+  { value: 'broker_hub', label: 'Broker Hub' },
+  { value: 'products', label: 'Products' },
+  { value: 'stores', label: 'Stores' },
+  { value: 'categories', label: 'Categories' },
+  { value: 'users', label: 'Users' },
+  { value: 'admin_management', label: 'Admin Management' },
+  { value: 'settings', label: 'Settings' },
+];
+
 function AdminManagementPage() {
   const [admins, setAdmins] = useState<ManagedAdmin[]>([]);
+  const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -62,7 +75,7 @@ function AdminManagementPage() {
     setLoadingUsers(true);
 
     try {
-      const users = await getAdminUsers();
+      const users = await getAllAdminUsers();
       setEligibleUsers(
         users.filter(
           (user) =>
@@ -124,6 +137,7 @@ function AdminManagementPage() {
         password: form.password,
         phone: form.phone.trim() || undefined,
         role: "ADMIN",
+        permissions: selectedPermissions,
       });
 
       setAdmins((current) => [newAdmin, ...current]);
@@ -218,6 +232,7 @@ function AdminManagementPage() {
             type="button"
             onClick={() => {
               setForm(initialForm);
+              setSelectedPermissions([]);
               setError(null);
               setSuccess(null);
               setShowCreateModal(true);
@@ -510,6 +525,39 @@ function AdminManagementPage() {
                   className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-purple-400"
                   placeholder="Minimum 8 characters"
                 />
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Permissions
+                </label>
+                <p className="mb-3 text-xs text-gray-500">
+                  Select which sections this administrator can access.
+                </p>
+                <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto p-1">
+                  {PERMISSION_OPTIONS.map((opt) => (
+                    <label
+                      key={opt.value}
+                      className="flex items-center gap-2 rounded-xl border border-gray-200 px-3 py-2 text-sm cursor-pointer hover:bg-gray-50 transition"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedPermissions.includes(opt.value)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedPermissions((prev) => [...prev, opt.value]);
+                          } else {
+                            setSelectedPermissions((prev) =>
+                              prev.filter((p) => p !== opt.value)
+                            );
+                          }
+                        }}
+                        className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                      />
+                      <span className="text-slate-700">{opt.label}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
 
               <div className="flex justify-end gap-3 border-t border-gray-100 pt-5">

@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Heart } from "lucide-react";
+import { Heart, Bell } from "lucide-react";
 import { getUser, isAuthenticated, clearAuth } from "../../utils/authStorage";
+import { getUnreadCount } from "../../api/messageApi";
+import { getSavedProducts } from "../../utils/savedStorage";
 import CustomerMobileNavigation from "./CustomerMobileNavigation";
 
 function isAdminRole(role?: string | null) {
@@ -15,6 +17,35 @@ function CustomerNavbar() {
   const user = getUser();
   const authenticated = isAuthenticated();
   const isAdmin = isAdminRole(user?.role);
+
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [savedCount, setSavedCount] = useState(0);
+
+  // Fetch unread messages count
+  useEffect(() => {
+    if (!authenticated) return;
+    const fetchUnread = async () => {
+      try {
+        const count = await getUnreadCount();
+        setUnreadCount(count);
+      } catch (err) {
+        console.error('Failed to fetch unread count', err);
+      }
+    };
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 30000); // Poll every 30s
+    return () => clearInterval(interval);
+  }, [authenticated]);
+
+  // Track saved products count
+  useEffect(() => {
+    setSavedCount(getSavedProducts().length);
+    const handleUpdate = () => {
+      setSavedCount(getSavedProducts().length);
+    };
+    window.addEventListener('saved_products_updated', handleUpdate);
+    return () => window.removeEventListener('saved_products_updated', handleUpdate);
+  }, []);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen((currentState) => !currentState);
@@ -106,12 +137,34 @@ function CustomerNavbar() {
 
         {/* Desktop Actions */}
         <div className="hidden items-center gap-5 md:flex">
+          {/* Notification Bell */}
+          {authenticated && (
+            <Link
+              to="/customer/messages"
+              className="relative text-gray-600 transition-colors hover:text-brand-600"
+              aria-label="Messages"
+            >
+              <Bell size={20} />
+              {unreadCount > 0 && (
+                <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
+            </Link>
+          )}
+
+          {/* Saved Products */}
           <Link
             to={authenticated ? "/customer/saved" : "/login"}
-            className="text-gray-600 transition-colors hover:text-brand-600"
+            className="relative text-gray-600 transition-colors hover:text-brand-600"
             aria-label="Saved products"
           >
             <Heart size={20} />
+            {authenticated && savedCount > 0 && (
+              <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-600 px-1 text-[10px] font-bold text-white">
+                {savedCount > 99 ? '99+' : savedCount}
+              </span>
+            )}
           </Link>
 
           {authenticated ? (

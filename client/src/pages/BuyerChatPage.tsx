@@ -73,9 +73,11 @@ function BuyerChatPage() {
 
     try {
       setSending(true);
+      const isAdmin = currentUser?.role?.toLowerCase() === 'admin' || currentUser?.role?.toLowerCase() === 'super_admin';
       await sendMessage({
         product_id: productId,
         message_text: textToSend,
+        ...(isAdmin ? { as_customer: true } : {}),
       });
 
       // Optimistic update

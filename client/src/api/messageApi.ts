@@ -57,6 +57,7 @@ export async function sendMessage(params: {
   product_id?: number | string;
   receiver_id?: number;
   order_id?: number;
+  as_customer?: boolean;
 }): Promise<{ message_id: number; receiver_id: number; product_id: number | null }> {
   const res = await axiosClient.post('/messages/send', params);
   return res.data.data;

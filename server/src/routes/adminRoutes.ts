@@ -43,4 +43,9 @@ router.get('/management/admins', adminController.getStaffAdmins);
 router.post('/management/admins', adminController.createStaffAdmin);
 router.put('/management/admins/:id/status', adminController.updateStaffAdminStatus);
 
+// 8. Admin Permissions
+router.get('/my-permissions', adminController.getMyPermissions);
+router.get('/permissions/:userId', adminController.getAdminPermissions);
+router.put('/permissions/:userId', adminController.setAdminPermissions);
+
 export default router;

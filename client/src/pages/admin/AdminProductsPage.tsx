@@ -6,10 +6,34 @@ import {
   updateAdminProductStatus,
   type AdminProduct,
   type AdminProductStatus,
+  type PaginationMeta,
 } from "../../api/adminApi";
+
+function exportToCSV(data: Record<string, unknown>[], filename: string) {
+  if (data.length === 0) return;
+  const headers = Object.keys(data[0]);
+  const csvRows = [
+    headers.join(','),
+    ...data.map(row =>
+      headers.map(h => {
+        const val = String(row[h] ?? '');
+        return `"${val.replace(/"/g, '""')}"`;
+      }).join(',')
+    ),
+  ];
+  const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 function AdminProductsPage() {
   const [products, setProducts] = useState<AdminProduct[]>([]);
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState<PaginationMeta | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,9 +59,9 @@ function AdminProductsPage() {
       setLoading(true);
       setError(null);
 
-      const data = await getAdminProducts();
-
-      setProducts(data);
+      const res = await getAdminProducts({ page, limit: 10 });
+      setProducts(res.data);
+      setPagination(res.pagination);
     } catch (err) {
       console.error(err);
       setError("Unable to load products.");
@@ -48,7 +72,7 @@ function AdminProductsPage() {
 
   useEffect(() => {
     loadProducts();
-  }, []);
+  }, [page]);
 
   /* =========================
      FILTER PRODUCTS
@@ -296,6 +320,7 @@ function AdminProductsPage() {
             </p>
           </div>
         ) : (
+          <>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[800px] text-left">
               <thead className="border-b border-gray-100 bg-gray-50">
@@ -393,6 +418,35 @@ function AdminProductsPage() {
               </tbody>
             </table>
           </div>
+          {pagination && (
+            <div className="flex items-center justify-between border-t border-gray-100 px-6 py-4">
+              <p className="text-sm text-gray-500">
+                Showing {((pagination.page - 1) * pagination.limit) + 1}–{Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total}
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={pagination.page <= 1}
+                  onClick={() => setPage(p => p - 1)}
+                  className="rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Previous
+                </button>
+                <span className="px-3 py-2 text-sm font-medium text-slate-900">
+                  {pagination.page} / {pagination.totalPages}
+                </span>
+                <button
+                  type="button"
+                  disabled={pagination.page >= pagination.totalPages}
+                  onClick={() => setPage(p => p + 1)}
+                  className="rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
+          </>
         )}
       </div>
 
