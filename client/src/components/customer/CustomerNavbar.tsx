@@ -16,11 +16,13 @@ function isAdminRole(role?: string | null) {
 interface CustomerNavbarProps {
   onLocationChange?: (newLoc: string) => void;
   selectedLocation?: string;
+  hideSearchOnMobile?: boolean;
 }
 
 export default function CustomerNavbar({
   onLocationChange,
   selectedLocation: propLocation,
+  hideSearchOnMobile = false,
 }: CustomerNavbarProps) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -33,10 +35,10 @@ export default function CustomerNavbar({
   const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
 
-  // Active location: controlled by prop, URL, or fallback "injibara"
+  // Active location: controlled by prop, URL, or default empty (all locations)
   const urlLocation = searchParams.get("location") || "";
   const [activeLocation, setActiveLocation] = useState(
-    propLocation !== undefined ? propLocation : urlLocation || "injibara"
+    propLocation !== undefined ? propLocation : urlLocation || ""
   );
 
   useEffect(() => {
@@ -44,6 +46,8 @@ export default function CustomerNavbar({
       setActiveLocation(propLocation);
     } else if (urlLocation) {
       setActiveLocation(urlLocation);
+    } else {
+      setActiveLocation("");
     }
   }, [propLocation, urlLocation]);
 
@@ -103,9 +107,11 @@ export default function CustomerNavbar({
   };
 
   const activeLocationLabel =
-    AVAILABLE_LOCATIONS.find(
-      (l) => l.value.toLowerCase() === activeLocation.toLowerCase()
-    )?.label || (activeLocation ? activeLocation.charAt(0).toUpperCase() + activeLocation.slice(1) : "Injibara");
+    !activeLocation || activeLocation.toLowerCase() === "all"
+      ? "All"
+      : AVAILABLE_LOCATIONS.find(
+          (l) => l.value.toLowerCase() === activeLocation.toLowerCase()
+        )?.label || activeLocation.charAt(0).toUpperCase() + activeLocation.slice(1);
 
   return (
     <>
@@ -113,69 +119,82 @@ export default function CustomerNavbar({
           MOBILE VIEWPORT HEADER (Matching mock.ux.png 1:1)
       ========================================================= */}
       <header className="block md:hidden bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 sticky top-0 z-40">
-        {/* Top Row: Logo + Bell & Chat Action Badges */}
+        {/* Top Row: Logo + Bell & Chat Action Badges OR Sign In */}
         <div className="flex items-center justify-between px-4 pt-3 pb-2">
           {/* Logo with traditional Ethiopian emblem */}
           <InjibaraLogo size="sm" to="/" />
 
-          {/* Right Action Icons: Notifications & Messages */}
+          {/* Right Action Icons */}
           <div className="flex items-center gap-2">
-            {/* Notification Bell */}
-            <Link
-              to={authenticated ? "/customer/notifications" : "/login"}
-              className="relative flex h-9 w-9 items-center justify-center rounded-full text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-800 transition"
-              aria-label="Notifications"
-            >
-              <Bell size={20} />
-              {/* Red Indicator Dot */}
-              <span className="absolute top-1.5 right-2 h-2 w-2 rounded-full bg-red-600 ring-2 ring-white dark:ring-slate-900" />
-            </Link>
+            {authenticated ? (
+              <>
+                {/* Notification Bell */}
+                <Link
+                  to="/customer/notifications"
+                  className="relative flex h-9 w-9 items-center justify-center rounded-full text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-800 transition"
+                  aria-label="Notifications"
+                >
+                  <Bell size={20} />
+                  {/* Red Indicator Dot */}
+                  <span className="absolute top-1.5 right-2 h-2 w-2 rounded-full bg-red-600 ring-2 ring-white dark:ring-slate-900" />
+                </Link>
 
-            {/* Messages Chat Bubble with Count Badge */}
-            <Link
-              to={authenticated ? "/customer/messages" : "/login"}
-              className="relative flex h-9 w-9 items-center justify-center rounded-full text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-800 transition"
-              aria-label="Messages"
-            >
-              <MessageSquare size={20} />
-              {unreadCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[9px] font-black text-white">
-                  {unreadCount > 99 ? "99+" : unreadCount}
-                </span>
-              )}
-            </Link>
+                {/* Messages Chat Bubble with Count Badge */}
+                <Link
+                  to="/customer/messages"
+                  className="relative flex h-9 w-9 items-center justify-center rounded-full text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-800 transition"
+                  aria-label="Messages"
+                >
+                  <MessageSquare size={20} />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[9px] font-black text-white">
+                      {unreadCount > 99 ? "99+" : unreadCount}
+                    </span>
+                  )}
+                </Link>
+              </>
+            ) : (
+              <Link
+                to="/login"
+                className="rounded-full bg-red-600 hover:bg-red-700 px-3.5 py-1.5 text-xs font-bold text-white shadow-xs transition"
+              >
+                Sign In
+              </Link>
+            )}
 
             <ThemeToggle />
           </div>
         </div>
 
-        {/* Search Bar + Location Selector Row */}
-        <div className="px-4 pb-3 pt-1">
-          <form onSubmit={handleSearchSubmit} className="flex items-center gap-2">
-            {/* Search Pill Input */}
-            <div className="flex flex-1 items-center gap-2 rounded-full border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/80 px-3.5 py-2 text-sm shadow-xs transition focus-within:border-red-600 focus-within:bg-white dark:focus-within:bg-slate-800">
-              <Search size={16} className="text-gray-400 shrink-0" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search products, services..."
-                className="w-full bg-transparent text-xs text-gray-900 dark:text-white placeholder-gray-400 outline-none"
-              />
-            </div>
+        {/* Search Bar + Location Selector Row (Optional on mobile) */}
+        {!hideSearchOnMobile && (
+          <div className="px-4 pb-3 pt-1">
+            <form onSubmit={handleSearchSubmit} className="flex items-center gap-2">
+              {/* Search Pill Input */}
+              <div className="flex flex-1 items-center gap-2 rounded-full border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/80 px-3.5 py-2 text-sm shadow-xs transition focus-within:border-red-600 focus-within:bg-white dark:focus-within:bg-slate-800">
+                <Search size={16} className="text-gray-400 shrink-0" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search products, services..."
+                  className="w-full bg-transparent text-xs text-gray-900 dark:text-white placeholder-gray-400 outline-none"
+                />
+              </div>
 
-            {/* Location Pill Selector */}
-            <button
-              type="button"
-              onClick={() => setIsLocationModalOpen(true)}
-              className="flex items-center gap-1.5 rounded-full border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/80 px-3 py-2 text-xs font-semibold text-gray-800 dark:text-gray-200 shadow-xs hover:border-red-600 transition shrink-0 cursor-pointer"
-            >
-              <MapPin size={14} className="text-red-600 dark:text-red-500 shrink-0" />
-              <span className="truncate max-w-[85px]">{activeLocationLabel}</span>
-              <ChevronDown size={14} className="text-gray-400 shrink-0" />
-            </button>
-          </form>
-        </div>
+              {/* Location Pill Selector */}
+              <button
+                type="button"
+                onClick={() => setIsLocationModalOpen(true)}
+                className="flex items-center gap-1.5 rounded-full border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/80 px-3 py-2 text-xs font-semibold text-gray-800 dark:text-gray-200 shadow-xs hover:border-red-600 transition shrink-0 cursor-pointer"
+              >
+                <MapPin size={14} className="text-red-600 dark:text-red-500 shrink-0" />
+                <span className="truncate max-w-[85px]">{activeLocationLabel}</span>
+                <ChevronDown size={14} className="text-gray-400 shrink-0" />
+              </button>
+            </form>
+          </div>
+        )}
       </header>
 
       {/* ========================================================

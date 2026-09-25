@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { getUser } from "../../utils/authStorage";
+import { getUser, clearAuth } from "../../utils/authStorage";
 import type { AuthUser } from "../../api/authApi";
 
 function CustomerProfilePage() {
@@ -89,19 +89,29 @@ function CustomerProfilePage() {
             </div>
           </div>
 
-          <div className="mt-8 pt-6 border-t border-gray-100 flex gap-4">
+          <div className="mt-8 pt-6 border-t border-gray-100 dark:border-slate-800 flex flex-wrap items-center gap-3">
             <Link
               to="/seller"
-              className="rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700"
+              className="rounded-xl bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 shadow-sm"
             >
               Go to Seller Hub
             </Link>
             <Link
               to="/"
-              className="rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+              className="rounded-xl border border-gray-300 dark:border-slate-700 px-5 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-200 transition hover:bg-gray-50 dark:hover:bg-slate-800"
             >
               Marketplace Home
             </Link>
+            <button
+              type="button"
+              onClick={() => {
+                clearAuth();
+                window.location.href = "/login";
+              }}
+              className="rounded-xl border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 px-5 py-2.5 text-sm font-semibold transition hover:bg-red-100 cursor-pointer ml-auto"
+            >
+              Sign Out
+            </button>
           </div>
         </div>
       </div>

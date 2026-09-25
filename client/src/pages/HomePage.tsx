@@ -8,7 +8,7 @@ import CustomerTrustBanner from "../components/customer/CustomerTrustBanner";
 import CustomerBottomNav from "../components/customer/CustomerBottomNav";
 
 function HomePage() {
-  const [selectedLocation, setSelectedLocation] = useState("injibara");
+  const [selectedLocation, setSelectedLocation] = useState("");
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 flex flex-col justify-between">

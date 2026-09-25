@@ -49,11 +49,11 @@ export default function CustomerHeroSection() {
 
           {/* Action Buttons Row */}
           <div className="mt-4 sm:mt-6 flex items-center gap-3 flex-wrap">
-            {/* 1. Browse listings (Red Pill) */}
+            {/* 1. Browse listings (Desktop only to prevent crowdedness on mobile) */}
             <button
               type="button"
               onClick={handleBrowseClick}
-              className="inline-flex items-center gap-2 rounded-full bg-red-600 px-4 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md hover:bg-red-700 active:scale-95 transition cursor-pointer"
+              className="hidden sm:inline-flex items-center gap-2 rounded-full bg-red-600 px-4 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md hover:bg-red-700 active:scale-95 transition cursor-pointer"
             >
               <LayoutGrid size={16} strokeWidth={2.5} />
               <span>Browse listings</span>
