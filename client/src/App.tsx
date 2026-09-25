@@ -3,6 +3,7 @@ import { BrowserRouter } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { Analytics } from "@vercel/analytics/react";
 import ErrorBoundary from "./components/common/ErrorBoundary";
+import ScrollToTop from "./components/common/ScrollToTop";
 import AppRoutes from "./routes/AppRoutes";
 import { ThemeProvider } from "./context/ThemeContext";
 
@@ -37,6 +38,7 @@ function App() {
   return (
     <ThemeProvider>
       <BrowserRouter>
+        <ScrollToTop />
         <ErrorBoundary>
           <AppRoutes />
           <Analytics />

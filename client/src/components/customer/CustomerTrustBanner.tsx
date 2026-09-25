@@ -1,54 +1,62 @@
-import { Heart, Globe, Lock } from "lucide-react";
+import { ShieldCheck, Languages, CheckCircle2 } from "lucide-react";
 
 function CustomerTrustBanner() {
   return (
-    <section className="border-t border-gray-100 bg-white py-16">
-      <div className="mx-auto max-w-7xl px-6 md:px-12 lg:px-16">
-        <div className="mb-10 text-center">
-          <p className="text-xs font-bold uppercase tracking-widest text-brand-600">
+    <section className="border-t border-gray-150 dark:border-slate-800 bg-gray-50/60 dark:bg-slate-900/40 py-6 sm:py-8">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        {/* Compact Header */}
+        <div className="text-center max-w-xl mx-auto">
+          <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 text-[10px] sm:text-xs font-bold uppercase tracking-wider border border-red-200/60 dark:border-red-900/60">
             Why Injibara Market?
+          </span>
+          <p className="mt-1.5 text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">
+            Built for trust & seamless local commerce in Injibara & Awi Zone
           </p>
-          <h3 className="mt-2 text-2xl font-bold text-gray-900">
-            Built for trust and seamless local commerce
-          </h3>
         </div>
 
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          {/* Local & Trusted */}
-          <div className="flex items-start gap-4 p-4 rounded-xl bg-gray-50 border border-gray-100">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
-              <Heart size={22} />
+        {/* 3 Compact Trust Cards in 1 Row */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mt-5 max-w-4xl mx-auto">
+          {/* 1. Local & Trusted */}
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-white dark:bg-slate-900 border border-gray-150 dark:border-slate-800 shadow-2xs">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-50 dark:bg-red-950/70 text-red-600 dark:text-red-400">
+              <ShieldCheck size={18} />
             </div>
-            <div>
-              <h4 className="font-bold text-gray-900 text-sm">Local & Trusted</h4>
-              <p className="mt-1 text-xs leading-relaxed text-gray-500">
-                A marketplace built specifically for the Injibara and Awi community.
+            <div className="min-w-0">
+              <h4 className="text-xs font-bold text-gray-900 dark:text-white truncate">
+                Local & Verified
+              </h4>
+              <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-snug truncate sm:whitespace-normal">
+                Connecting genuine local buyers & sellers.
               </p>
             </div>
           </div>
 
-          {/* Bilingual Platform */}
-          <div className="flex items-start gap-4 p-4 rounded-xl bg-gray-50 border border-gray-100">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
-              <Globe size={22} />
+          {/* 2. Bilingual Platform */}
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-white dark:bg-slate-900 border border-gray-150 dark:border-slate-800 shadow-2xs">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-50 dark:bg-red-950/70 text-red-600 dark:text-red-400">
+              <Languages size={18} />
             </div>
-            <div>
-              <h4 className="font-bold text-gray-900 text-sm">Bilingual Platform</h4>
-              <p className="mt-1 text-xs leading-relaxed text-gray-500">
-                Easily browse in English and Amharic.
+            <div className="min-w-0">
+              <h4 className="text-xs font-bold text-gray-900 dark:text-white truncate">
+                Bilingual Platform
+              </h4>
+              <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-snug truncate sm:whitespace-normal">
+                Browse seamlessly in Amharic & English.
               </p>
             </div>
           </div>
 
-          {/* Safe & Reliable */}
-          <div className="flex items-start gap-4 p-4 rounded-xl bg-gray-50 border border-gray-100">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
-              <Lock size={22} />
+          {/* 3. Direct & Safe */}
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-white dark:bg-slate-900 border border-gray-150 dark:border-slate-800 shadow-2xs">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-50 dark:bg-red-950/70 text-red-600 dark:text-red-400">
+              <CheckCircle2 size={18} />
             </div>
-            <div>
-              <h4 className="font-bold text-gray-900 text-sm">Safe & Reliable</h4>
-              <p className="mt-1 text-xs leading-relaxed text-gray-500">
-                Verified merchants with 6-angle photo inspection guarantee.
+            <div className="min-w-0">
+              <h4 className="text-xs font-bold text-gray-900 dark:text-white truncate">
+                Direct & Safe
+              </h4>
+              <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-snug truncate sm:whitespace-normal">
+                Multi-angle photos & admin mediation.
               </p>
             </div>
           </div>

@@ -1,89 +1,62 @@
 import { Link } from "react-router-dom";
+import InjibaraLogo from "../common/InjibaraLogo";
 
 function CustomerFooter() {
+  const currentYear = new Date().getFullYear();
+
   return (
-    <footer className="border-t border-brand-900 bg-brand-900 text-white">
-      <div className="mx-auto max-w-7xl px-6 py-12 md:px-12 lg:px-16">
-        {/* Main Grid */}
-        <div className="grid gap-10 md:grid-cols-12">
-          {/* Logo & About Column */}
-          <div className="md:col-span-4 flex flex-col justify-between">
-            <div>
-              <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-brand-900 font-bold text-lg select-none">
-                  አ
-                </div>
-                <div className="text-left leading-tight">
-                  <div className="text-xs font-bold text-white tracking-wider">እንጅባራ ገበያ</div>
-                  <div className="text-sm font-black text-white tracking-wide">INJIBARA MARKET</div>
-                </div>
-              </div>
-
-              <p className="mt-4 max-w-sm text-xs leading-relaxed text-red-100">
-                Your trusted local marketplace to buy, sell, and connect in Injibara and Awi Zone.
-              </p>
-            </div>
-
-            {/* Social Links */}
-            <div className="mt-6 flex items-center gap-3">
-              <span className="h-8 w-8 rounded-full border border-red-200/40 flex items-center justify-center text-xs font-bold text-white">FB</span>
-              <span className="h-8 w-8 rounded-full border border-red-200/40 flex items-center justify-center text-xs font-bold text-white">TG</span>
-              <span className="h-8 w-8 rounded-full border border-red-200/40 flex items-center justify-center text-xs font-bold text-white">TT</span>
-              <span className="h-8 w-8 rounded-full border border-red-200/40 flex items-center justify-center text-xs font-bold text-white">YT</span>
-            </div>
+    <footer className="border-t border-gray-200 dark:border-slate-800/80 bg-white dark:bg-slate-950 text-gray-600 dark:text-gray-400 py-6 sm:py-8 pb-24 sm:pb-8">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        {/* Main Row: Logo on left, Nav links on right */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <InjibaraLogo size="sm" to="/" />
+            <span className="hidden md:inline-block text-xs text-gray-400 dark:text-gray-500 border-l border-gray-200 dark:border-slate-800 pl-3">
+              Trusted local marketplace in Injibara & Awi Zone
+            </span>
           </div>
 
-          {/* Quick Links */}
-          <div className="md:col-span-2">
-            <h4 className="text-sm font-bold uppercase tracking-wider text-white">Quick Links</h4>
-            <ul className="mt-4 space-y-2 text-xs text-red-100/90">
-              <li><Link to="/products" className="hover:text-white transition">Browse Listings</Link></li>
-              <li><Link to="/categories" className="hover:text-white transition">Categories</Link></li>
-              <li><Link to="/seller" className="hover:text-white transition">Seller Hub</Link></li>
-              <li><Link to="/customer/saved" className="hover:text-white transition">Saved Items</Link></li>
-            </ul>
-          </div>
-
-          {/* For Buyers */}
-          <div className="md:col-span-2">
-            <h4 className="text-sm font-bold uppercase tracking-wider text-white">For Buyers</h4>
-            <ul className="mt-4 space-y-2 text-xs text-red-100/90">
-              <li><span className="hover:text-white cursor-pointer transition">Safety Tips</span></li>
-              <li><span className="hover:text-white cursor-pointer transition">Direct Inspection</span></li>
-              <li><span className="hover:text-white cursor-pointer transition">Delivery & Pickup</span></li>
-              <li><span className="hover:text-white cursor-pointer transition">Buyer Protection</span></li>
-            </ul>
-          </div>
-
-          {/* For Sellers */}
-          <div className="md:col-span-2">
-            <h4 className="text-sm font-bold uppercase tracking-wider text-white">For Sellers</h4>
-            <ul className="mt-4 space-y-2 text-xs text-red-100/90">
-              <li><Link to="/seller" className="hover:text-white transition">Seller Dashboard</Link></li>
-              <li><Link to="/seller/products/new" className="hover:text-white transition">+ Add Product</Link></li>
-              <li><span className="hover:text-white cursor-pointer transition">Pricing Tips</span></li>
-              <li><span className="hover:text-white cursor-pointer transition">6-Angle Photos</span></li>
-            </ul>
-          </div>
-
-          {/* App Info */}
-          <div className="md:col-span-2">
-            <h4 className="text-sm font-bold uppercase tracking-wider text-white">Mobile App</h4>
-            <p className="mt-4 text-xs text-red-100/90">Coming Soon</p>
-            <div className="mt-3 flex flex-col gap-2">
-              <div className="rounded bg-black/30 border border-white/20 p-2 text-[10px] text-center select-none">Google Play</div>
-              <div className="rounded bg-black/30 border border-white/20 p-2 text-[10px] text-center select-none">App Store</div>
-            </div>
-          </div>
+          {/* Inline Navigation Links */}
+          <nav className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs font-semibold text-gray-600 dark:text-gray-300">
+            <Link
+              to="/products"
+              className="hover:text-red-600 dark:hover:text-red-400 transition"
+            >
+              Browse
+            </Link>
+            <Link
+              to="/categories"
+              className="hover:text-red-600 dark:hover:text-red-400 transition"
+            >
+              Categories
+            </Link>
+            <Link
+              to="/seller"
+              className="hover:text-red-600 dark:hover:text-red-400 transition"
+            >
+              Seller Hub
+            </Link>
+            <Link
+              to="/customer/saved"
+              className="hover:text-red-600 dark:hover:text-red-400 transition"
+            >
+              Saved Items
+            </Link>
+            <Link
+              to="/customer/messages"
+              className="hover:text-red-600 dark:hover:text-red-400 transition"
+            >
+              Messages
+            </Link>
+          </nav>
         </div>
 
-        {/* Bottom */}
-        <div className="mt-10 border-t border-white/10 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-red-100/70">
-          <p>&copy; {new Date().getFullYear()} Injibara Market. All rights reserved.</p>
-          <div className="flex gap-4">
-            <span className="hover:text-white cursor-pointer transition">Terms & Conditions</span>
-            <span className="hover:text-white cursor-pointer transition">Privacy Policy</span>
-          </div>
+        {/* Bottom Sub-Row: Copyright & Location */}
+        <div className="mt-5 pt-4 border-t border-gray-100 dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-gray-400 dark:text-gray-500">
+          <p>&copy; {currentYear} Injibara Market. All rights reserved.</p>
+          <p className="flex items-center gap-1.5">
+            <span>Injibara & Awi Zone, Ethiopia</span>
+          </p>
         </div>
       </div>
     </footer>

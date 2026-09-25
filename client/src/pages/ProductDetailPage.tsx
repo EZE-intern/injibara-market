@@ -55,6 +55,7 @@ function ProductDetailPage() {
   };
 
   useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     fetchDetail();
   }, [id]);
 
@@ -76,15 +77,41 @@ function ProductDetailPage() {
     return (
       <div className="min-h-screen bg-white dark:bg-[#0b0f19] flex flex-col justify-between">
         <CustomerNavbar hideSearchOnMobile={true} />
-        <main className="flex flex-1 items-center justify-center bg-gray-50 dark:bg-[#0b0f19] py-16">
-          <div className="text-center">
-            <div className="inline-block h-10 w-10 animate-spin rounded-full border-4 border-red-600 border-t-transparent" />
-            <p className="mt-4 text-sm font-medium text-gray-600 dark:text-gray-400">
-              Loading product details...
-            </p>
+
+        {/* Mobile Top Sub-Header placeholder */}
+        <div className="flex sm:hidden items-center justify-between px-4 py-2.5 bg-white dark:bg-slate-900 border-b border-gray-150 dark:border-slate-800">
+          <div className="h-4 w-16 bg-gray-200 dark:bg-slate-800 rounded animate-pulse" />
+          <div className="flex gap-2">
+            <div className="h-8 w-8 bg-gray-200 dark:bg-slate-800 rounded-full animate-pulse" />
+            <div className="h-8 w-8 bg-gray-200 dark:bg-slate-800 rounded-full animate-pulse" />
+          </div>
+        </div>
+
+        <main className="flex-1 bg-gray-50 dark:bg-[#0b0f19] pb-28 sm:pb-12">
+          <div className="mx-auto max-w-7xl px-4 py-4 sm:py-8 sm:px-6 lg:px-8">
+            <div className="overflow-hidden rounded-2xl bg-white dark:bg-slate-900 shadow-sm border border-gray-150 dark:border-slate-800">
+              <div className="grid lg:grid-cols-2">
+                {/* Skeleton Media */}
+                <div className="p-4 sm:p-6 lg:p-8 border-b lg:border-b-0 lg:border-r border-gray-150 dark:border-slate-800">
+                  <div className="aspect-square w-full rounded-2xl bg-gray-200 dark:bg-slate-800 animate-pulse" />
+                </div>
+
+                {/* Skeleton Info */}
+                <div className="p-5 sm:p-8 lg:p-10 space-y-4">
+                  <div className="h-6 w-28 bg-gray-200 dark:bg-slate-800 rounded-full animate-pulse" />
+                  <div className="h-8 w-3/4 bg-gray-200 dark:bg-slate-800 rounded-lg animate-pulse" />
+                  <div className="h-10 w-44 bg-gray-200 dark:bg-slate-800 rounded-lg animate-pulse" />
+                  <div className="my-5 border-t border-gray-150 dark:border-slate-800" />
+                  <div className="space-y-2.5">
+                    <div className="h-4 w-full bg-gray-200 dark:bg-slate-800 rounded animate-pulse" />
+                    <div className="h-4 w-5/6 bg-gray-200 dark:bg-slate-800 rounded animate-pulse" />
+                    <div className="h-4 w-2/3 bg-gray-200 dark:bg-slate-800 rounded animate-pulse" />
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </main>
-        <CustomerFooter />
       </div>
     );
   }
@@ -160,10 +187,17 @@ function ProductDetailPage() {
   const isTier1 = isBrokeredProduct(product);
   const chatPath = `/messages/chat/${product.id}`;
 
-  const price =
-    typeof product.price === "number"
-      ? product.price.toLocaleString()
-      : Number(product.price).toLocaleString();
+  const originalPrice = Number(product.price);
+  const discountPrice =
+    product.discount_price !== null &&
+    product.discount_price !== undefined &&
+    !Number.isNaN(Number(product.discount_price))
+      ? Number(product.discount_price)
+      : null;
+
+  const hasDiscount =
+    discountPrice !== null && discountPrice > 0 && discountPrice < originalPrice;
+  const activePrice = hasDiscount ? discountPrice : originalPrice;
 
   const allImages =
     product.product_images && product.product_images.length > 0
@@ -371,20 +405,22 @@ function ProductDetailPage() {
                   </h1>
 
                   {/* Price */}
-                  <div className="mt-3 flex items-baseline gap-2">
+                  <div className="mt-3 flex items-baseline gap-2.5 flex-wrap">
                     <span className="text-2xl sm:text-3xl font-extrabold text-red-600 dark:text-red-500">
-                      {price}{" "}
+                      {activePrice.toLocaleString()}{" "}
                       <span className="text-base sm:text-lg font-bold">
                         ETB
                       </span>
                     </span>
-                    {product.discount_price && (
-                      <span className="text-sm font-semibold text-gray-400 line-through">
-                        {typeof product.discount_price === "number"
-                          ? product.discount_price.toLocaleString()
-                          : product.discount_price}{" "}
-                        ETB
-                      </span>
+                    {hasDiscount && (
+                      <>
+                        <span className="text-sm sm:text-base font-semibold text-gray-400 dark:text-gray-500 line-through">
+                          {originalPrice.toLocaleString()} ETB
+                        </span>
+                        <span className="rounded-full bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-900 px-2.5 py-0.5 text-xs font-bold text-red-600 dark:text-red-400">
+                          Save {(originalPrice - discountPrice!).toLocaleString()} ETB
+                        </span>
+                      </>
                     )}
                   </div>
 
