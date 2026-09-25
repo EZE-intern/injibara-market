@@ -21,9 +21,18 @@ function notifyThrottled(type: "warning" | "error", message: string, cooldown = 
   }
 }
 
+const getBaseApiUrl = (): string => {
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL;
+  }
+  if (typeof window !== "undefined" && window.location.hostname) {
+    return `http://${window.location.hostname}:5000/api`;
+  }
+  return "http://localhost:5000/api";
+};
+
 const axiosClient = axios.create({
-  baseURL:
-    import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api",
+  baseURL: getBaseApiUrl(),
   headers: {
     "Content-Type": "application/json",
   },

@@ -1,29 +1,84 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { Heart, MapPin, Check } from "lucide-react";
+import toast from "react-hot-toast";
 import type { Product } from "../../types/Product";
+import { isProductSaved, toggleSaveProduct } from "../../utils/savedStorage";
 
 interface ProductCardProps {
   product: Product;
+  compact?: boolean;
 }
 
 /** Resolve any image URL to a full, displayable path */
 const getImageUrl = (product: Product): string => {
-  // 1. Try Cloudinary URLs from product_images
   const primaryImg =
     product.product_images?.find((img) => img.is_primary)?.image_url ||
     product.product_images?.[0]?.image_url;
 
   if (primaryImg && primaryImg.startsWith("http")) return primaryImg;
-
-  // 2. Try the product.image field (also Cloudinary URL)
   if (product.image && product.image.startsWith("http")) return product.image;
 
-  // 3. Fallback placeholder
+  // Authentic fallback placeholder
   return "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&q=80&w=400";
 };
 
-function ProductCard({ product }: ProductCardProps) {
+/** Format ISO timestamp to relative time string (e.g. '2h ago', '1d ago') */
+function formatTimeAgo(dateString?: string): string {
+  if (!dateString) return "Recently";
+  try {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    if (diffMs < 0) return "Recently";
+
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    if (diffHours < 1) {
+      const diffMins = Math.max(1, Math.floor(diffMs / (1000 * 60)));
+      return `${diffMins}m ago`;
+    }
+    if (diffHours < 24) {
+      return `${diffHours}h ago`;
+    }
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays < 7) {
+      return `${diffDays}d ago`;
+    }
+    const diffWeeks = Math.floor(diffDays / 7);
+    if (diffWeeks < 4) {
+      return `${diffWeeks}w ago`;
+    }
+    return `${Math.floor(diffDays / 30)}mo ago`;
+  } catch {
+    return "Recently";
+  }
+}
+
+export default function ProductCard({ product }: ProductCardProps) {
   const [imgError, setImgError] = useState(false);
+  const [saved, setSaved] = useState(() => isProductSaved(product.id));
+
+  // Sync saved state with external storage events
+  useEffect(() => {
+    const handleUpdate = () => {
+      setSaved(isProductSaved(product.id));
+    };
+    window.addEventListener("saved_products_updated", handleUpdate);
+    return () => window.removeEventListener("saved_products_updated", handleUpdate);
+  }, [product.id]);
+
+  const handleToggleHeart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const isNowSaved = toggleSaveProduct(product);
+    setSaved(isNowSaved);
+    if (isNowSaved) {
+      toast.success(`Saved "${product.name}" to favorites`, { id: `saved-${product.id}` });
+    } else {
+      toast.success(`Removed from favorites`, { id: `unsaved-${product.id}` });
+    }
+  };
+
   const imageUrl = imgError
     ? "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&q=80&w=400"
     : getImageUrl(product);
@@ -34,98 +89,83 @@ function ProductCard({ product }: ProductCardProps) {
       ? Number(product.discount_price)
       : null;
 
-  const categoryName =
-    typeof product.category === "object" && product.category !== null
-      ? product.category.name
-      : product.categories?.name || (typeof product.category === "string" ? product.category : null);
+  const displayPrice = discountPrice !== null && discountPrice < price ? discountPrice : price;
+  const locationText = product.location || "Injibara";
+  const timeAgoText = formatTimeAgo(product.created_at);
+
+  // Consider verified if seller or store has verification or product is active & approved
+  const isVerified = Boolean(
+    product.status === "approved" || product.store_id || product.is_active
+  );
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
-      {/* Product Image */}
-      <Link to={`/products/${product.id}`} className="aspect-square overflow-hidden bg-gray-100 dark:bg-slate-800 block relative">
+    <article className="group flex flex-col overflow-hidden rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 transition-all duration-200 hover:-translate-y-1 hover:shadow-md">
+      {/* Product Image Box */}
+      <Link
+        to={`/products/${product.id}`}
+        className="aspect-square w-full overflow-hidden bg-gray-50 dark:bg-slate-800 block relative"
+      >
         <img
           src={imageUrl}
           alt={product.name}
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           onError={() => setImgError(true)}
+          loading="lazy"
         />
-        {discountPrice !== null && discountPrice < price && (
-          <span className="absolute top-2 left-2 rounded-full bg-brand-600 px-2 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider">
-            Sale
-          </span>
+
+        {/* Verified Seller Badge (Top Left) */}
+        {isVerified && (
+          <div className="absolute top-2 left-2 flex items-center gap-1 rounded-full bg-emerald-800/90 dark:bg-emerald-900/90 backdrop-blur-xs px-2 py-0.5 text-[10px] font-semibold text-white shadow-xs">
+            <Check size={11} strokeWidth={3} className="shrink-0" />
+            <span>Verified seller</span>
+          </div>
         )}
+
+        {/* Wishlist Heart Button (Top Right) */}
+        <button
+          type="button"
+          onClick={handleToggleHeart}
+          aria-label={saved ? "Remove from wishlist" : "Add to wishlist"}
+          className="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-white/95 dark:bg-slate-800/95 shadow-sm text-red-600 transition-transform active:scale-90 hover:scale-110 cursor-pointer"
+        >
+          <Heart
+            size={15}
+            className={saved ? "fill-red-600 text-red-600" : "text-red-500"}
+          />
+        </button>
       </Link>
 
       {/* Product Information */}
-      <div className="flex flex-1 flex-col p-4 justify-between">
+      <div className="flex flex-1 flex-col p-3 justify-between">
         <div>
-          {/* Category Badge */}
-          {categoryName && (
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-400 truncate">
-              {categoryName}
-            </p>
-          )}
-
-          {/* Product Name */}
+          {/* Title */}
           <Link to={`/products/${product.id}`}>
-            <h3 className="mt-1 text-sm font-semibold text-gray-900 dark:text-white line-clamp-1 hover:text-brand-600 dark:hover:text-brand-400 transition-colors">
+            <h3 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white line-clamp-1 hover:text-red-600 dark:hover:text-red-400 transition-colors">
               {product.name}
             </h3>
           </Link>
 
-          {/* Location */}
-          {product.location && (
-            <p className="mt-1 flex items-center gap-1 text-xs text-gray-400 dark:text-gray-400">
-              <svg
-                className="h-3.5 w-3.5 text-gray-400 shrink-0"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-              </svg>
-              <span className="truncate">{product.location}</span>
-            </p>
-          )}
-        </div>
-
-        {/* Price + View Button */}
-        <div className="mt-3 pt-3 border-t border-gray-100 dark:border-slate-800 flex items-center justify-between">
-          <div>
-            <span className="text-base font-bold text-gray-900 dark:text-white">
-              {discountPrice !== null && discountPrice < price
-                ? discountPrice.toLocaleString()
-                : price.toLocaleString()}{" "}
-              <span className="text-xs text-brand-600 dark:text-brand-400 font-semibold">ETB</span>
+          {/* Price */}
+          <div className="mt-1 flex items-baseline gap-1.5 flex-wrap">
+            <span className="text-sm sm:text-base font-bold text-red-600 dark:text-red-500 tracking-tight">
+              ETB {displayPrice.toLocaleString()}
             </span>
             {discountPrice !== null && discountPrice < price && (
-              <span className="block text-[11px] text-gray-400 line-through">
-                {price.toLocaleString()} ETB
+              <span className="text-[10px] text-gray-400 line-through">
+                ETB {price.toLocaleString()}
               </span>
             )}
           </div>
+        </div>
 
-          <Link
-            to={`/products/${product.id}`}
-            className="rounded-lg bg-brand-50 dark:bg-brand-950/60 px-3 py-1.5 text-xs font-bold text-brand-700 dark:text-brand-400 transition hover:bg-brand-600 dark:hover:bg-brand-600 hover:text-white dark:hover:text-white"
-          >
-            View
-          </Link>
+        {/* Location & Time */}
+        <div className="mt-2 pt-1.5 flex items-center gap-1 text-[11px] text-gray-400 dark:text-gray-400 truncate">
+          <MapPin size={12} className="shrink-0 text-gray-400" />
+          <span className="truncate">
+            {locationText} • {timeAgoText}
+          </span>
         </div>
       </div>
     </article>
   );
 }
-
-export default ProductCard;

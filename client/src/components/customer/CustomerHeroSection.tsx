@@ -1,156 +1,76 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, MapPin, Grid, Plus } from "lucide-react";
+import { LayoutGrid, PlusCircle } from "lucide-react";
 import { isAuthenticated } from "../../utils/authStorage";
-import { useTheme } from "../../context/ThemeContext";
 
-function CustomerHeroSection() {
+export default function CustomerHeroSection() {
   const navigate = useNavigate();
-  const { isDark } = useTheme();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchLocation, setSearchLocation] = useState("");
   const authenticated = isAuthenticated();
 
   const handleSellClick = () => {
     if (!authenticated) {
       navigate("/login");
     } else {
-      navigate("/seller");
+      navigate("/seller/products/new");
     }
   };
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const params = new URLSearchParams();
-    if (searchQuery.trim()) {
-      params.set("search", searchQuery.trim());
-    }
-    if (searchLocation.trim()) {
-      params.set("location", searchLocation.trim().toLowerCase());
-    }
-    const queryString = params.toString();
-    navigate(queryString ? `/products?${queryString}` : "/products");
+  const handleBrowseClick = () => {
+    navigate("/products");
   };
 
   return (
-    <section className="relative overflow-hidden min-h-[420px] md:min-h-[480px] flex items-center">
-      {/* Full-width Background Image */}
-      <div className="absolute inset-0">
+    <section className="px-4 py-2 sm:px-6 lg:px-8">
+      <div className="relative mx-auto max-w-7xl overflow-hidden rounded-3xl shadow-md min-h-[220px] sm:min-h-[280px] lg:min-h-[320px] flex items-end">
+        {/* Background Image: Lake Zengena */}
         <img
           src="/images/lake_zengena.jpg"
-          alt="Lake Zengena in Awi Zone near Injibara"
-          aria-hidden="true"
-          className="h-full w-full object-cover object-[center_35%]"
+          alt="Scenic Lake Zengena in Injibara, Awi Zone"
+          className="absolute inset-0 h-full w-full object-cover object-[center_35%]"
+          loading="eager"
         />
-      </div>
 
-      {/* Gradient overlay: adaptive white in light mode, deep dark in dark mode fading to transparent */}
-      <div
-        className="absolute inset-0 transition-opacity duration-300"
-        style={{
-          background: isDark
-            ? "linear-gradient(to right, rgba(11,15,25,0.98) 0%, rgba(11,15,25,0.92) 25%, rgba(11,15,25,0.70) 55%, rgba(11,15,25,0.25) 80%, rgba(11,15,25,0) 100%)"
-            : "linear-gradient(to right, rgba(255,255,255,0.97) 0%, rgba(255,255,255,0.85) 20%, rgba(255,255,255,0.60) 45%, rgba(255,255,255,0.25) 70%, rgba(255,255,255,0) 100%)",
-        }}
-      />
+        {/* Gradient Overlay for Text Readability */}
+        <div
+          className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/20"
+          aria-hidden="true"
+        />
 
-      {/* Frosted glass blur layer on the left side */}
-      <div
-        className="absolute inset-0"
-        style={{
-          backdropFilter: "blur(6px)",
-          WebkitBackdropFilter: "blur(6px)",
-          maskImage:
-            "linear-gradient(to right, black 0%, black 40%, transparent 70%)",
-          WebkitMaskImage:
-            "linear-gradient(to right, black 0%, black 40%, transparent 70%)",
-        }}
-      />
-
-      {/* Content */}
-      <div className="relative z-10 mx-auto w-full max-w-7xl px-6 py-12 md:px-12 lg:px-16">
-        <div className="max-w-2xl">
-          <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-5xl lg:text-6xl">
-            Your marketplace.
-            <span className="block text-brand-600 dark:text-brand-500 mt-1">Your community.</span>
+        {/* Content Box */}
+        <div className="relative z-10 w-full p-5 sm:p-8 lg:p-10 flex flex-col items-start">
+          {/* Main Headline */}
+          <h1 className="text-2xl font-black tracking-tight text-white sm:text-3xl lg:text-4xl drop-shadow-sm">
+            Find what you need nearby
           </h1>
 
-          <p className="mt-4 text-base text-gray-700 dark:text-gray-200 sm:text-lg font-medium">
-            Buy and sell products and services
-            <br className="hidden sm:block" />
-            from people around Injibara.
+          {/* Amharic Subtitle */}
+          <p className="mt-1 text-sm font-semibold text-white/90 sm:text-base drop-shadow-sm">
+            በእንጅባራ የሚፈልጉትን ያግኙ
           </p>
-          <p className="mt-1.5 text-sm text-brand-700 dark:text-brand-400 font-semibold">
-            በእንጅባራ የሚሸጡና የሚገዙትን ያግኙ።
-          </p>
-        </div>
 
-        {/* Search Bar */}
-        <form onSubmit={handleSearchSubmit} className="mt-8 max-w-2xl">
-          <div className="flex flex-col gap-2 rounded-xl bg-white dark:bg-slate-900/90 p-2 shadow-lg sm:flex-row sm:items-center border border-gray-200 dark:border-slate-700 backdrop-blur-md">
-            {/* Product Search Input */}
-            <div className="flex flex-1 items-center gap-2 px-3">
-              <Search size={18} className="text-gray-400 shrink-0" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search products, services, vehicles..."
-                className="w-full py-2 text-sm text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none bg-transparent"
-              />
-            </div>
-
-            {/* Location Filter */}
-            <div className="flex items-center gap-2 border-t border-gray-100 dark:border-slate-800 px-3 py-2 sm:border-t-0 sm:border-l sm:py-0 shrink-0">
-              <MapPin size={18} className="text-brand-600 dark:text-brand-400 shrink-0" />
-              <select
-                value={searchLocation}
-                onChange={(e) => setSearchLocation(e.target.value)}
-                className="bg-transparent text-sm font-medium text-gray-700 dark:text-gray-200 outline-none py-1.5 cursor-pointer dark:bg-slate-900"
-              >
-                <option value="">All Locations</option>
-                <option value="injibara">Injibara</option>
-                <option value="awi">Awi Zone</option>
-                <option value="kossober">Kossober</option>
-                <option value="chagni">Chagni</option>
-                <option value="bahirdar">Bahir Dar</option>
-              </select>
-            </div>
-
-            {/* Search Button */}
+          {/* Action Buttons Row */}
+          <div className="mt-4 sm:mt-6 flex items-center gap-3 flex-wrap">
+            {/* 1. Browse listings (Red Pill) */}
             <button
-              type="submit"
-              className="rounded-lg bg-brand-600 p-3 text-white transition hover:bg-brand-700 shrink-0 flex items-center justify-center cursor-pointer shadow-sm"
-              aria-label="Search button"
+              type="button"
+              onClick={handleBrowseClick}
+              className="inline-flex items-center gap-2 rounded-full bg-red-600 px-4 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md hover:bg-red-700 active:scale-95 transition cursor-pointer"
             >
-              <Search size={20} />
+              <LayoutGrid size={16} strokeWidth={2.5} />
+              <span>Browse listings</span>
+            </button>
+
+            {/* 2. Sell item (White Pill) */}
+            <button
+              type="button"
+              onClick={handleSellClick}
+              className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2.5 text-xs sm:text-sm font-bold text-red-600 shadow-md hover:bg-gray-100 active:scale-95 transition cursor-pointer"
+            >
+              <PlusCircle size={16} strokeWidth={2.5} />
+              <span>Sell item</span>
             </button>
           </div>
-        </form>
-
-        {/* Quick Actions */}
-        <div className="mt-8 flex flex-wrap gap-4">
-          <button
-            type="button"
-            onClick={() => navigate("/categories")}
-            className="flex items-center gap-2 rounded-lg bg-brand-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 cursor-pointer"
-          >
-            <Grid size={16} />
-            Browse Categories
-          </button>
-
-          <button
-            type="button"
-            onClick={handleSellClick}
-            className="flex items-center gap-2 rounded-lg border border-brand-600 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm px-5 py-3 text-sm font-semibold text-brand-700 dark:text-brand-300 transition hover:bg-white dark:hover:bg-slate-900 cursor-pointer"
-          >
-            <Plus size={16} />
-            Sell Something
-          </button>
         </div>
       </div>
     </section>
   );
 }
-
-export default CustomerHeroSection;

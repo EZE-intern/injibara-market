@@ -10,16 +10,24 @@ import { ThemeProvider } from "./context/ThemeContext";
 // warming the Prisma/TiDB connection pool. Homepage data components
 // (CustomerCategoryGrid, CustomerFeaturedListings) await this promise
 // before fetching, so their queries hit a warm connection.
-const apiBase =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
-const healthUrl = apiBase.replace(/\/api\/?$/, "") + "/healthz";
+const getHealthUrl = (): string => {
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL.replace(/\/api\/?$/, "") + "/healthz";
+  }
+  if (typeof window !== "undefined" && window.location.hostname) {
+    return `http://${window.location.hostname}:5000/healthz`;
+  }
+  return "http://localhost:5000/healthz";
+};
 
-export const serverWarmup: Promise<void> = fetch(healthUrl, {
-  method: "GET",
-  mode: "cors",
-})
-  .then(() => {})
-  .catch(() => {});
+export const serverWarmup: Promise<void> = (typeof window !== "undefined"
+  ? fetch(getHealthUrl(), {
+      method: "GET",
+      mode: "cors",
+    })
+      .then(() => {})
+      .catch(() => {})
+  : Promise.resolve());
 
 function App() {
   useEffect(() => {

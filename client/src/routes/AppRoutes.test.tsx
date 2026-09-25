@@ -66,7 +66,7 @@ describe("AppRoutes Route Protection", () => {
         </MemoryRouter>
       );
 
-      expect(screen.getByRole("heading", { name: /Your marketplace/i, level: 1 })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Find what you need nearby|Your marketplace/i, level: 1 })).toBeInTheDocument();
     });
 
     it("allows unauthenticated access to /login", () => {
