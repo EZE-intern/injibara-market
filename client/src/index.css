@@ -190,3 +190,12 @@ html.dark .shadow-lg,
 html.dark .shadow-xl {
   box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
 }
+
+/* Scrollbar-hidden utility for carousel / horizontal scroll containers */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
