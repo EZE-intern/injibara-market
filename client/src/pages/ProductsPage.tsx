@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import ProductCard from "../components/common/ProductCard";
 import CustomerNavbar from "../components/customer/CustomerNavbar";
 import CustomerFooter from "../components/customer/CustomerFooter";
+import CustomerBottomNav from "../components/customer/CustomerBottomNav";
 import { getProductsWithPagination } from "../api/productApi";
 import { getCategories } from "../api/categoryApi";
 import type { Product } from "../types/Product";
@@ -193,17 +194,17 @@ function ProductsPage() {
   }, [categories, products]);
 
   return (
-    <div className="min-h-screen bg-white flex flex-col justify-between">
+    <div className="min-h-screen bg-white dark:bg-[#0b0f19] flex flex-col justify-between">
       <CustomerNavbar />
 
-      <main className="flex-1 bg-gray-50">
+      <main className="flex-1 bg-gray-50 dark:bg-[#0b0f19] pb-20 md:pb-0">
         {/* =========================
             PAGE HEADER
         ========================== */}
-        <section className="border-b bg-white">
-          <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Marketplace Catalog</h1>
-            <p className="mt-2 text-sm text-gray-600">
+        <section className="border-b border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900/60">
+          <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Marketplace Catalog</h1>
+            <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
               Discover authentic products and listings from sellers around Injibara and the Awi area.
             </p>
           </div>
@@ -212,14 +213,14 @@ function ProductsPage() {
         {/* =========================
             FILTER / SEARCH AREA
         ========================== */}
-        <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-          <div className="rounded-xl bg-white p-5 shadow-sm border border-gray-100">
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <section className="mx-auto max-w-7xl px-4 py-4 sm:py-6 sm:px-6 lg:px-8">
+          <div className="rounded-xl bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-sm border border-gray-100 dark:border-slate-800">
+            <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {/* Search */}
               <div>
                 <label
                   htmlFor="product-search"
-                  className="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-700"
+                  className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300"
                 >
                   Search products
                 </label>
@@ -229,7 +230,7 @@ function ProductsPage() {
                   value={search}
                   onChange={(event) => handleSearchChange(event.target.value)}
                   placeholder="Search name, details, or location..."
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
+                  className="w-full rounded-lg border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white px-4 py-2.5 text-sm outline-none transition focus:border-red-600 focus:ring-2 focus:ring-red-100 dark:focus:ring-red-950/40"
                 />
               </div>
 
@@ -237,7 +238,7 @@ function ProductsPage() {
               <div>
                 <label
                   htmlFor="location"
-                  className="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-700"
+                  className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300"
                 >
                   Location
                 </label>
@@ -245,7 +246,7 @@ function ProductsPage() {
                   id="location"
                   value={selectedLocation}
                   onChange={(event) => handleLocationChange(event.target.value)}
-                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100 cursor-pointer"
+                  className="w-full rounded-lg border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white px-4 py-2.5 text-sm outline-none transition focus:border-red-600 focus:ring-2 focus:ring-red-100 dark:focus:ring-red-950/40 cursor-pointer"
                 >
                   <option value="">All Locations</option>
                   <option value="injibara">Injibara</option>
@@ -260,7 +261,7 @@ function ProductsPage() {
               <div>
                 <label
                   htmlFor="category"
-                  className="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-700"
+                  className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300"
                 >
                   Category
                 </label>
@@ -268,7 +269,7 @@ function ProductsPage() {
                   id="category"
                   value={selectedCategory}
                   onChange={(event) => handleCategoryChange(event.target.value)}
-                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100 cursor-pointer"
+                  className="w-full rounded-lg border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white px-4 py-2.5 text-sm outline-none transition focus:border-red-600 focus:ring-2 focus:ring-red-100 dark:focus:ring-red-950/40 cursor-pointer"
                 >
                   <option value="All">All Categories</option>
                   {categoryOptions.map((cat) => (
@@ -283,7 +284,7 @@ function ProductsPage() {
               <div>
                 <label
                   htmlFor="sort"
-                  className="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-700"
+                  className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300"
                 >
                   Sort products
                 </label>
@@ -291,7 +292,7 @@ function ProductsPage() {
                   id="sort"
                   value={sortBy}
                   onChange={(event) => setSortBy(event.target.value as SortOption)}
-                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100 cursor-pointer"
+                  className="w-full rounded-lg border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white px-4 py-2.5 text-sm outline-none transition focus:border-red-600 focus:ring-2 focus:ring-red-100 dark:focus:ring-red-950/40 cursor-pointer"
                 >
                   <option value="default">Default</option>
                   <option value="newest">Newest Listed</option>
@@ -309,19 +310,19 @@ function ProductsPage() {
         <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
           {/* Result count & active filter info */}
           <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               Showing{" "}
-              <span className="font-semibold text-gray-900">
+              <span className="font-semibold text-gray-900 dark:text-white">
                 {products.length}
               </span>{" "}
               {totalCount > products.length ? `of ${totalCount}` : ""} products
               {selectedCategory !== "All" && (
-                <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-bold text-brand-700 border border-brand-200">
+                <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-red-50 dark:bg-red-950/40 px-2.5 py-0.5 text-xs font-bold text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800">
                   Category: {selectedCategory}
                   <button
                     type="button"
                     onClick={() => handleCategoryChange("All")}
-                    className="ml-1 text-brand-700 hover:text-brand-900 cursor-pointer"
+                    className="ml-1 text-red-700 dark:text-red-400 hover:text-red-900 dark:hover:text-red-200 cursor-pointer"
                     aria-label="Remove category filter"
                   >
                     &times;
@@ -330,15 +331,16 @@ function ProductsPage() {
               )}
             </p>
 
-            {(search || selectedCategory !== "All") && (
+            {(search || selectedCategory !== "All" || (selectedLocation && selectedLocation !== "All")) && (
               <button
                 type="button"
                 onClick={() => {
                   handleSearchChange("");
                   handleCategoryChange("All");
+                  handleLocationChange("");
                   setSortBy("default");
                 }}
-                className="text-sm font-medium text-brand-600 hover:text-brand-700 cursor-pointer"
+                className="text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 cursor-pointer"
               >
                 Clear all filters
               </button>
@@ -347,28 +349,28 @@ function ProductsPage() {
 
           {/* Product Grid or Skeletons */}
           {loading ? (
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-              {Array.from({ length: 8 }).map((_, i) => (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+              {Array.from({ length: 12 }).map((_, i) => (
                 <div
                   key={i}
-                  className="animate-pulse rounded-2xl border border-gray-200 bg-white"
+                  className="overflow-hidden rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 animate-pulse"
                 >
-                  <div className="aspect-square bg-gray-200" />
-                  <div className="space-y-3 p-5">
-                    <div className="h-3 w-16 rounded bg-gray-200" />
-                    <div className="h-5 w-3/4 rounded bg-gray-200" />
-                    <div className="h-6 w-1/2 rounded bg-gray-200" />
+                  <div className="aspect-square bg-gray-200 dark:bg-slate-800" />
+                  <div className="p-3 space-y-2">
+                    <div className="h-3.5 w-3/4 rounded bg-gray-200 dark:bg-slate-800" />
+                    <div className="h-4 w-1/2 rounded bg-gray-200 dark:bg-slate-800" />
+                    <div className="h-3 w-2/3 rounded bg-gray-200 dark:bg-slate-800" />
                   </div>
                 </div>
               ))}
             </div>
           ) : error ? (
-            <div className="rounded-2xl border border-red-200 bg-red-50 px-6 py-16 text-center">
-              <svg className="mx-auto h-12 w-12 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="rounded-2xl border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-950/20 px-6 py-16 text-center">
+              <svg className="mx-auto h-12 w-12 text-red-400 dark:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
               </svg>
-              <h2 className="mt-4 text-xl font-semibold text-red-800">{error}</h2>
-              <p className="mt-2 text-sm text-red-600">
+              <h2 className="mt-4 text-xl font-semibold text-red-800 dark:text-red-300">{error}</h2>
+              <p className="mt-2 text-sm text-red-600 dark:text-red-400">
                 This could be caused by a slow internet connection or a temporary server issue.
               </p>
               <button
@@ -381,7 +383,7 @@ function ProductsPage() {
             </div>
           ) : sortedProducts.length > 0 ? (
             <>
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
                 {sortedProducts.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
@@ -394,11 +396,11 @@ function ProductsPage() {
                     type="button"
                     disabled={loadingMore}
                     onClick={handleLoadMore}
-                    className="inline-flex items-center gap-2 rounded-xl bg-white border border-gray-300 px-8 py-3.5 text-sm font-bold text-gray-800 shadow-sm transition hover:bg-gray-50 hover:border-brand-500 hover:text-brand-700 disabled:opacity-50 cursor-pointer"
+                    className="inline-flex items-center gap-2 rounded-xl bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-700 px-8 py-3.5 text-sm font-bold text-gray-800 dark:text-gray-200 shadow-sm transition hover:bg-gray-50 dark:hover:bg-slate-800 hover:border-red-500 hover:text-red-600 dark:hover:text-red-400 disabled:opacity-50 cursor-pointer"
                   >
                     {loadingMore ? (
                       <>
-                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-brand-600 border-t-transparent" />
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-red-600 border-t-transparent" />
                         <span>ምርቶች በመጫን ላይ ናቸው... (Loading more...)</span>
                       </>
                     ) : (
@@ -413,9 +415,9 @@ function ProductsPage() {
             </>
           ) : (
             /* Empty state */
-            <div className="rounded-2xl bg-white px-6 py-16 text-center shadow-sm border border-gray-100">
+            <div className="rounded-2xl bg-white dark:bg-slate-900 px-6 py-16 text-center shadow-sm border border-gray-100 dark:border-slate-800">
               <svg
-                className="mx-auto h-12 w-12 text-gray-300"
+                className="mx-auto h-12 w-12 text-gray-300 dark:text-gray-600"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -427,25 +429,26 @@ function ProductsPage() {
                   d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                 />
               </svg>
-              <h2 className="mt-4 text-xl font-semibold text-gray-900">
+              <h2 className="mt-4 text-xl font-semibold text-gray-900 dark:text-white">
                 No products found
               </h2>
-              <p className="mt-2 text-sm text-gray-500 max-w-md mx-auto">
+              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
                 {products.length === 0
                   ? "No products listed in the marketplace yet. Registered sellers can list new products from their dashboard."
                   : selectedCategory !== "All"
                   ? `There are currently no products listed under "${selectedCategory}".`
                   : "Try searching for another product name or resetting filters."}
               </p>
-              {(products.length > 0 || selectedCategory !== "All" || search) && (
+              {(products.length > 0 || selectedCategory !== "All" || search || (selectedLocation && selectedLocation !== "All")) && (
                 <button
                   type="button"
                   onClick={() => {
                     handleSearchChange("");
                     handleCategoryChange("All");
+                    handleLocationChange("");
                     setSortBy("default");
                   }}
-                  className="mt-6 rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700 shadow-sm cursor-pointer"
+                  className="mt-6 rounded-lg bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 shadow-sm cursor-pointer"
                 >
                   View All Products
                 </button>
@@ -456,6 +459,7 @@ function ProductsPage() {
       </main>
 
       <CustomerFooter />
+      <CustomerBottomNav />
     </div>
   );
 }

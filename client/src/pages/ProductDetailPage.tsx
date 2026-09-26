@@ -8,7 +8,6 @@ import {
   Check,
   MessageSquare,
   ShieldCheck,
-  Clock,
 } from "lucide-react";
 import CustomerNavbar from "../components/customer/CustomerNavbar";
 import CustomerFooter from "../components/customer/CustomerFooter";
