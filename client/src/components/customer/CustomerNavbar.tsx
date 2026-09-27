@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Heart, Bell, MessageSquare, Search, MapPin, ChevronDown } from "lucide-react";
+import { Heart, MessageSquare, Search, MapPin, ChevronDown } from "lucide-react";
 import { getUser, isAuthenticated, clearAuth } from "../../utils/authStorage";
 import { getUnreadCount } from "../../api/messageApi";
 import { getSavedProducts } from "../../utils/savedStorage";
@@ -127,32 +127,19 @@ export default function CustomerNavbar({
           {/* Right Action Icons */}
           <div className="flex items-center gap-2">
             {authenticated ? (
-              <>
-                {/* Notification Bell */}
-                <Link
-                  to="/customer/notifications"
-                  className="relative flex h-9 w-9 items-center justify-center rounded-full text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-800 transition"
-                  aria-label="Notifications"
-                >
-                  <Bell size={20} />
-                  {/* Red Indicator Dot */}
-                  <span className="absolute top-1.5 right-2 h-2 w-2 rounded-full bg-red-600 ring-2 ring-white dark:ring-slate-900" />
-                </Link>
-
-                {/* Messages Chat Bubble with Count Badge */}
-                <Link
-                  to="/customer/messages"
-                  className="relative flex h-9 w-9 items-center justify-center rounded-full text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-800 transition"
-                  aria-label="Messages"
-                >
-                  <MessageSquare size={20} />
-                  {unreadCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[9px] font-black text-white">
-                      {unreadCount > 99 ? "99+" : unreadCount}
-                    </span>
-                  )}
-                </Link>
-              </>
+              /* Messages Chat Bubble with Count Badge */
+              <Link
+                to="/customer/messages"
+                className="relative flex h-9 w-9 items-center justify-center rounded-full text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-800 transition"
+                aria-label="Messages"
+              >
+                <MessageSquare size={20} />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[9px] font-black text-white">
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
+                )}
+              </Link>
             ) : (
               <Link
                 to="/login"

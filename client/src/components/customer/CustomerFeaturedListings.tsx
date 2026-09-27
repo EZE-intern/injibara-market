@@ -149,7 +149,7 @@ export default function CustomerFeaturedListings({
               Featured Listings
             </h2>
             <p className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
-              በእንጅባራ የተመረጡ • Fresh listings around Injibara
+              በእንጅባራ የተመረጡ
             </p>
           </div>
 
