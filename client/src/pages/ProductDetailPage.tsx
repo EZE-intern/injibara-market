@@ -9,6 +9,7 @@ import {
   MessageSquare,
   ShieldCheck,
 } from "lucide-react";
+import ProductImageGallery from "../components/product/ProductImageGallery";
 import CustomerNavbar from "../components/customer/CustomerNavbar";
 import CustomerFooter from "../components/customer/CustomerFooter";
 import { getProductById } from "../api/productApi";
@@ -22,7 +23,6 @@ function ProductDetailPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isSaved, setIsSaved] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const navigate = useNavigate();
@@ -37,14 +37,6 @@ function ProductDetailPage() {
       setError(null);
       const data = await getProductById(id);
       setProduct(data);
-      if (data) {
-        const mainImg =
-          data.product_images?.find((img) => img.is_primary)?.image_url ||
-          data.product_images?.[0]?.image_url ||
-          data.image ||
-          null;
-        setSelectedImage(mainImg);
-      }
     } catch (err) {
       console.error("Error fetching product detail:", err);
       setError("Unable to load this product. Please try again.");
@@ -306,62 +298,10 @@ function ProductDetailPage() {
             <div className="grid lg:grid-cols-2">
               {/* Media Gallery */}
               <div className="flex flex-col bg-gray-50/80 dark:bg-slate-900/60 p-4 sm:p-6 lg:p-8 border-b lg:border-b-0 lg:border-r border-gray-150 dark:border-slate-800">
-                {/* Main Active Image */}
-                <div className="flex aspect-square w-full items-center justify-center overflow-hidden rounded-2xl bg-white dark:bg-slate-800 shadow-inner border border-gray-200 dark:border-slate-700">
-                  {selectedImage ? (
-                    <img
-                      src={selectedImage}
-                      alt={product.name}
-                      className="h-full w-full object-contain p-2"
-                    />
-                  ) : (
-                    <div className="text-center text-gray-400">
-                      <svg
-                        className="mx-auto h-12 w-12 text-gray-300 dark:text-gray-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={1.5}
-                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                        />
-                      </svg>
-                      <p className="mt-2 text-sm">No photo available</p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Multi-angle Thumbnails */}
-                {allImages.length > 1 && (
-                  <div className="mt-3 sm:mt-4 flex gap-2.5 overflow-x-auto pb-1">
-                    {allImages.map((img, idx) => (
-                      <button
-                        key={img.id || idx}
-                        type="button"
-                        onClick={() => setSelectedImage(img.image_url)}
-                        className={`relative h-16 w-16 sm:h-20 sm:w-20 shrink-0 overflow-hidden rounded-xl border-2 bg-white dark:bg-slate-800 transition cursor-pointer ${
-                          selectedImage === img.image_url
-                            ? "border-red-600 shadow-md ring-2 ring-red-100 dark:ring-red-950"
-                            : "border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600"
-                        }`}
-                      >
-                        <img
-                          src={img.image_url}
-                          alt={`${product.name} angle`}
-                          className="h-full w-full object-cover"
-                        />
-                        {img.side_angle && (
-                          <span className="absolute bottom-0 left-0 right-0 bg-black/75 text-center text-[9px] font-bold uppercase text-white py-0.5 truncate">
-                            {img.side_angle}
-                          </span>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                )}
+                <ProductImageGallery
+                  images={allImages}
+                  productName={product.name}
+                />
               </div>
 
               {/* Information */}
