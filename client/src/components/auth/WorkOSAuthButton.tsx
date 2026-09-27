@@ -22,9 +22,17 @@ export default function WorkOSAuthButton({
         sessionStorage.setItem("injibara_auth_redirect", redirectTo);
       }
 
-      // Compute redirect URI matching current environment
-      const currentOrigin = window.location.origin;
-      const redirectUri = `${currentOrigin}/auth/callback`;
+      // Compute redirect URI:
+      // If developing on localhost, use localhost callback.
+      // In production or on Vercel preview URLs (e.g. *-git-develop-*.vercel.app),
+      // leave undefined so backend uses the registered WORKOS_REDIRECT_URI.
+      const isLocalhost =
+        window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1";
+
+      const redirectUri = isLocalhost
+        ? `${window.location.origin}/auth/callback`
+        : undefined;
 
       const authUrl = await getWorkOSUrl(redirectUri);
       if (authUrl) {
