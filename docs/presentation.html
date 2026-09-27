@@ -1,0 +1,2074 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Injibara Market — Technical Architecture Defense &amp; Product Launch</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Ethiopic:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #080C14;
+      --bg-card: #0F172A;
+      --bg-card-border: #1E293B;
+      --brand: #10B981;
+      --brand-glow: rgba(16, 185, 129, 0.2);
+      --brand-light: #34D399;
+      --accent-blue: #38BDF8;
+      --accent-amber: #F59E0B;
+      --accent-purple: #A855F7;
+      --accent-red: #EF4444;
+      --text-primary: #F8FAFC;
+      --text-secondary: #94A3B8;
+      --text-muted: #64748B;
+      --font-main: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-ethiopic: 'Noto Sans Ethiopic', 'Inter', sans-serif;
+      --font-mono: 'Fira Code', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-primary);
+      font-family: var(--font-main);
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      user-select: none;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Top Progress & Header Bar */
+    #progress-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.06);
+      z-index: 1000;
+    }
+
+    #progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand), var(--accent-blue));
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    header {
+      position: fixed;
+      top: 4px;
+      left: 0;
+      right: 0;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      background: rgba(8, 12, 20, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      z-index: 900;
+    }
+
+    .brand-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-badge {
+      background: rgba(16, 185, 129, 0.12);
+      color: var(--brand-light);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-family: var(--font-mono);
+      font-weight: 600;
+    }
+
+    .nav-controls {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .btn-icon {
+      background: #131B2A;
+      border: 1px solid var(--bg-card-border);
+      color: var(--text-secondary);
+      cursor: pointer;
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      transition: all 0.2s ease;
+    }
+
+    .btn-icon:hover {
+      color: var(--text-primary);
+      border-color: var(--brand);
+      background: #1A2438;
+    }
+
+    .btn-icon.active {
+      background: var(--brand);
+      color: #000;
+      border-color: var(--brand);
+      font-weight: 700;
+    }
+
+    .slide-counter {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      min-width: 85px;
+      text-align: center;
+    }
+
+    /* Main Presentation Container */
+    #slide-stage {
+      position: absolute;
+      top: 56px;
+      left: 0;
+      right: 0;
+      bottom: 42px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px 36px;
+    }
+
+    .slide {
+      display: none;
+      width: 100%;
+      max-width: 1300px;
+      height: 100%;
+      flex-direction: column;
+      justify-content: center;
+      animation: fadeIn 0.25s ease-out forwards;
+    }
+
+    .slide.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Typography & Core Elements */
+    .slide-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--brand);
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 6px;
+    }
+
+    .slide-title {
+      font-size: 1.95rem;
+      font-weight: 800;
+      color: #FFFFFF;
+      letter-spacing: -0.5px;
+      line-height: 1.2;
+    }
+
+    .slide-subtitle {
+      font-size: 0.98rem;
+      color: var(--text-secondary);
+      margin-top: 4px;
+      margin-bottom: 14px;
+      max-width: 1000px;
+      line-height: 1.45;
+    }
+
+    .amharic-sub {
+      font-family: var(--font-ethiopic);
+      color: var(--brand-light);
+      font-weight: 600;
+    }
+
+    /* Cards & Grids */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--bg-card-border);
+      border-radius: 10px;
+      padding: 16px 18px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+      position: relative;
+    }
+
+    .card-accent-green { border-left: 3px solid var(--brand); }
+    .card-accent-blue { border-left: 3px solid var(--accent-blue); }
+    .card-accent-amber { border-left: 3px solid var(--accent-amber); }
+    .card-accent-purple { border-left: 3px solid var(--accent-purple); }
+    .card-accent-red { border-left: 3px solid var(--accent-red); }
+
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #FFFFFF;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-desc {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      line-height: 1.45;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: #172338;
+      border: 1px solid #283953;
+      color: var(--text-primary);
+    }
+
+    .pill-green { background: rgba(16, 185, 129, 0.12); color: var(--brand-light); border-color: rgba(16, 185, 129, 0.35); }
+    .pill-blue { background: rgba(56, 189, 248, 0.12); color: var(--accent-blue); border-color: rgba(56, 189, 248, 0.35); }
+    .pill-amber { background: rgba(245, 158, 11, 0.12); color: var(--accent-amber); border-color: rgba(245, 158, 11, 0.35); }
+    .pill-purple { background: rgba(168, 85, 247, 0.12); color: var(--accent-purple); border-color: rgba(168, 85, 247, 0.35); }
+
+    /* Code Blocks */
+    .code-box {
+      background: #0B0F19;
+      border: 1px solid #1E293B;
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: #E2E8F0;
+      line-height: 1.45;
+      overflow-x: auto;
+      margin-top: 8px;
+    }
+
+    .code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+    .window-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot-red { background: #EF4444; }
+    .dot-amber { background: #F59E0B; }
+    .dot-green { background: #10B981; }
+
+    .code-kw { color: #F43F5E; font-weight: 600; }
+    .code-fn { color: #38BDF8; font-weight: 600; }
+    .code-str { color: #34D399; }
+    .code-comment { color: #64748B; font-style: italic; }
+    .code-num { color: #F59E0B; }
+
+    /* Lists */
+    ul.check-list {
+      list-style: none;
+    }
+
+    ul.check-list li {
+      position: relative;
+      padding-left: 22px;
+      margin-bottom: 8px;
+      font-size: 0.86rem;
+      line-height: 1.45;
+      color: #CBD5E1;
+    }
+
+    ul.check-list li::before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      color: var(--brand);
+      font-weight: 800;
+    }
+
+    ul.cross-list li {
+      position: relative;
+      padding-left: 22px;
+      margin-bottom: 8px;
+      font-size: 0.86rem;
+      line-height: 1.45;
+      color: #CBD5E1;
+    }
+
+    ul.cross-list li::before {
+      content: '✕';
+      position: absolute;
+      left: 0;
+      color: var(--accent-red);
+      font-weight: 800;
+    }
+
+    /* Stats Boxes */
+    .stat-box {
+      background: #0F172A;
+      border: 1px solid #1E293B;
+      border-radius: 8px;
+      padding: 12px 14px;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 1.7rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      line-height: 1.1;
+    }
+
+    .stat-label {
+      font-size: 0.74rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-top: 4px;
+    }
+
+    /* Diagrams in Slides */
+    .svg-diagram-wrapper {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--bg-card-border);
+      background: #0A0E1A;
+      padding: 8px;
+    }
+
+    .svg-diagram-wrapper svg {
+      max-height: 440px;
+      width: 100%;
+      height: auto;
+    }
+
+    /* Bottom Bar */
+    footer.bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      background: rgba(8, 12, 20, 0.95);
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      z-index: 900;
+    }
+
+    .key-hints span {
+      background: #172338;
+      border: 1px solid #2B3D5B;
+      color: var(--text-secondary);
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+    }
+
+    /* Presenter Notes Drawer */
+    #notes-drawer {
+      position: fixed;
+      bottom: 38px;
+      right: 0;
+      width: 480px;
+      max-width: 90vw;
+      background: #0D1424;
+      border-top: 1px solid #23324A;
+      border-left: 1px solid #23324A;
+      border-top-left-radius: 12px;
+      padding: 20px 24px;
+      box-shadow: -8px 0 32px rgba(0, 0, 0, 0.6);
+      transform: translateY(120%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 950;
+      max-height: 48vh;
+      overflow-y: auto;
+    }
+
+    #notes-drawer.open {
+      transform: translateY(0);
+    }
+
+    .notes-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 8px;
+    }
+
+    .notes-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--accent-amber);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .notes-content {
+      font-size: 0.88rem;
+      color: #E2E8F0;
+      line-height: 1.6;
+    }
+
+    /* Overview Modal Grid */
+    #overview-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(8, 12, 20, 0.96);
+      backdrop-filter: blur(14px);
+      z-index: 2000;
+      overflow-y: auto;
+      padding: 48px;
+    }
+
+    #overview-modal.open {
+      display: block;
+    }
+
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 20px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .overview-thumb {
+      background: #111827;
+      border: 1px solid #1E293B;
+      border-radius: 8px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .overview-thumb:hover {
+      border-color: var(--brand);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(16, 185, 129, 0.15);
+    }
+
+    .overview-thumb.current {
+      border-color: var(--brand);
+      background: #162438;
+    }
+
+    .overview-num {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--brand);
+      font-weight: 700;
+    }
+
+    .overview-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #FFF;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Progress Bar -->
+  <div id="progress-container">
+    <div id="progress-bar"></div>
+  </div>
+
+  <!-- Header Navigation -->
+  <header>
+    <div class="brand-title">
+      <span>Injibara Market</span>
+      <span class="amharic-sub">(እንጂባራ ገበያ)</span>
+      <span class="brand-badge">Defense Deck</span>
+    </div>
+
+    <div class="nav-controls">
+      <button class="btn-icon" id="btn-prev" title="Previous Slide (Left Arrow)">◀</button>
+      <div class="slide-counter" id="slide-counter">Slide 1 / 15</div>
+      <button class="btn-icon" id="btn-next" title="Next Slide (Right Arrow / Space)">▶</button>
+      <button class="btn-icon" id="btn-overview" title="Slide Overview (O)">☷</button>
+      <button class="btn-icon" id="btn-notes" title="Toggle Presenter Notes (N)">✎</button>
+      <button class="btn-icon" id="btn-fs" title="Toggle Fullscreen (F)">⛶</button>
+    </div>
+  </header>
+
+  <!-- Slide Stage -->
+  <main id="slide-stage">
+
+    <!-- ==================== SLIDE 1: Title & Hero Launchpad ==================== -->
+    <section class="slide active" data-slide="1" data-notes="Good morning/afternoon advisors and engineering committee. Today I am presenting Injibara Market (እንጂባራ ገበያ) — a full-stack, distributed digital marketplace built specifically for the local commerce and economic realities of Injibara city. Over this defense, I will demonstrate how we moved beyond standard generic e-commerce templates to engineer an algorithmic two-tier brokering engine, an enterprise identity federation layer, a distributed TiDB Cloud relational schema, and a sub-second performance architecture backed by 88+ automated tests.">
+      <div style="text-align: center; max-width: 1050px; margin: 0 auto;">
+        <div class="slide-tag">Executive Technical Project Defense &amp; Launch</div>
+        <h1 class="slide-title" style="font-size: 3rem; margin-top: 8px;">Injibara Market <span style="color: var(--brand);">(እንጂባራ ገበያ)</span></h1>
+        <p class="slide-subtitle" style="margin: 12px auto 26px auto; font-size: 1.15rem;">
+          A Distributed, Brokered Digital Marketplace for Regional Ethiopian Commerce
+        </p>
+
+        <div style="display: flex; justify-content: center; gap: 8px; margin-bottom: 28px; flex-wrap: wrap;">
+          <span class="pill pill-green">Vercel Edge CDN</span>
+          <span class="pill pill-blue">Express 5.2 TypeScript</span>
+          <span class="pill pill-amber">TiDB Cloud Distributed SQL</span>
+          <span class="pill pill-purple">WorkOS AuthKit SSO</span>
+          <span class="pill pill-green">React 19</span>
+          <span class="pill pill-blue">Prisma ORM</span>
+          <span class="pill pill-green">88+ Automated Tests</span>
+        </div>
+
+        <div class="grid-3" style="text-align: left;">
+          <div class="card card-accent-green">
+            <div class="card-title">🏢 Two-Tier Brokered System</div>
+            <p class="card-desc">Domain-driven transaction engine separating retail goods from high-value brokered assets (Property, Bajaj, Machinery) with mediated appointments.</p>
+          </div>
+          <div class="card card-accent-blue">
+            <div class="card-title">🔐 Enterprise Identity Federation</div>
+            <p class="card-desc">WorkOS AuthKit Google SSO with backward-compatible email account federation across 17 relational database tables.</p>
+          </div>
+          <div class="card card-accent-purple">
+            <div class="card-title">⚡ Sub-Second Cloud Architecture</div>
+            <p class="card-desc">In-memory TTL caching, route-level code splitting (-78% initial bundle size), and automated 24/7 keep-alive monitoring.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 2: What We Solve ==================== -->
+    <section class="slide" data-slide="2" data-notes="Why did we build Injibara Market instead of using a standard generic e-commerce template? Because regional Ethiopian commerce has distinct structural challenges. Standard 1-click cart checkouts completely fail for high-value local assets like farmland, motor vehicles, or tractors. In Injibara, trust is relationship-driven, requiring physical inspection, verification, and appointment booking. At the same time, small everyday merchants need instant catalog discovery without complex payment gateways.">
+      <div>
+        <div class="slide-tag">Domain Context &amp; Market Realities</div>
+        <h2 class="slide-title">The Regional Commerce Dilemma &amp; What We Solve</h2>
+        <p class="slide-subtitle">Why generic Western e-commerce templates fail in Injibara — and our architectural trust platform.</p>
+
+        <div class="svg-diagram-wrapper" style="margin-bottom: 12px; padding: 6px 12px;">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 75" width="100%" height="auto" style="background:#0b0f19; font-family:'Inter',sans-serif;">
+    <defs>
+      <marker id="arrowS2" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 8 5 L 0 9 z" fill="#38bdf8"/>
+      </marker>
+    </defs>
+    <!-- Left: Chaos -->
+    <rect x="10" y="8" width="370" height="58" rx="6" fill="#1e1822" stroke="#ef4444" stroke-width="1.2"/>
+    <text x="25" y="30" fill="#f87171" font-size="11" font-weight="700">INFORMAL OFFLINE TRADE (HIGH FRICTION)</text>
+    <text x="25" y="48" fill="#94a3b8" font-size="9">Roadside Brokers (Delala) • Unvetted Telegram Groups • Cash &amp; Deed Fraud</text>
+
+    <!-- Center Transition -->
+    <line x1="390" y1="37" x2="480" y2="37" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrowS2)"/>
+    <text x="435" y="28" fill="#38bdf8" font-size="8.5" font-weight="700" text-anchor="middle">TRANSFORMED BY</text>
+
+    <!-- Right: Solution -->
+    <rect x="490" y="8" width="380" height="58" rx="6" fill="#0d241c" stroke="#10b981" stroke-width="1.2"/>
+    <text x="505" y="30" fill="#34d399" font-size="11" font-weight="700">INJIBARA MARKET (MEDIATED TRUST PLATFORM)</text>
+    <text x="505" y="48" fill="#94a3b8" font-size="9">Two-Tier Broker Engine • Twitter/X Verified Badging • Formal In-Person Escrow</text>
+  </svg>
+</div>
+
+        <div class="grid-2" style="margin-bottom: 14px;">
+          <div class="card card-accent-amber">
+            <div class="card-title" style="color: var(--accent-amber);">⚠️ The Regional Marketplace Challenge</div>
+            <ul class="cross-list" style="margin-top: 12px;">
+              <li><strong>Rampant High-Value Fraud:</strong> Farmland (መሬት), Bajajs (ባጃጅ), and vehicles cannot be safely transacted via direct peer-to-peer chat without physical escrow and deed verification.</li>
+              <li><strong>Informal Commerce Fragmentation:</strong> Local merchants operate through unorganized Telegram channels with zero inventory tracking, search discovery, or audit trails.</li>
+              <li><strong>Payment &amp; Network Realities:</strong> Reliance on Telebirr, CBE Birr, and Cash-on-Delivery, accompanied by 3G mobile latency and cloud cold-starts.</li>
+            </ul>
+          </div>
+
+          <div class="card card-accent-green">
+            <div class="card-title" style="color: var(--brand-light);">💡 The Injibara Market Solution</div>
+            <ul class="check-list" style="margin-top: 12px;">
+              <li><strong>Domain-Aware Two-Tier Architecture:</strong> Algorithmically isolates everyday retail goods (direct seller chat/cart) from high-value brokered assets (admin mediated).</li>
+              <li><strong>Verified Merchant Trust:</strong> Official Twitter/X-grade 12-point scalloped starburst rosette verified badge signaling merchant authenticity in Injibara.</li>
+              <li><strong>Resilient Network Layer:</strong> Frontend Axios client automatically retries cold-start timeouts with exponential backoff and localized Ethiopian phone validation.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card card-accent-blue" style="padding: 12px 18px; display: flex; align-items: center; gap: 14px;">
+          <div style="font-size: 1.6rem;">🎯</div>
+          <div>
+            <div style="font-weight: 700; color: #FFF; font-size: 0.92rem;">Core Engineering Mission</div>
+            <div style="font-size: 0.84rem; color: var(--text-secondary);">
+              To formalize Injibara's local economy by converting fragmented offline trade into a transparent, searchable marketplace while preserving the physical inspection rituals essential to regional Ethiopian commerce.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 3: Methodology ==================== -->
+    <section class="slide" data-slide="3" data-notes="Let us discuss our development methodology. Rather than following a rigid, upfront Waterfall specification where requirements are locked before understanding the market, we adopted an Agile Iterative & Discovery-Driven Development methodology. Because Injibara's commerce has unique dynamics, we started with a core MVP and iteratively evolved the system based on real local market discoveries. For example, when we discovered that high-value assets like land and Bajajs carry high fraud risks, we pivoted from a standard checkout model to create the Two-Tier Brokered Hub. Features were continuously added, refined, or dropped based on real practical feedback.">
+      <div>
+        <div class="slide-tag">Software Engineering Process</div>
+        <h2 class="slide-title">Development Methodology: Agile &amp; Market Discovery</h2>
+        <p class="slide-subtitle">Why we used Iterative Evolutionary Architecture instead of rigid upfront specification.</p>
+
+        <div class="grid-4" style="margin-top: 10px;">
+          <div class="card card-accent-green">
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--brand); font-weight: 700;">PHASE 01</div>
+            <div class="card-title" style="margin-top: 4px; font-size: 0.95rem;">Core MVP</div>
+            <p class="card-desc">Initial catalog browsing, responsive customer UI, standard JWT auth, and basic relational schema.</p>
+            <div style="margin-top: 10px;"><span class="pill pill-green">Foundation</span></div>
+          </div>
+
+          <div class="card card-accent-amber">
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent-amber); font-weight: 700;">PHASE 02</div>
+            <div class="card-title" style="margin-top: 4px; font-size: 0.95rem;">The Broker Pivot</div>
+            <p class="card-desc">Field discovery: high fraud on land and Bajajs. Engineered <code>brokeredCategories.ts</code> and Admin Broker Hub.</p>
+            <div style="margin-top: 10px;"><span class="pill pill-amber">Domain Innovation</span></div>
+          </div>
+
+          <div class="card card-accent-blue">
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent-blue); font-weight: 700;">PHASE 03</div>
+            <div class="card-title" style="margin-top: 4px; font-size: 0.95rem;">Cloud SQL &amp; SSO</div>
+            <p class="card-desc">Migrated to TiDB Cloud distributed SQL in AWS Frankfurt and integrated WorkOS AuthKit enterprise identity.</p>
+            <div style="margin-top: 10px;"><span class="pill pill-blue">Enterprise Scale</span></div>
+          </div>
+
+          <div class="card card-accent-purple">
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent-purple); font-weight: 700;">PHASE 04</div>
+            <div class="card-title" style="margin-top: 4px; font-size: 0.95rem;">Sub-Second Polish</div>
+            <p class="card-desc">Implemented in-memory TTL caching, route code splitting (-78% bundle size), and keep-alive automation.</p>
+            <div style="margin-top: 10px;"><span class="pill pill-purple">Hardening</span></div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top: 16px; padding: 14px 18px;">
+          <div style="font-weight: 700; color: #FFF; font-size: 0.92rem; margin-bottom: 4px;">Iterative Validation Principles:</div>
+          <div style="display: flex; gap: 20px; font-size: 0.84rem; color: var(--text-secondary); flex-wrap: wrap;">
+            <div>• <strong>Code as Truth:</strong> Architecture evolved based on real code tests rather than speculative documentation.</div>
+            <div>• <strong>Continuous Integration:</strong> 88+ automated tests run on every pull request to develop and main.</div>
+            <div>• <strong>Zero Data Loss:</strong> Database schema evolved via non-breaking migrations preserving existing relationships.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 4: Technical Architecture ==================== -->
+    <section class="slide" data-slide="4" data-notes="Here is our end-to-end system architecture as implemented in the code. We have a decoupled client-server architecture. The frontend is a React 19 Single Page App built with Vite and Tailwind v4 deployed on Vercel Edge. The backend is an Express 5 TypeScript service on Render with in-memory TTL caching. Persistence connects via strict SSL to TiDB Cloud Serverless MySQL in AWS Frankfurt, media streams through Cloudinary CDN, and enterprise authentication is handled by WorkOS AuthKit.">
+      <div>
+        <div class="slide-tag">Technical Architecture</div>
+        <h2 class="slide-title">End-to-End Three-Tier Cloud Topology</h2>
+        <p class="slide-subtitle">Production-deployed, multi-tier decoupled system with edge CDN and distributed cloud persistence.</p>
+
+        <div class="svg-diagram-wrapper" style="margin-bottom: 12px;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="100%" height="auto" style="background:#0f172a; border-radius:10px; font-family:'Segoe UI',Roboto,Helvetica,sans-serif;">
+  <defs>
+    <linearGradient id="gradClient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="gradApi" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e3a8a"/>
+      <stop offset="100%" stop-color="#172554"/>
+    </linearGradient>
+    <linearGradient id="gradData" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#065f46"/>
+      <stop offset="100%" stop-color="#022c22"/>
+    </linearGradient>
+    <linearGradient id="gradCdn" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7c2d12"/>
+      <stop offset="100%" stop-color="#431407"/>
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000" flood-opacity="0.4"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#38bdf8"/>
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#34d399"/>
+    </marker>
+    <marker id="arrowOrange" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#fb923c"/>
+    </marker>
+  </defs>
+
+  <!-- Title & Frame Header -->
+  <text x="500" y="32" fill="#f8fafc" font-size="18" font-weight="700" text-anchor="middle" letter-spacing="1">FIGURE 3.1 — HIGH-LEVEL THREE-TIER CLOUD TOPOLOGY</text>
+  <line x1="40" y1="46" x2="960" y2="46" stroke="#334155" stroke-width="1"/>
+
+  <!-- TIER 1: Presentation Tier -->
+  <rect x="40" y="65" width="920" height="135" rx="8" fill="url(#gradClient)" stroke="#38bdf8" stroke-width="1.5" filter="url(#shadow)"/>
+  <rect x="55" y="75" width="220" height="24" rx="4" fill="#0369a1"/>
+  <text x="165" y="91" fill="#ffffff" font-size="11" font-weight="700" text-anchor="middle" letter-spacing="0.8">TIER 1: PRESENTATION LAYER</text>
+  <text x="890" y="91" fill="#38bdf8" font-size="11" font-weight="600" text-anchor="end">Vercel Edge CDN | injibara-market.vercel.app</text>
+
+  <!-- Client components -->
+  <rect x="65" y="112" width="165" height="70" rx="6" fill="#1e293b" stroke="#475569" stroke-width="1"/>
+  <text x="147" y="133" fill="#38bdf8" font-size="12" font-weight="700" text-anchor="middle">React 19 SPA</text>
+  <text x="147" y="151" fill="#94a3b8" font-size="10" text-anchor="middle">Vite 8 + Tailwind CSS 4</text>
+  <text x="147" y="167" fill="#64748b" font-size="9" text-anchor="middle">Client-Side Hydration</text>
+
+  <rect x="245" y="112" width="165" height="70" rx="6" fill="#1e293b" stroke="#475569" stroke-width="1"/>
+  <text x="327" y="133" fill="#38bdf8" font-size="12" font-weight="700" text-anchor="middle">Navigation &amp; Guards</text>
+  <text x="327" y="151" fill="#94a3b8" font-size="10" text-anchor="middle">React Router v7</text>
+  <text x="327" y="167" fill="#64748b" font-size="9" text-anchor="middle">Role Guards: Seller / Admin</text>
+
+  <rect x="425" y="112" width="170" height="70" rx="6" fill="#1e293b" stroke="#475569" stroke-width="1"/>
+  <text x="510" y="133" fill="#38bdf8" font-size="12" font-weight="700" text-anchor="middle">User Context &amp; State</text>
+  <text x="510" y="151" fill="#94a3b8" font-size="10" text-anchor="middle">JWT in localStorage</text>
+  <text x="510" y="167" fill="#64748b" font-size="9" text-anchor="middle">Auto-login &amp; Session Sync</text>
+
+  <rect x="610" y="112" width="165" height="70" rx="6" fill="#1e293b" stroke="#475569" stroke-width="1"/>
+  <text x="692" y="133" fill="#38bdf8" font-size="12" font-weight="700" text-anchor="middle">Axios Interceptor</text>
+  <text x="692" y="151" fill="#94a3b8" font-size="10" text-anchor="middle">Bearer Header Injection</text>
+  <text x="692" y="167" fill="#64748b" font-size="9" text-anchor="middle">Cold-Start Auto-Retry</text>
+
+  <rect x="790" y="112" width="155" height="70" rx="6" fill="#1e293b" stroke="#475569" stroke-width="1"/>
+  <text x="867" y="133" fill="#38bdf8" font-size="12" font-weight="700" text-anchor="middle">Feedback &amp; UI</text>
+  <text x="867" y="151" fill="#94a3b8" font-size="10" text-anchor="middle">React Hot Toast</text>
+  <text x="867" y="167" fill="#64748b" font-size="9" text-anchor="middle">Lucide React Icons</text>
+
+  <!-- Connectors: Tier 1 to Tier 2 -->
+  <path d="M 500 200 L 500 240" stroke="#38bdf8" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
+  <text x="515" y="224" fill="#38bdf8" font-size="10" font-weight="600">HTTPS / REST API (JSON + Multipart Form-Data)</text>
+
+  <!-- TIER 2: Application / API Layer -->
+  <rect x="40" y="245" width="920" height="205" rx="8" fill="url(#gradApi)" stroke="#60a5fa" stroke-width="1.5" filter="url(#shadow)"/>
+  <rect x="55" y="255" width="220" height="24" rx="4" fill="#1d4ed8"/>
+  <text x="165" y="271" fill="#ffffff" font-size="11" font-weight="700" text-anchor="middle" letter-spacing="0.8">TIER 2: APPLICATION &amp; API LAYER</text>
+  <text x="890" y="271" fill="#93c5fd" font-size="11" font-weight="600" text-anchor="end">Node.js 20+ (ESM) | Express 5.2.1 | TypeScript</text>
+
+  <!-- Sub-box: Security & Middleware Gateway -->
+  <rect x="65" y="290" width="870" height="40" rx="5" fill="#0f172a" stroke="#3b82f6" stroke-width="1"/>
+  <text x="78" y="315" fill="#60a5fa" font-size="11" font-weight="700">Security Gateway:</text>
+  <text x="210" y="315" fill="#cbd5e1" font-size="10">Trust Proxy (Vercel/Railway)</text>
+  <text x="375" y="315" fill="#cbd5e1" font-size="10">CORS Policy</text>
+  <text x="470" y="315" fill="#cbd5e1" font-size="10">Rate Limiters (Global / Auth / Upload)</text>
+  <text x="715" y="315" fill="#cbd5e1" font-size="10">JWT Auth + Zod Schemas</text>
+
+  <!-- Express Controllers & Handlers -->
+  <rect x="65" y="345" width="115" height="90" rx="5" fill="#1e293b" stroke="#334155"/>
+  <text x="122" y="365" fill="#93c5fd" font-size="11" font-weight="700" text-anchor="middle">Auth Controller</text>
+  <text x="122" y="382" fill="#94a3b8" font-size="9" text-anchor="middle">Register &amp; Login</text>
+  <text x="122" y="396" fill="#94a3b8" font-size="9" text-anchor="middle">Bcrypt Hash (10 rds)</text>
+  <text x="122" y="410" fill="#38bdf8" font-size="9" text-anchor="middle">Role Patching</text>
+
+  <rect x="190" y="345" width="130" height="90" rx="5" fill="#1e293b" stroke="#334155"/>
+  <text x="255" y="365" fill="#93c5fd" font-size="11" font-weight="700" text-anchor="middle">Product Controller</text>
+  <text x="255" y="382" fill="#94a3b8" font-size="9" text-anchor="middle">Search &amp; Filters</text>
+  <text x="255" y="396" fill="#34d399" font-size="9" font-weight="600" text-anchor="middle">★ Auto-Promote Seller</text>
+  <text x="255" y="410" fill="#94a3b8" font-size="9" text-anchor="middle">Soft-Delete (deleted_at)</text>
+
+  <rect x="330" y="345" width="135" height="90" rx="5" fill="#1e293b" stroke="#334155"/>
+  <text x="397" y="365" fill="#93c5fd" font-size="11" font-weight="700" text-anchor="middle">Message &amp; Router</text>
+  <text x="397" y="382" fill="#fbbf24" font-size="9" font-weight="600" text-anchor="middle">★ Tier-1 Regex Filter</text>
+  <text x="397" y="396" fill="#94a3b8" font-size="9" text-anchor="middle">Auto-Route to Broker</text>
+  <text x="397" y="410" fill="#94a3b8" font-size="9" text-anchor="middle">P2P Tier-2 Direct</text>
+
+  <rect x="475" y="345" width="125" height="90" rx="5" fill="#1e293b" stroke="#334155"/>
+  <text x="537" y="365" fill="#93c5fd" font-size="11" font-weight="700" text-anchor="middle">Order Controller</text>
+  <text x="537" y="382" fill="#94a3b8" font-size="9" text-anchor="middle">Prisma $transaction</text>
+  <text x="537" y="396" fill="#94a3b8" font-size="9" text-anchor="middle">Atomic Stock Deduct</text>
+  <text x="537" y="410" fill="#94a3b8" font-size="9" text-anchor="middle">COD &amp; Order Status</text>
+
+  <rect x="610" y="345" width="165" height="90" rx="5" fill="#1e293b" stroke="#334155"/>
+  <text x="692" y="365" fill="#93c5fd" font-size="11" font-weight="700" text-anchor="middle">Admin &amp; Broker Hub</text>
+  <text x="692" y="382" fill="#94a3b8" font-size="9" text-anchor="middle">Deal Pipeline Management</text>
+  <text x="692" y="396" fill="#94a3b8" font-size="9" text-anchor="middle">In-Memory + DB Sync</text>
+  <text x="692" y="410" fill="#94a3b8" font-size="9" text-anchor="middle">Product &amp; User Moderation</text>
+
+  <rect x="785" y="345" width="150" height="90" rx="5" fill="#1e293b" stroke="#334155"/>
+  <text x="860" y="365" fill="#93c5fd" font-size="11" font-weight="700" text-anchor="middle">Data Access Layer</text>
+  <text x="860" y="382" fill="#94a3b8" font-size="9" text-anchor="middle">Prisma 7.9.1 ORM</text>
+  <text x="860" y="396" fill="#94a3b8" font-size="9" text-anchor="middle">@prisma/adapter-mariadb</text>
+  <text x="860" y="410" fill="#94a3b8" font-size="9" text-anchor="middle">Cloudinary SDK v2</text>
+
+  <!-- Connectors: Tier 2 to Tier 3 -->
+  <path d="M 330 450 L 330 485" stroke="#34d399" stroke-width="2" marker-end="url(#arrowGreen)"/>
+  <text x="340" y="472" fill="#34d399" font-size="10" font-weight="600">MySQL Wire Protocol (TLS Encrypted / Port 4000)</text>
+
+  <path d="M 750 450 L 750 485" stroke="#fb923c" stroke-width="2" marker-end="url(#arrowOrange)"/>
+  <text x="760" y="472" fill="#fb923c" font-size="10" font-weight="600">Buffer Stream Upload (HTTPS API)</text>
+
+  <!-- TIER 3: Data Tier -->
+  <rect x="40" y="490" width="450" height="135" rx="8" fill="url(#gradData)" stroke="#34d399" stroke-width="1.5" filter="url(#shadow)"/>
+  <rect x="55" y="500" width="220" height="24" rx="4" fill="#047857"/>
+  <text x="165" y="516" fill="#ffffff" font-size="11" font-weight="700" text-anchor="middle" letter-spacing="0.8">TIER 3A: DATABASE STORAGE</text>
+
+  <text x="65" y="545" fill="#a7f3d0" font-size="13" font-weight="700">TiDB Serverless Cloud (AWS eu-central-1)</text>
+  <text x="65" y="565" fill="#ecfdf5" font-size="10">• Fully Managed Distributed SQL (MySQL 8.0 Wire Compatible)</text>
+  <text x="65" y="582" fill="#ecfdf5" font-size="10">• 16 Relational Entity Tables + 8 Enumerated Types</text>
+  <text x="65" y="599" fill="#ecfdf5" font-size="10">• ACID Transactions, Foreign Key Constraints &amp; Soft-Deletes</text>
+  <text x="65" y="615" fill="#6ee7b7" font-size="9">Host: gateway01.eu-central-1.prod.aws.tidbcloud.com</text>
+
+  <!-- TIER 3B: Media Storage -->
+  <rect x="510" y="490" width="450" height="135" rx="8" fill="url(#gradCdn)" stroke="#fb923c" stroke-width="1.5" filter="url(#shadow)"/>
+  <rect x="525" y="500" width="220" height="24" rx="4" fill="#c2410c"/>
+  <text x="635" y="516" fill="#ffffff" font-size="11" font-weight="700" text-anchor="middle" letter-spacing="0.8">TIER 3B: MEDIA &amp; ASSET CDN</text>
+
+  <text x="535" y="545" fill="#fed7aa" font-size="13" font-weight="700">Cloudinary Media Cloud</text>
+  <text x="535" y="565" fill="#fff7ed" font-size="10">• Direct Buffer-to-Cloud Streaming via Multer Memory Storage</text>
+  <text x="535" y="582" fill="#fff7ed" font-size="10">• Automatic Image Optimization (WebP / AVIF) &amp; Global Delivery</text>
+  <text x="535" y="599" fill="#fff7ed" font-size="10">• Secure Multi-Angle Image Storage linked to Product ID</text>
+  <text x="535" y="615" fill="#fdba74" font-size="9">Delivery URL: https://res.cloudinary.com/bncb5ci9/image/upload/...</text>
+</svg>
+        </div>
+
+        <div class="grid-3">
+          <div class="stat-box">
+            <div class="stat-number" style="color: var(--brand);">35ms</div>
+            <div class="stat-label">In-Memory Cached API Latency</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-number" style="color: var(--accent-blue);">3</div>
+            <div class="stat-label">Decoupled Cloud Services</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-number" style="color: var(--accent-purple);">100%</div>
+            <div class="stat-label">Type-Safe Endpoints (Zod + TS)</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 5: Core Innovation ==================== -->
+    <section class="slide" data-slide="5" data-notes="This slide shows our core algorithmic innovation, straight from brokeredCategories.ts. When a user posts or interacts with a product, our system inspects the category and slug using localized bilingual regex patterns matching terms like land (መሬት), bajaj (ባጃጅ), vehicles (መኪና), and heavy machinery (ማሽነሪ). If it is Tier 1, the UI disables direct messaging, notifies the buyer that an admin will mediate, and routes inquiries directly to the Admin Broker Hub where appointments are scheduled. Standard retail goods remain direct.">
+      <div>
+        <div class="slide-tag">Core Algorithmic Innovation</div>
+        <h2 class="slide-title">Domain-Driven Two-Tier Brokered System</h2>
+        <p class="slide-subtitle">How <code>client/src/utils/brokeredCategories.ts</code> and <code>server/src/utils/brokeredCategories.ts</code> enforce mediated trust.</p>
+
+        <div class="grid-2">
+          <div>
+            <div class="svg-diagram-wrapper" style="margin-bottom: 10px;">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 260" width="100%" height="auto" style="background:#0b0f19; border-radius:8px; font-family:'Inter',sans-serif;">
+  <defs>
+    <marker id="flowArrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#38bdf8"/>
+    </marker>
+    <marker id="flowAmber" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#f59e0b"/>
+    </marker>
+    <marker id="flowGreen" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#10b981"/>
+    </marker>
+  </defs>
+  <rect x="20" y="95" width="130" height="60" rx="6" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+  <text x="85" y="120" fill="#ffffff" font-size="11" font-weight="700" text-anchor="middle">Product Action</text>
+  <text x="85" y="138" fill="#94a3b8" font-size="9.5" text-anchor="middle">Name, Slug, Category</text>
+
+  <line x1="150" y1="125" x2="190" y2="125" stroke="#38bdf8" stroke-width="2" marker-end="url(#flowArrow)"/>
+
+  <polygon points="265,75 335,125 265,175 195,125" fill="#1e293b" stroke="#a855f7" stroke-width="1.5"/>
+  <text x="265" y="120" fill="#e2e8f0" font-size="10" font-weight="700" text-anchor="middle">Bilingual Regex</text>
+  <text x="265" y="135" fill="#c084fc" font-size="9" text-anchor="middle">Evaluator</text>
+
+  <path d="M 265 75 L 265 45 L 365 45" fill="none" stroke="#f59e0b" stroke-width="2" marker-end="url(#flowAmber)"/>
+  <text x="300" y="38" fill="#f59e0b" font-size="9" font-weight="700">Tier 1 Match</text>
+  <rect x="370" y="20" width="170" height="52" rx="6" fill="#1e293b" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="455" y="42" fill="#fde047" font-size="10.5" font-weight="700" text-anchor="middle">Admin Broker Mediation</text>
+  <text x="455" y="58" fill="#cbd5e1" font-size="8.5" text-anchor="middle">Direct Chat Off • Scheduled Inspection</text>
+
+  <path d="M 265 175 L 265 205 L 365 205" fill="none" stroke="#10b981" stroke-width="2" marker-end="url(#flowGreen)"/>
+  <text x="300" y="220" fill="#10b981" font-size="9" font-weight="700">Tier 2 Match</text>
+  <rect x="370" y="180" width="170" height="52" rx="6" fill="#1e293b" stroke="#10b981" stroke-width="1.5"/>
+  <text x="455" y="202" fill="#34d399" font-size="10.5" font-weight="700" text-anchor="middle">Standard Commerce</text>
+  <text x="455" y="218" fill="#cbd5e1" font-size="8.5" text-anchor="middle">Instant Chat • Cart &amp; Order Placement</text>
+</svg>
+            </div>
+          </div>
+
+          <div>
+            <div class="code-box" style="margin-top: 0;">
+              <div class="code-header">
+                <div class="window-dots"><div class="dot dot-red"></div><div class="dot dot-amber"></div><div class="dot dot-green"></div></div>
+                <span style="font-size: 0.72rem; color: var(--text-muted);">utils/brokeredCategories.ts</span>
+              </div>
+              <pre><span class="code-comment">// Bilingual pattern matching for high-risk assets</span>
+<span class="code-kw">const</span> BROKERED_CATEGORY_PATTERNS: RegExp[] = [
+  <span class="code-str">/\bproperty\b/i</span>, <span class="code-str">/\bland\b/i</span>, <span class="code-str">/መሬት/</span>,
+  <span class="code-str">/\bvehicles?\b/i</span>, <span class="code-str">/\bbajaj\b/i</span>, <span class="code-str">/ባጃጅ/</span>, <span class="code-str">/መኪና/</span>,
+  <span class="code-str">/\bheavy[\s_-]?machinery\b/i</span>, <span class="code-str">/ማሽነሪ/</span>
+];
+
+<span class="code-kw">export function</span> <span class="code-fn">isBrokeredCategory</span>(name, slug): <span class="code-kw">boolean</span> {
+  <span class="code-kw">const</span> combined = `${name || ""} ${slug || ""}`.trim();
+  <span class="code-kw">return</span> BROKERED_CATEGORY_PATTERNS
+    .<span class="code-fn">some</span>(p =&gt; p.<span class="code-fn">test</span>(combined));
+}</pre>
+            </div>
+            <div class="card card-accent-green" style="margin-top: 10px; padding: 10px 14px;">
+              <div style="font-size: 0.82rem; color: #CBD5E1;">
+                <strong style="color: var(--brand-light);">Tier 1 (High Value):</strong> Direct chat suppressed; inquiries auto-route to Admin Hub for physical appointment.<br>
+                <strong style="color: var(--accent-blue);">Tier 2 (Retail):</strong> Instant direct chat enabled; shopping cart &amp; checkout active.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 6: Backend Engineering ==================== -->
+    <section class="slide" data-slide="6" data-notes="Let's look at the Express 5 backend in server/src/index.ts. Notice that we have mounted dedicated resource routers for auth, products, categories, stores, orders, messages, and admin. To eliminate cold database queries and cloud latency, we introduced an in-memory TTL cache using node-cache. Frequently accessed data like product categories and listing pages are cached for 2 to 5 minutes, slashing response latency from 450 milliseconds down to 35 milliseconds. We also implemented a deep health check endpoint at /healthz which executes SELECT 1 on boot.">
+      <div>
+        <div class="slide-tag">Backend Engineering &amp; Resilience</div>
+        <h2 class="slide-title">Express 5 REST API &amp; Sub-Second Latency Layer</h2>
+        <p class="slide-subtitle">Modular route distribution, in-memory TTL caching, and cold-start pool pre-warming.</p>
+
+        <div class="grid-3" style="margin-bottom: 14px;">
+          <div class="card card-accent-blue">
+            <div class="card-title" style="font-size: 0.95rem;">📡 Modular API Architecture</div>
+            <ul class="check-list" style="margin-top: 8px;">
+              <li><code>/api/auth</code> : JWT &amp; WorkOS AuthKit</li>
+              <li><code>/api/products</code> : Catalog &amp; Cloudinary</li>
+              <li><code>/api/categories</code> : Hierarchical CRUD</li>
+              <li><code>/api/orders</code> : Status transition audit</li>
+              <li><code>/api/messages</code> : Dynamic broker routing</li>
+              <li><code>/api/admin</code> : Analytics &amp; Broker Hub</li>
+            </ul>
+          </div>
+
+          <div class="card card-accent-green">
+            <div class="card-title" style="font-size: 0.95rem;">⚡ In-Memory TTL Cache</div>
+            <ul class="check-list" style="margin-top: 8px;">
+              <li><strong>Node-Cache Engine:</strong> Embedded in-memory store for high-frequency reads.</li>
+              <li><strong>5-Min Category TTL:</strong> Eliminates database overhead for category menus.</li>
+              <li><strong>2-Min Product TTL:</strong> Sub-second catalog browsing under traffic spikes.</li>
+              <li><strong>Latency Drop:</strong> Slashing response time from ~450ms to ~35ms.</li>
+            </ul>
+          </div>
+
+          <div class="card card-accent-purple">
+            <div class="card-title" style="font-size: 0.95rem;">🛡️ Cloud Cold-Start Hardening</div>
+            <ul class="check-list" style="margin-top: 8px;">
+              <li><strong>Deep /healthz:</strong> Executes <code>SELECT 1</code> via Prisma raw query to pre-warm DB pool.</li>
+              <li><strong>24/7 Keep-Alive:</strong> Automated GitHub Actions workflow prevents cloud idling.</li>
+              <li><strong>Trust Proxy 1:</strong> Correct IP forwarding behind Vercel and Render load balancers.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="code-box">
+          <div class="code-header">
+            <div class="window-dots"><div class="dot dot-red"></div><div class="dot dot-amber"></div><div class="dot dot-green"></div></div>
+            <span style="font-size: 0.72rem; color: var(--text-muted);">server/src/lib/cache.ts — In-Memory TTL Caching Layer</span>
+          </div>
+          <pre><span class="code-kw">import</span> NodeCache <span class="code-kw">from</span> <span class="code-str">'node-cache'</span>;
+<span class="code-comment">// Categories cached for 5 minutes (300s); Products cached for 2 minutes (120s)</span>
+<span class="code-kw">export const</span> categoryCache = <span class="code-kw">new</span> <span class="code-fn">NodeCache</span>({ stdTTL: <span class="code-num">300</span>, checkperiod: <span class="code-num">60</span> });
+<span class="code-kw">export const</span> productListCache = <span class="code-kw">new</span> <span class="code-fn">NodeCache</span>({ stdTTL: <span class="code-num">120</span>, checkperiod: <span class="code-num">60</span> });</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 7: Data Architecture ==================== -->
+    <section class="slide" data-slide="7" data-notes="Moving to our database architecture: our production database is hosted on TiDB Cloud Serverless in AWS Frankfurt. Our Prisma schema models 17 distinct relational tables in MySQL with strict foreign key constraints and audit tables including order status history and inventory logs. When we integrated WorkOS enterprise authentication, we preserved all 11 existing relational foreign keys by federating identity through a nullable workos_user_id column, ensuring zero database migration downtime and seamless backward compatibility.">
+      <div>
+        <div class="slide-tag">Data Architecture &amp; Distributed SQL</div>
+        <h2 class="slide-title">Relational Modeling on TiDB Cloud Distributed SQL</h2>
+        <p class="slide-subtitle">Enterprise referential integrity, audit history, and seamless identity federation across 17 tables.</p>
+
+        <div class="svg-diagram-wrapper" style="margin-bottom: 12px;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 860" width="100%" height="auto" style="background:#090d16; border-radius:10px; font-family:'Segoe UI',Roboto,Helvetica,sans-serif;">
+  <!-- Header -->
+  <text x="550" y="30" fill="#f8fafc" font-size="18" font-weight="700" text-anchor="middle" letter-spacing="1">FIGURE 4.1 — RELATIONAL ENTITY-RELATIONSHIP DIAGRAM (17 MODELS ON TiDB CLOUD)</text>
+  <line x1="30" y1="42" x2="1070" y2="42" stroke="#334155" stroke-width="1"/>
+
+  <!-- Entity Box Helper Macro Representation in SVG -->
+  <!-- 1. USERS (Central Hub Left) -->
+  <g id="entUsers" transform="translate(40, 60)">
+    <rect width="210" height="195" rx="5" fill="#111827" stroke="#38bdf8" stroke-width="1.5"/>
+    <rect width="210" height="26" rx="4" fill="#0284c7"/>
+    <text x="105" y="18" fill="#ffffff" font-size="12" font-weight="700" text-anchor="middle">users</text>
+    <text x="12" y="44" fill="#38bdf8" font-size="10" font-weight="700">PK  id: Int</text>
+    <text x="12" y="60" fill="#e2e8f0" font-size="10">    full_name: VarChar(100)</text>
+    <text x="12" y="76" fill="#fde047" font-size="10">UK  email: VarChar(100)</text>
+    <text x="12" y="92" fill="#fde047" font-size="10">UK  phone: VarChar(20)?</text>
+    <text x="12" y="106" fill="#e2e8f0" font-size="9.5">    password: VarChar(255)?</text>
+    <text x="12" y="118" fill="#fde047" font-size="9.5">UK  workos_user_id: VarChar(100)?</text>
+    <text x="12" y="124" fill="#a7f3d0" font-size="10">    role: users_role (cust|sel|adm)</text>
+    <text x="12" y="140" fill="#94a3b8" font-size="10">    created_at: Timestamp</text>
+    <text x="12" y="156" fill="#94a3b8" font-size="10">    updated_at: Timestamp</text>
+    <text x="12" y="172" fill="#f87171" font-size="10">    deleted_at: Timestamp?</text>
+  </g>
+
+  <!-- 2. STORES -->
+  <g id="entStores" transform="translate(40, 290)">
+    <rect width="210" height="145" rx="5" fill="#111827" stroke="#34d399" stroke-width="1.5"/>
+    <rect width="210" height="26" rx="4" fill="#059669"/>
+    <text x="105" y="18" fill="#ffffff" font-size="12" font-weight="700" text-anchor="middle">stores</text>
+    <text x="12" y="44" fill="#38bdf8" font-size="10" font-weight="700">PK  id: Int</text>
+    <text x="12" y="60" fill="#f472b6" font-size="10">FK  seller_id: Int -> users.id</text>
+    <text x="12" y="76" fill="#e2e8f0" font-size="10">    store_name: VarChar(150)</text>
+    <text x="12" y="92" fill="#fde047" font-size="10">UK  slug: VarChar(150)</text>
+    <text x="12" y="108" fill="#e2e8f0" font-size="10">    logo, description, phone</text>
+    <text x="12" y="124" fill="#e2e8f0" font-size="10">    is_active: Boolean</text>
+    <text x="12" y="138" fill="#f87171" font-size="9">    deleted_at: Timestamp?</text>
+  </g>
+
+  <!-- 3. CATEGORIES -->
+  <g id="entCategories" transform="translate(40, 470)">
+    <rect width="210" height="115" rx="5" fill="#111827" stroke="#a78bfa" stroke-width="1.5"/>
+    <rect width="210" height="26" rx="4" fill="#7c3aed"/>
+    <text x="105" y="18" fill="#ffffff" font-size="12" font-weight="700" text-anchor="middle">categories</text>
+    <text x="12" y="44" fill="#38bdf8" font-size="10" font-weight="700">PK  id: Int</text>
+    <text x="12" y="60" fill="#e2e8f0" font-size="10">    name: VarChar(100)</text>
+    <text x="12" y="76" fill="#fde047" font-size="10">UK  slug: VarChar(100)</text>
+    <text x="12" y="92" fill="#e2e8f0" font-size="10">    description, image</text>
+    <text x="12" y="106" fill="#f87171" font-size="9">    deleted_at: Timestamp?</text>
+  </g>
+
+  <!-- 4. ADDRESSES -->
+  <g id="entAddresses" transform="translate(40, 620)">
+    <rect width="210" height="115" rx="5" fill="#111827" stroke="#64748b" stroke-width="1.2"/>
+    <rect width="210" height="24" rx="4" fill="#475569"/>
+    <text x="105" y="17" fill="#ffffff" font-size="11" font-weight="700" text-anchor="middle">addresses</text>
+    <text x="12" y="42" fill="#38bdf8" font-size="10" font-weight="700">PK  id: Int</text>
+    <text x="12" y="58" fill="#f472b6" font-size="10">FK  user_id: Int -> users.id</text>
+    <text x="12" y="74" fill="#e2e8f0" font-size="10">    region, city, kebele</text>
+    <text x="12" y="90" fill="#e2e8f0" font-size="10">    street_address, phone</text>
+    <text x="12" y="105" fill="#e2e8f0" font-size="10">    is_default: Boolean</text>
+  </g>
+
+  <!-- 5. PRODUCTS (Central Engine) -->
+  <g id="entProducts" transform="translate(340, 110)">
+    <rect width="240" height="260" rx="5" fill="#111827" stroke="#f59e0b" stroke-width="1.8"/>
+    <rect width="240" height="28" rx="4" fill="#d97706"/>
+    <text x="120" y="19" fill="#ffffff" font-size="13" font-weight="700" text-anchor="middle">products</text>
+    <text x="12" y="46" fill="#38bdf8" font-size="10" font-weight="700">PK  id: Int</text>
+    <text x="12" y="62" fill="#f472b6" font-size="10">FK  seller_id: Int? -> users.id</text>
+    <text x="12" y="78" fill="#f472b6" font-size="10">FK  store_id: Int? -> stores.id</text>
+    <text x="12" y="94" fill="#f472b6" font-size="10">FK  category_id: Int? -> categories.id</text>
+    <text x="12" y="110" fill="#e2e8f0" font-size="10">    name: VarChar(200)</text>
+    <text x="12" y="126" fill="#fde047" font-size="10">UK  slug: VarChar(200)</text>
+    <text x="12" y="142" fill="#e2e8f0" font-size="10">    location: VarChar(100)?</text>
+    <text x="12" y="158" fill="#34d399" font-size="10">    price, discount_price: Decimal</text>
+    <text x="12" y="174" fill="#e2e8f0" font-size="10">    stock: Int (default 0)</text>
+    <text x="12" y="190" fill="#a7f3d0" font-size="10">    status: draft|pending|appr|rej</text>
+    <text x="12" y="206" fill="#e2e8f0" font-size="10">    image: Primary Cloudinary URL</text>
+    <text x="12" y="222" fill="#e2e8f0" font-size="10">    is_active: Boolean</text>
+    <text x="12" y="238" fill="#f87171" font-size="10">    deleted_at: Timestamp?</text>
+  </g>
+
+  <!-- 6. PRODUCT_IMAGES -->
+  <g id="entProductImages" transform="translate(340, 410)">
+    <rect width="240" height="110" rx="5" fill="#111827" stroke="#e2e8f0" stroke-width="1.2"/>
+    <rect width="240" height="24" rx="4" fill="#475569"/>
+    <text x="120" y="17" fill="#ffffff" font-size="11" font-weight="700" text-anchor="middle">product_images</text>
+    <text x="12" y="42" fill="#38bdf8" font-size="10" font-weight="700">PK  id: Int</text>
+    <text x="12" y="58" fill="#f472b6" font-size="10">FK  product_id: Int -> products.id</text>
+    <text x="12" y="74" fill="#e2e8f0" font-size="10">    image_url: VarChar(255)</text>
+    <text x="12" y="90" fill="#e2e8f0" font-size="10">    side_angle, is_primary, sort_order</text>
+  </g>
+
+  <!-- 7. BROKER_INQUIRIES (Tier 1 Desk) -->
+  <g id="entBroker" transform="translate(340, 560)">
+    <rect width="240" height="145" rx="5" fill="#111827" stroke="#fbbf24" stroke-width="1.8"/>
+    <rect width="240" height="26" rx="4" fill="#b45309"/>
+    <text x="120" y="18" fill="#ffffff" font-size="12" font-weight="700" text-anchor="middle">broker_inquiries (Tier 1)</text>
+    <text x="12" y="44" fill="#38bdf8" font-size="10" font-weight="700">PK  id: Int</text>
+    <text x="12" y="60" fill="#f472b6" font-size="10">FK  product_id: Int -> products.id</text>
+    <text x="12" y="76" fill="#f472b6" font-size="10">FK  buyer_id: Int -> users.id</text>
+    <text x="12" y="92" fill="#fde047" font-size="10">    status: NEW|ASSIGNED|APPT|CLOSED</text>
+    <text x="12" y="108" fill="#e2e8f0" font-size="10">    appointment_date: DateTime?</text>
+    <text x="12" y="124" fill="#e2e8f0" font-size="10">    notes: Text?</text>
+    <text x="12" y="138" fill="#a7f3d0" font-size="9">UK (product_id, buyer_id)</text>
+  </g>
+
+  <!-- 8. MESSAGES (Communication Stream) -->
+  <g id="entMessages" transform="translate(640, 60)">
+    <rect width="210" height="175" rx="5" fill="#111827" stroke="#38bdf8" stroke-width="1.5"/>
+    <rect width="210" height="26" rx="4" fill="#0284c7"/>
+    <text x="105" y="18" fill="#ffffff" font-size="12" font-weight="700" text-anchor="middle">messages</text>
+    <text x="12" y="44" fill="#38bdf8" font-size="10" font-weight="700">PK  id: Int</text>
+    <text x="12" y="60" fill="#f472b6" font-size="10">FK  sender_id: Int -> users.id</text>
+    <text x="12" y="76" fill="#f472b6" font-size="10">FK  receiver_id: Int -> users.id</text>
+    <text x="12" y="92" fill="#f472b6" font-size="10">FK  product_id: Int? -> products.id</text>
+    <text x="12" y="108" fill="#f472b6" font-size="10">FK  order_id: Int? -> orders.id</text>
+    <text x="12" y="124" fill="#e2e8f0" font-size="10">    message_text: Text</text>
+    <text x="12" y="140" fill="#e2e8f0" font-size="10">    is_read: Boolean (false)</text>
+    <text x="12" y="156" fill="#94a3b8" font-size="10">    created_at: Timestamp</text>
+  </g>
+
+  <!-- 9. ORDERS -->
+  <g id="entOrders" transform="translate(640, 265)">
+    <rect width="210" height="195" rx="5" fill="#111827" stroke="#10b981" stroke-width="1.8"/>
+    <rect width="210" height="26" rx="4" fill="#059669"/>
+    <text x="105" y="18" fill="#ffffff" font-size="12" font-weight="700" text-anchor="middle">orders</text>
+    <text x="12" y="44" fill="#38bdf8" font-size="10" font-weight="700">PK  id: Int</text>
+    <text x="12" y="60" fill="#f472b6" font-size="10">FK  user_id: Int -> users.id</text>
+    <text x="12" y="76" fill="#fde047" font-size="10">UK  order_number: VarChar(50)</text>
+    <text x="12" y="92" fill="#34d399" font-size="10">    total_amount: Decimal</text>
+    <text x="12" y="108" fill="#e2e8f0" font-size="10">    status: orders_status</text>
+    <text x="12" y="124" fill="#e2e8f0" font-size="10">    payment_method: cod|telebirr</text>
+    <text x="12" y="140" fill="#e2e8f0" font-size="10">    payment_status: pending|paid</text>
+    <text x="12" y="156" fill="#e2e8f0" font-size="10">    shipping_address, note</text>
+    <text x="12" y="172" fill="#94a3b8" font-size="10">    created_at, updated_at</text>
+  </g>
+
+  <!-- 10. ORDER_ITEMS -->
+  <g id="entOrderItems" transform="translate(640, 485)">
+    <rect width="210" height="115" rx="5" fill="#111827" stroke="#10b981" stroke-width="1.5"/>
+    <rect width="210" height="24" rx="4" fill="#059669"/>
+    <text x="105" y="17" fill="#ffffff" font-size="11" font-weight="700" text-anchor="middle">order_items</text>
+    <text x="12" y="42" fill="#38bdf8" font-size="10" font-weight="700">PK  id: Int</text>
+    <text x="12" y="58" fill="#f472b6" font-size="10">FK  order_id: Int -> orders.id</text>
+    <text x="12" y="74" fill="#f472b6" font-size="10">FK  product_id: Int? -> products.id</text>
+    <text x="12" y="90" fill="#e2e8f0" font-size="10">    product_name, price, quantity</text>
+  </g>
+
+  <!-- 11. ORDER_STATUS_HISTORY -->
+  <g id="entHistory" transform="translate(640, 625)">
+    <rect width="210" height="110" rx="5" fill="#111827" stroke="#64748b" stroke-width="1.2"/>
+    <rect width="210" height="24" rx="4" fill="#475569"/>
+    <text x="105" y="17" fill="#ffffff" font-size="11" font-weight="700" text-anchor="middle">order_status_history</text>
+    <text x="12" y="42" fill="#38bdf8" font-size="10" font-weight="700">PK  id: Int</text>
+    <text x="12" y="58" fill="#f472b6" font-size="10">FK  order_id: Int -> orders.id</text>
+    <text x="12" y="74" fill="#f472b6" font-size="10">FK  changed_by: Int? -> users.id</text>
+    <text x="12" y="90" fill="#e2e8f0" font-size="10">    status, changed_at</text>
+  </g>
+
+  <!-- 12-16. SUPPORTING ENTITIES (Right Column) -->
+  <!-- CARTS & CART_ITEMS -->
+  <g id="entCarts" transform="translate(890, 60)">
+    <rect width="180" height="85" rx="5" fill="#111827" stroke="#64748b" stroke-width="1"/>
+    <rect width="180" height="22" rx="4" fill="#334155"/>
+    <text x="90" y="16" fill="#cbd5e1" font-size="10" font-weight="700" text-anchor="middle">carts (1:1 user)</text>
+    <text x="10" y="38" fill="#38bdf8" font-size="9" font-weight="700">PK  id: Int</text>
+    <text x="10" y="52" fill="#f472b6" font-size="9">FK  user_id: Int? UK</text>
+    <text x="10" y="66" fill="#94a3b8" font-size="9">    created_at, updated_at</text>
+  </g>
+
+  <g id="entCartItems" transform="translate(890, 160)">
+    <rect width="180" height="95" rx="5" fill="#111827" stroke="#64748b" stroke-width="1"/>
+    <rect width="180" height="22" rx="4" fill="#334155"/>
+    <text x="90" y="16" fill="#cbd5e1" font-size="10" font-weight="700" text-anchor="middle">cart_items</text>
+    <text x="10" y="38" fill="#38bdf8" font-size="9" font-weight="700">PK  id: Int</text>
+    <text x="10" y="52" fill="#f472b6" font-size="9">FK  cart_id, product_id</text>
+    <text x="10" y="66" fill="#e2e8f0" font-size="9">    quantity: Int (default 1)</text>
+    <text x="10" y="80" fill="#a7f3d0" font-size="8">UK (cart_id, product_id)</text>
+  </g>
+
+  <!-- FAVORITES -->
+  <g id="entFavorites" transform="translate(890, 275)">
+    <rect width="180" height="85" rx="5" fill="#111827" stroke="#64748b" stroke-width="1"/>
+    <rect width="180" height="22" rx="4" fill="#334155"/>
+    <text x="90" y="16" fill="#cbd5e1" font-size="10" font-weight="700" text-anchor="middle">favorites</text>
+    <text x="10" y="38" fill="#38bdf8" font-size="9" font-weight="700">PK  id: Int</text>
+    <text x="10" y="52" fill="#f472b6" font-size="9">FK  user_id, product_id</text>
+    <text x="10" y="66" fill="#a7f3d0" font-size="8">UK (user_id, product_id)</text>
+  </g>
+
+  <!-- INVENTORY_LOGS -->
+  <g id="entInventory" transform="translate(890, 380)">
+    <rect width="180" height="90" rx="5" fill="#111827" stroke="#64748b" stroke-width="1"/>
+    <rect width="180" height="22" rx="4" fill="#334155"/>
+    <text x="90" y="16" fill="#cbd5e1" font-size="10" font-weight="700" text-anchor="middle">inventory_logs</text>
+    <text x="10" y="38" fill="#38bdf8" font-size="9" font-weight="700">PK  id: Int</text>
+    <text x="10" y="52" fill="#f472b6" font-size="9">FK  product_id: Int</text>
+    <text x="10" y="66" fill="#e2e8f0" font-size="9">    change, reason</text>
+    <text x="10" y="80" fill="#94a3b8" font-size="8">    created_at</text>
+  </g>
+
+  <!-- PAYMENTS -->
+  <g id="entPayments" transform="translate(890, 490)">
+    <rect width="180" height="115" rx="5" fill="#111827" stroke="#64748b" stroke-width="1"/>
+    <rect width="180" height="22" rx="4" fill="#334155"/>
+    <text x="90" y="16" fill="#cbd5e1" font-size="10" font-weight="700" text-anchor="middle">payments (Planned)</text>
+    <text x="10" y="38" fill="#38bdf8" font-size="9" font-weight="700">PK  id: Int</text>
+    <text x="10" y="52" fill="#f472b6" font-size="9">FK  order_id: Int</text>
+    <text x="10" y="66" fill="#e2e8f0" font-size="9">    transaction_id, amount</text>
+    <text x="10" y="80" fill="#e2e8f0" font-size="9">    payment_method, status</text>
+    <text x="10" y="94" fill="#94a3b8" font-size="8">    currency (ETB), paid_at</text>
+  </g>
+
+  <!-- REVIEWS -->
+  <g id="entReviews" transform="translate(890, 625)">
+    <rect width="180" height="95" rx="5" fill="#111827" stroke="#64748b" stroke-width="1"/>
+    <rect width="180" height="22" rx="4" fill="#334155"/>
+    <text x="90" y="16" fill="#cbd5e1" font-size="10" font-weight="700" text-anchor="middle">reviews</text>
+    <text x="10" y="38" fill="#38bdf8" font-size="9" font-weight="700">PK  id: Int</text>
+    <text x="10" y="52" fill="#f472b6" font-size="9">FK  product_id, user_id</text>
+    <text x="10" y="66" fill="#e2e8f0" font-size="9">    rating: SmallInt (1-5)</text>
+    <text x="10" y="80" fill="#a7f3d0" font-size="8">UK (product_id, user_id)</text>
+  </g>
+
+  <!-- RELATIONSHIP CONNECTORS (CARDINALITY LINES) -->
+  <!-- users to products (1 to Many) -->
+  <path d="M 250 140 L 340 140" stroke="#38bdf8" stroke-width="1.8"/>
+  <text x="295" y="133" fill="#38bdf8" font-size="9" text-anchor="middle">1 : N</text>
+
+  <!-- users to stores (1 to Many) -->
+  <path d="M 145 255 L 145 290" stroke="#34d399" stroke-width="1.8"/>
+  <text x="155" y="275" fill="#34d399" font-size="9">1 : N</text>
+
+  <!-- stores to products (1 to Many) -->
+  <path d="M 250 350 L 340 250" stroke="#34d399" stroke-width="1.8"/>
+  <text x="290" y="295" fill="#34d399" font-size="9">1 : N</text>
+
+  <!-- categories to products (1 to Many) -->
+  <path d="M 250 510 L 340 330" stroke="#a78bfa" stroke-width="1.8"/>
+  <text x="300" y="425" fill="#a78bfa" font-size="9">1 : N</text>
+
+  <!-- products to product_images (1 to Many) -->
+  <path d="M 460 370 L 460 410" stroke="#e2e8f0" stroke-width="1.8"/>
+  <text x="470" y="395" fill="#e2e8f0" font-size="9">1 : N</text>
+
+  <!-- products to broker_inquiries (1 to Many) -->
+  <path d="M 460 520 L 460 560" stroke="#fbbf24" stroke-width="1.8"/>
+  <text x="470" y="545" fill="#fbbf24" font-size="9">1 : N</text>
+
+  <!-- users to broker_inquiries (buyer_id) -->
+  <path d="M 160 255 L 160 760 L 400 760 L 400 705" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="4 2"/>
+  <text x="270" y="755" fill="#fbbf24" font-size="9">1 : N (Buyer)</text>
+
+  <!-- products to messages -->
+  <path d="M 580 150 L 640 150" stroke="#38bdf8" stroke-width="1.8"/>
+  <text x="610" y="142" fill="#38bdf8" font-size="9" text-anchor="middle">1 : N</text>
+
+  <!-- users to orders -->
+  <path d="M 250 180 L 310 180 L 310 30 L 745 30 L 745 265" stroke="#10b981" stroke-width="1.5"/>
+  <text x="500" y="25" fill="#10b981" font-size="9" text-anchor="middle">1 : N (User places Orders)</text>
+
+  <!-- orders to order_items -->
+  <path d="M 745 460 L 745 485" stroke="#10b981" stroke-width="1.8"/>
+  <text x="755" y="475" fill="#10b981" font-size="9">1 : N</text>
+
+  <!-- products to order_items -->
+  <path d="M 580 320 L 620 320 L 620 540 L 640 540" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="615" y="450" fill="#f59e0b" font-size="9">1 : N</text>
+</svg>
+        </div>
+
+        <div class="card card-accent-green" style="padding: 10px 16px; display: flex; align-items: center; justify-content: space-between;">
+          <div style="font-size: 0.86rem; color: #E2E8F0;">
+            <strong style="color: var(--brand-light);">Zero-Downtime Identity Federation:</strong> Added <code>workos_user_id VARCHAR(100) UNIQUE NULL</code> to the <code>users</code> table, preserving all 11 foreign-key relations (products.seller_id, orders.user_id, messages).
+          </div>
+          <span class="pill pill-green">TiDB Cloud AWS Frankfurt</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 8: Enterprise Security ==================== -->
+    <section class="slide" data-slide="8" data-notes="For security, we integrated WorkOS AuthKit to provide enterprise-grade Single Sign-On via Google alongside standard authentication. When a user authenticates through WorkOS, our backend exchanges the authorization code, matches the user's verified email against our database, links their existing profile, and mints an application JWT. On the validation layer, our custom Zod schemas strictly sanitize input, including normalizing diverse Ethiopian phone number formats into canonical 10-digit strings.">
+      <div>
+        <div class="slide-tag">Enterprise Security &amp; AuthKit</div>
+        <h2 class="slide-title">Enterprise Identity Federation &amp; Defense-in-Depth</h2>
+        <p class="slide-subtitle">WorkOS AuthKit SSO, email federation, Zod schema normalization, and role-based guards.</p>
+
+        <div class="grid-2" style="margin-bottom: 12px;">
+          <div>
+            <div class="svg-diagram-wrapper" style="margin-bottom: 10px;">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 220" width="100%" height="auto" style="background:#0b0f19; border-radius:8px; font-family:'Inter',sans-serif;">
+  <defs>
+    <marker id="seqArrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#38bdf8"/>
+    </marker>
+  </defs>
+  <rect x="20" y="15" width="100" height="30" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.2"/>
+  <text x="70" y="34" fill="#ffffff" font-size="10" font-weight="700" text-anchor="middle">Client App</text>
+  <line x1="70" y1="45" x2="70" y2="205" stroke="#334155" stroke-dasharray="4 4"/>
+
+  <rect x="155" y="15" width="110" height="30" rx="4" fill="#1e293b" stroke="#a855f7" stroke-width="1.2"/>
+  <text x="210" y="34" fill="#ffffff" font-size="10" font-weight="700" text-anchor="middle">WorkOS SSO</text>
+  <line x1="210" y1="45" x2="210" y2="205" stroke="#334155" stroke-dasharray="4 4"/>
+
+  <rect x="300" y="15" width="110" height="30" rx="4" fill="#1e293b" stroke="#10b981" stroke-width="1.2"/>
+  <text x="355" y="34" fill="#ffffff" font-size="10" font-weight="700" text-anchor="middle">Express Backend</text>
+  <line x1="355" y1="45" x2="355" y2="205" stroke="#334155" stroke-dasharray="4 4"/>
+
+  <rect x="445" y="15" width="95" height="30" rx="4" fill="#1e293b" stroke="#f59e0b" stroke-width="1.2"/>
+  <text x="492" y="34" fill="#ffffff" font-size="10" font-weight="700" text-anchor="middle">TiDB Cloud</text>
+  <line x1="492" y1="45" x2="492" y2="205" stroke="#334155" stroke-dasharray="4 4"/>
+
+  <line x1="70" y1="65" x2="205" y2="65" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#seqArrow)"/>
+  <text x="135" y="60" fill="#94a3b8" font-size="8.5" text-anchor="middle">1. Google / WorkOS Sign-In</text>
+
+  <line x1="210" y1="95" x2="75" y2="95" stroke="#a855f7" stroke-width="1.5" marker-end="url(#seqArrow)"/>
+  <text x="135" y="90" fill="#c084fc" font-size="8.5" text-anchor="middle">2. Callback with Code</text>
+
+  <line x1="70" y1="125" x2="350" y2="125" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#seqArrow)"/>
+  <text x="210" y="120" fill="#38bdf8" font-size="8.5" text-anchor="middle">3. POST /auth/workos/callback (code)</text>
+
+  <line x1="355" y1="155" x2="487" y2="155" stroke="#10b981" stroke-width="1.5" marker-end="url(#seqArrow)"/>
+  <text x="420" y="150" fill="#34d399" font-size="8.5" text-anchor="middle">4. Email Match &amp; Link FKs</text>
+
+  <line x1="355" y1="185" x2="75" y2="185" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#seqArrow)"/>
+  <text x="215" y="180" fill="#fde047" font-size="8.5" text-anchor="middle">5. Issue Signed App JWT Token</text>
+</svg>
+            </div>
+          </div>
+
+          <div>
+            <div class="card card-accent-blue" style="margin-bottom: 10px; padding: 12px 14px;">
+              <div class="card-title" style="font-size: 0.95rem;">🔐 WorkOS Identity Federation</div>
+              <ul class="check-list" style="margin-top: 6px; font-size: 0.82rem;">
+                <li><strong>Enterprise Google SSO:</strong> Zero third-party password leakage.</li>
+                <li><strong>Email Federation:</strong> Auto-links existing DB records to preserve user data.</li>
+                <li><strong>Signed JWT Issuance:</strong> Express mints token containing role payload.</li>
+              </ul>
+            </div>
+
+            <div class="code-box" style="margin-top: 0;">
+              <div class="code-header">
+                <div class="window-dots"><div class="dot dot-red"></div><div class="dot dot-amber"></div><div class="dot dot-green"></div></div>
+                <span style="font-size: 0.72rem; color: var(--text-muted);">server/src/schemas/index.ts</span>
+              </div>
+              <pre><span class="code-kw">const</span> ethiopianPhoneRegex = <span class="code-str">/^(\+251|0)(9|7)\d{8}$/</span>;
+<span class="code-kw">export const</span> phoneSchema = z.<span class="code-fn">string</span>()
+  .<span class="code-fn">transform</span>(val =&gt; val.<span class="code-fn">replace</span>(<span class="code-str">/[\s\-]/g</span>, <span class="code-str">''</span>))
+  .<span class="code-fn">refine</span>(val =&gt; ethiopianPhoneRegex.<span class="code-fn">test</span>(val), { message: <span class="code-str">'Invalid Ethiopian phone'</span> })
+  .<span class="code-fn">transform</span>(val =&gt; val.<span class="code-fn">startsWith</span>(<span class="code-str">'+251'</span>) ? <span class="code-str">'0'</span> + val.<span class="code-fn">slice</span>(<span class="code-num">4</span>) : val);</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 9: Frontend Engineering ==================== -->
+    <section class="slide" data-slide="9" data-notes="On the frontend, we built a React 19 Single Page App optimized for regional network conditions. By implementing route-level code splitting with React.lazy and Suspense, we slashed our initial JavaScript bundle from 600 KB down to just 130 KB — a 78% reduction. This means first-time visitors in Injibara don't waste data downloading admin or seller bundles until they actually navigate there. Additionally, our custom Axios interceptor includes automatic exponential-backoff retries for idempotent requests, shielding users from cloud cold-start hiccups.">
+      <div>
+        <div class="slide-tag">Frontend Engineering &amp; Performance</div>
+        <h2 class="slide-title">React 19 Architecture &amp; Sub-Second Optimization</h2>
+        <p class="slide-subtitle">Route-level code splitting and resilient self-healing HTTP interceptor layer.</p>
+
+        <div class="grid-2" style="margin-bottom: 14px;">
+          <div class="card card-accent-green">
+            <div class="card-title">⚡ Route-Level Code Splitting (React.lazy)</div>
+            <p class="card-desc" style="margin-bottom: 12px;">Admin and Seller dashboards are deferred until navigated, ensuring instantaneous homepage first paint.</p>
+            <div style="background: #111827; border-radius: 6px; padding: 10px 14px;">
+              <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 4px;">
+                <span>Initial JS Bundle Size:</span>
+                <strong style="color: var(--brand-light);">130 KB (was ~600 KB)</strong>
+              </div>
+              <div style="width: 100%; height: 8px; background: #1E293B; border-radius: 4px; overflow: hidden;">
+                <div style="width: 22%; height: 100%; background: var(--brand);"></div>
+              </div>
+              <div style="font-size: 0.74rem; color: var(--brand); margin-top: 4px; text-align: right; font-weight: 700;">-78% Bundle Reduction</div>
+            </div>
+          </div>
+
+          <div class="card card-accent-blue">
+            <div class="card-title">🔄 Self-Healing Axios Interceptor Layer</div>
+            <p class="card-desc" style="margin-bottom: 10px;">Automatic retry with exponential backoff on cloud gateway timeouts (504s) and rate limits.</p>
+            <ul class="check-list">
+              <li><strong>60-Second Budget:</strong> Accommodates free-tier cloud host wake-ups without timeout errors.</li>
+              <li><strong>Auto JWT Injection:</strong> Injects Bearer token automatically from localStorage.</li>
+              <li><strong>Throttled Toast Alerts:</strong> Prevents repetitive error toast notifications in UI.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="code-box">
+          <div class="code-header">
+            <div class="window-dots"><div class="dot dot-red"></div><div class="dot dot-amber"></div><div class="dot dot-green"></div></div>
+            <span style="font-size: 0.72rem; color: var(--text-muted);">client/src/routes/AppRoutes.tsx — Route Code Splitting</span>
+          </div>
+          <pre><span class="code-comment">// Eagerly load HomePage for instantaneous first paint</span>
+<span class="code-kw">import</span> HomePage <span class="code-kw">from</span> <span class="code-str">"../pages/HomePage"</span>;
+<span class="code-comment">// Lazy-load heavy administrative and seller modules on demand</span>
+<span class="code-kw">const</span> AdminDashboardPage = lazy(() =&gt; <span class="code-kw">import</span>(<span class="code-str">"../pages/admin/AdminDashboardPage"</span>));
+<span class="code-kw">const</span> BrokerHubPage = lazy(() =&gt; <span class="code-kw">import</span>(<span class="code-str">"../pages/admin/BrokerHubPage"</span>));</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 10: Multi-Role Portals ==================== -->
+    <section class="slide" data-slide="10" data-notes="Our application architecture provides three distinct user portals mapped strictly to authenticated roles, as shown in this UML use case diagram. Customers have catalog exploration, persistent carts, saved item wishlists, and order tracking. Sellers have store creation, product management with Cloudinary image streaming, and order fulfillment. Administrators have a full cockpit including category CRUD, store approvals, and the Broker Hub.">
+      <div>
+        <div class="slide-tag">User Experience &amp; Portal Architecture</div>
+        <h2 class="slide-title">Three Tailored Portals &amp; Functional Boundaries</h2>
+        <p class="slide-subtitle">Purpose-built cockpits for buyers, local merchants, and marketplace moderators.</p>
+
+        <div class="svg-diagram-wrapper" style="margin-bottom: 12px;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 780" width="100%" height="auto" style="background:#0f172a; border-radius:10px; font-family:'Segoe UI',Roboto,Helvetica,sans-serif;">
+  <defs>
+    <filter id="ucShadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- Header -->
+  <text x="500" y="32" fill="#f8fafc" font-size="18" font-weight="700" text-anchor="middle" letter-spacing="1">FIGURE 5.1 — UNIFIED UML USE CASE DIAGRAM (ACTORS &amp; FUNCTIONAL BOUNDARIES)</text>
+  <line x1="40" y1="46" x2="960" y2="46" stroke="#334155" stroke-width="1"/>
+
+  <!-- System Boundary Box -->
+  <rect x="230" y="65" width="540" height="695" rx="10" fill="#1e293b" stroke="#3b82f6" stroke-width="2" stroke-dasharray="8 4"/>
+  <rect x="250" y="55" width="220" height="24" rx="4" fill="#1d4ed8"/>
+  <text x="360" y="71" fill="#ffffff" font-size="11" font-weight="700" text-anchor="middle">INJIBARA MARKET SYSTEM</text>
+
+  <!-- ACTOR 1: Customer (Left Top) -->
+  <g id="actorCustomer" transform="translate(100, 160)">
+    <circle cx="0" cy="-30" r="14" fill="#38bdf8" stroke="#ffffff" stroke-width="2"/>
+    <line x1="0" y1="-16" x2="0" y2="12" stroke="#ffffff" stroke-width="2.5"/>
+    <line x1="-18" y1="-5" x2="18" y2="-5" stroke="#ffffff" stroke-width="2.5"/>
+    <line x1="0" y1="12" x2="-14" y2="35" stroke="#ffffff" stroke-width="2.5"/>
+    <line x1="0" y1="12" x2="14" y2="35" stroke="#ffffff" stroke-width="2.5"/>
+    <text x="0" y="55" fill="#38bdf8" font-size="12" font-weight="700" text-anchor="middle">Customer</text>
+    <text x="0" y="70" fill="#94a3b8" font-size="10" text-anchor="middle">(Buyer Actor)</text>
+  </g>
+
+  <!-- ACTOR 2: Seller (Left Bottom) -->
+  <g id="actorSeller" transform="translate(100, 470)">
+    <circle cx="0" cy="-30" r="14" fill="#34d399" stroke="#ffffff" stroke-width="2"/>
+    <line x1="0" y1="-16" x2="0" y2="12" stroke="#ffffff" stroke-width="2.5"/>
+    <line x1="-18" y1="-5" x2="18" y2="-5" stroke="#ffffff" stroke-width="2.5"/>
+    <line x1="0" y1="12" x2="-14" y2="35" stroke="#ffffff" stroke-width="2.5"/>
+    <line x1="0" y1="12" x2="14" y2="35" stroke="#ffffff" stroke-width="2.5"/>
+    <text x="0" y="55" fill="#34d399" font-size="12" font-weight="700" text-anchor="middle">Seller</text>
+    <text x="0" y="70" fill="#94a3b8" font-size="10" text-anchor="middle">(Merchant Actor)</text>
+    <!-- Generalization arrow: Seller inherits Customer capabilities -->
+    <path d="M 0 -45 L 0 -225" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3 3"/>
+    <polygon points="0,-235 -6,-223 6,-223" fill="#94a3b8"/>
+    <text x="-15" y="-130" fill="#94a3b8" font-size="9" transform="rotate(-90 -15 -130)">inherits (auto-promoted)</text>
+  </g>
+
+  <!-- ACTOR 3: Admin & Broker (Right Mid) -->
+  <g id="actorAdmin" transform="translate(880, 360)">
+    <circle cx="0" cy="-30" r="14" fill="#f59e0b" stroke="#ffffff" stroke-width="2"/>
+    <line x1="0" y1="-16" x2="0" y2="12" stroke="#ffffff" stroke-width="2.5"/>
+    <line x1="-18" y1="-5" x2="18" y2="-5" stroke="#ffffff" stroke-width="2.5"/>
+    <line x1="0" y1="12" x2="-14" y2="35" stroke="#ffffff" stroke-width="2.5"/>
+    <line x1="0" y1="12" x2="14" y2="35" stroke="#ffffff" stroke-width="2.5"/>
+    <text x="0" y="55" fill="#f59e0b" font-size="12" font-weight="700" text-anchor="middle">Admin / Broker</text>
+    <text x="0" y="70" fill="#94a3b8" font-size="10" text-anchor="middle">(Platform Authority)</text>
+  </g>
+
+  <!-- USE CASES (OVALS / PILLS) -->
+  <!-- 1. Auth Module -->
+  <g id="ucAuth">
+    <ellipse cx="370" cy="110" rx="90" ry="20" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5"/>
+    <text x="370" y="114" fill="#f1f5f9" font-size="11" text-anchor="middle">UC-01: Register &amp; Login</text>
+
+    <ellipse cx="610" cy="110" rx="95" ry="20" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5"/>
+    <text x="610" y="114" fill="#f1f5f9" font-size="11" text-anchor="middle">UC-02: Manage JWT Profile</text>
+  </g>
+
+  <!-- 2. Marketplace & Browsing -->
+  <g id="ucCatalog">
+    <ellipse cx="370" cy="170" rx="105" ry="22" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5"/>
+    <text x="370" y="174" fill="#f1f5f9" font-size="11" text-anchor="middle">UC-03: Browse &amp; Filter Products</text>
+
+    <ellipse cx="610" cy="170" rx="95" ry="22" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5"/>
+    <text x="610" y="174" fill="#f1f5f9" font-size="11" text-anchor="middle">UC-04: View Product Detail</text>
+  </g>
+
+  <!-- 3. Orders & Commerce -->
+  <g id="ucOrders">
+    <ellipse cx="370" cy="235" rx="110" ry="22" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5"/>
+    <text x="370" y="239" fill="#f1f5f9" font-size="11" text-anchor="middle">UC-05: Place Order (Stock Deduct)</text>
+
+    <ellipse cx="610" cy="235" rx="95" ry="22" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5"/>
+    <text x="610" y="239" fill="#f1f5f9" font-size="11" text-anchor="middle">UC-06: View Order History</text>
+  </g>
+
+  <!-- 4. Messaging & Hybrid Routing -->
+  <g id="ucMessaging">
+    <ellipse cx="370" cy="305" rx="115" ry="24" fill="#0f172a" stroke="#60a5fa" stroke-width="1.5"/>
+    <text x="370" y="303" fill="#f1f5f9" font-size="11" text-anchor="middle">UC-07: Send Direct Inquiry</text>
+    <text x="370" y="318" fill="#93c5fd" font-size="9" text-anchor="middle">(Tier-2 Consumer Products)</text>
+
+    <ellipse cx="610" cy="305" rx="115" ry="24" fill="#0f172a" stroke="#fbbf24" stroke-width="1.5"/>
+    <text x="610" y="303" fill="#f1f5f9" font-size="11" text-anchor="middle">UC-08: Inquire High-Value Asset</text>
+    <text x="610" y="318" fill="#fde68a" font-size="9" text-anchor="middle">(Tier-1: Land / Vehicle / Machine)</text>
+  </g>
+
+  <!-- 5. Broker Desk Actions -->
+  <g id="ucBroker">
+    <ellipse cx="610" cy="380" rx="115" ry="24" fill="#0f172a" stroke="#f59e0b" stroke-width="1.5"/>
+    <text x="610" y="378" fill="#f1f5f9" font-size="11" text-anchor="middle">UC-09: Mediate Broker Deals</text>
+    <text x="610" y="393" fill="#fde68a" font-size="9" text-anchor="middle">(Pipeline State &amp; Messaging)</text>
+
+    <ellipse cx="610" cy="445" rx="115" ry="22" fill="#0f172a" stroke="#f59e0b" stroke-width="1.5"/>
+    <text x="610" y="449" fill="#f1f5f9" font-size="11" text-anchor="middle">UC-10: Schedule Inspection Appt</text>
+  </g>
+
+  <!-- 6. Seller Operations -->
+  <g id="ucSeller">
+    <ellipse cx="370" cy="440" rx="115" ry="24" fill="#0f172a" stroke="#34d399" stroke-width="1.5"/>
+    <text x="370" y="438" fill="#f1f5f9" font-size="11" text-anchor="middle">UC-11: Create Product Listing</text>
+    <text x="370" y="453" fill="#86efac" font-size="9" text-anchor="middle">(Auto-promotes Customer to Seller)</text>
+
+    <ellipse cx="370" cy="510" rx="110" ry="22" fill="#0f172a" stroke="#34d399" stroke-width="1.5"/>
+    <text x="370" y="514" fill="#f1f5f9" font-size="11" text-anchor="middle">UC-12: Update / Soft-Delete Listing</text>
+
+    <ellipse cx="370" cy="575" rx="100" ry="22" fill="#0f172a" stroke="#34d399" stroke-width="1.5"/>
+    <text x="370" y="579" fill="#f1f5f9" font-size="11" text-anchor="middle">UC-13: Create Store Profile</text>
+
+    <ellipse cx="370" cy="640" rx="100" ry="22" fill="#0f172a" stroke="#34d399" stroke-width="1.5"/>
+    <text x="370" y="644" fill="#f1f5f9" font-size="11" text-anchor="middle">UC-14: View Seller Orders</text>
+  </g>
+
+  <!-- 7. Platform Administration -->
+  <g id="ucAdmin">
+    <ellipse cx="610" cy="520" rx="110" ry="22" fill="#0f172a" stroke="#f59e0b" stroke-width="1.5"/>
+    <text x="610" y="524" fill="#f1f5f9" font-size="11" text-anchor="middle">UC-15: Moderate Products (Approve)</text>
+
+    <ellipse cx="610" cy="580" rx="110" ry="22" fill="#0f172a" stroke="#f59e0b" stroke-width="1.5"/>
+    <text x="610" y="584" fill="#f1f5f9" font-size="11" text-anchor="middle">UC-16: Category &amp; Store Mgmt</text>
+
+    <ellipse cx="610" cy="645" rx="110" ry="22" fill="#0f172a" stroke="#f59e0b" stroke-width="1.5"/>
+    <text x="610" y="649" fill="#f1f5f9" font-size="11" text-anchor="middle">UC-17: User &amp; Staff Admin Mgmt</text>
+
+    <ellipse cx="610" cy="710" rx="110" ry="22" fill="#0f172a" stroke="#f59e0b" stroke-width="1.5"/>
+    <text x="610" y="714" fill="#f1f5f9" font-size="11" text-anchor="middle">UC-18: Platform Analytics Overview</text>
+  </g>
+
+  <!-- CONNECTORS: Customer to Use Cases -->
+  <line x1="125" y1="160" x2="280" y2="115" stroke="#38bdf8" stroke-width="1.2"/>
+  <line x1="125" y1="160" x2="265" y2="170" stroke="#38bdf8" stroke-width="1.2"/>
+  <line x1="125" y1="160" x2="260" y2="235" stroke="#38bdf8" stroke-width="1.2"/>
+  <line x1="125" y1="160" x2="255" y2="305" stroke="#38bdf8" stroke-width="1.2"/>
+  <line x1="125" y1="160" x2="510" y2="115" stroke="#38bdf8" stroke-width="1.2"/>
+  <line x1="125" y1="160" x2="515" y2="170" stroke="#38bdf8" stroke-width="1.2"/>
+  <line x1="125" y1="160" x2="500" y2="305" stroke="#38bdf8" stroke-width="1.2"/>
+
+  <!-- CONNECTORS: Seller to Use Cases -->
+  <line x1="125" y1="470" x2="255" y2="440" stroke="#34d399" stroke-width="1.2"/>
+  <line x1="125" y1="470" x2="260" y2="510" stroke="#34d399" stroke-width="1.2"/>
+  <line x1="125" y1="470" x2="270" y2="575" stroke="#34d399" stroke-width="1.2"/>
+  <line x1="125" y1="470" x2="270" y2="640" stroke="#34d399" stroke-width="1.2"/>
+  <line x1="125" y1="470" x2="260" y2="305" stroke="#34d399" stroke-width="1.2"/>
+
+  <!-- CONNECTORS: Admin to Use Cases -->
+  <line x1="855" y1="360" x2="725" y2="380" stroke="#f59e0b" stroke-width="1.2"/>
+  <line x1="855" y1="360" x2="725" y2="445" stroke="#f59e0b" stroke-width="1.2"/>
+  <line x1="855" y1="360" x2="720" y2="520" stroke="#f59e0b" stroke-width="1.2"/>
+  <line x1="855" y1="360" x2="720" y2="580" stroke="#f59e0b" stroke-width="1.2"/>
+  <line x1="855" y1="360" x2="720" y2="645" stroke="#f59e0b" stroke-width="1.2"/>
+  <line x1="855" y1="360" x2="720" y2="710" stroke="#f59e0b" stroke-width="1.2"/>
+  <line x1="855" y1="360" x2="720" y2="305" stroke="#f59e0b" stroke-width="1.2"/>
+</svg>
+        </div>
+
+        <div class="grid-3">
+          <div class="card card-accent-blue" style="padding: 10px 14px;">
+            <div style="font-weight: 700; color: #FFF; font-size: 0.88rem;">🛍️ Customer Portal</div>
+            <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px;">Catalog search, category pills, persistent cart, saved items, direct seller chat.</div>
+          </div>
+          <div class="card card-accent-green" style="padding: 10px 14px;">
+            <div style="font-weight: 700; color: #FFF; font-size: 0.88rem;">🏪 Seller Hub</div>
+            <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px;">Store creation, Cloudinary uploads, inventory tracking, order fulfillment.</div>
+          </div>
+          <div class="card card-accent-amber" style="padding: 10px 14px;">
+            <div style="font-weight: 700; color: #FFF; font-size: 0.88rem;">🛡️ Admin Broker Cockpit</div>
+            <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px;">Broker mediation, appointment scheduler, category CRUD, store approvals.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 11: Feature Deep-Dive: Broker Hub ==================== -->
+    <section class="slide" data-slide="11" data-notes="Let's look under the hood of messageController.ts and BrokerHubPage.tsx. When a buyer clicks 'Contact' on a product, resolveProductReceiver evaluates if the item belongs to a brokered category like land or vehicles. If it does, the recipient is dynamically overridden to the system admin broker. In the Admin Broker Hub, the admin inspects buyer and seller credentials, communicates directly with both parties, schedules an in-person physical inspection date in Injibara, and tracks the transaction from initial review to completion.">
+      <div>
+        <div class="slide-tag">Feature Deep-Dive &amp; Workflow</div>
+        <h2 class="slide-title">The Broker Hub: Mediated Transaction Lifecycle</h2>
+        <p class="slide-subtitle">How algorithmic inquiry hijacking transforms high-risk sales into mediated physical transactions.</p>
+
+        <div class="grid-2">
+          <div>
+            <div class="svg-diagram-wrapper" style="margin-bottom: 10px;">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 210" width="100%" height="auto" style="background:#0b0f19; border-radius:8px; font-family:'Inter',sans-serif;">
+  <defs>
+    <marker id="smArrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#38bdf8"/>
+    </marker>
+  </defs>
+
+  <rect x="15" y="25" width="115" height="65" rx="6" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+  <text x="72" y="48" fill="#38bdf8" font-size="10" font-weight="700" text-anchor="middle">1. NEW</text>
+  <text x="72" y="65" fill="#cbd5e1" font-size="8" text-anchor="middle">Buyer clicks Contact</text>
+  <text x="72" y="78" fill="#94a3b8" font-size="8" text-anchor="middle">on Land / Bajaj</text>
+
+  <line x1="130" y1="58" x2="165" y2="58" stroke="#38bdf8" stroke-width="2" marker-end="url(#smArrow)"/>
+
+  <rect x="170" y="25" width="115" height="65" rx="6" fill="#1e293b" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="227" y="48" fill="#f59e0b" font-size="10" font-weight="700" text-anchor="middle">2. IN_REVIEW</text>
+  <text x="227" y="65" fill="#cbd5e1" font-size="8" text-anchor="middle">Receiver Hijacked</text>
+  <text x="227" y="78" fill="#94a3b8" font-size="8" text-anchor="middle">Admin validates asset</text>
+
+  <line x1="285" y1="58" x2="320" y2="58" stroke="#38bdf8" stroke-width="2" marker-end="url(#smArrow)"/>
+
+  <rect x="325" y="25" width="115" height="65" rx="6" fill="#1e293b" stroke="#a855f7" stroke-width="1.5"/>
+  <text x="382" y="48" fill="#a855f7" font-size="10" font-weight="700" text-anchor="middle">3. APPOINTED</text>
+  <text x="382" y="65" fill="#cbd5e1" font-size="8" text-anchor="middle">Admin sets meeting</text>
+  <text x="382" y="78" fill="#94a3b8" font-size="8" text-anchor="middle">date &amp; location</text>
+
+  <line x1="440" y1="58" x2="470" y2="58" stroke="#38bdf8" stroke-width="2" marker-end="url(#smArrow)"/>
+
+  <rect x="475" y="25" width="75" height="65" rx="6" fill="#1e293b" stroke="#10b981" stroke-width="1.5"/>
+  <text x="512" y="48" fill="#10b981" font-size="10" font-weight="700" text-anchor="middle">4. DONE</text>
+  <text x="512" y="65" fill="#cbd5e1" font-size="8" text-anchor="middle">Inspection</text>
+  <text x="512" y="78" fill="#94a3b8" font-size="8" text-anchor="middle">Passed</text>
+
+  <rect x="15" y="115" width="535" height="75" rx="6" fill="#111827" stroke="#1e293b" stroke-width="1"/>
+  <text x="30" y="138" fill="#f8fafc" font-size="9.5" font-weight="700">Audit Trail Enforcement &amp; Mediation Rule:</text>
+  <text x="30" y="156" fill="#94a3b8" font-size="8.5">• Direct messaging between buyer &amp; seller is strictly blocked until broker verification occurs.</text>
+  <text x="30" y="172" fill="#94a3b8" font-size="8.5">• All status transitions are recorded in the database with timestamps and admin user tracking.</text>
+</svg>
+            </div>
+          </div>
+
+          <div>
+            <div class="code-box" style="margin-top: 0;">
+              <div class="code-header">
+                <div class="window-dots"><div class="dot dot-red"></div><div class="dot dot-amber"></div><div class="dot dot-green"></div></div>
+                <span style="font-size: 0.72rem; color: var(--text-muted);">server/src/controllers/messageController.ts</span>
+              </div>
+              <pre><span class="code-comment">// Dynamic Recipient Hijacking for Tier 1 Assets</span>
+<span class="code-kw">const</span> targetProduct = <span class="code-kw">await</span> prisma.products.<span class="code-fn">findUnique</span>({
+  where: { id: productId },
+  include: { categories: <span class="code-kw">true</span> }
+});
+
+<span class="code-kw">if</span> (targetProduct &amp;&amp; <span class="code-fn">isBrokeredCategory</span>(targetProduct.categories.name)) {
+  <span class="code-comment">// Re-route recipient to designated Admin Broker</span>
+  finalReceiverId = <span class="code-kw">await</span> <span class="code-fn">getAdminBrokerId</span>();
+  isBrokered = <span class="code-kw">true</span>;
+}</pre>
+            </div>
+            <div class="card card-accent-amber" style="margin-top: 10px; padding: 10px 14px;">
+              <div style="font-size: 0.82rem; color: #CBD5E1;">
+                <strong>Mediation Value:</strong> Completely eliminates advance-fee fraud and fake document scams common in informal Telegram groups.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 12: Quality Assurance ==================== -->
+    <section class="slide" data-slide="12" data-notes="Software quality is verified by continuous automated testing using Vitest across both client and server. We have 88 total automated tests running on every pull request. On the backend, 48 tests verify authentication, role-based authorization, rate limiters, Zod schemas, WorkOS identity federation, and message routing. On the frontend, 40 tests verify route protection, unauthenticated redirects, local storage resilience, and brokered classification. We maintain zero ESLint errors and zero TypeScript compile errors.">
+      <div>
+        <div class="slide-tag">Quality Assurance &amp; Rigorous Testing</div>
+        <h2 class="slide-title">Automated Testing Rigor &amp; Verification Pipeline</h2>
+        <p class="slide-subtitle">Zero regressions guaranteed across 7 backend test suites and frontend integration tests.</p>
+
+        <div class="grid-2" style="margin-bottom: 14px;">
+          <div class="card card-accent-green">
+            <div class="card-title" style="color: var(--brand-light);">Backend Vitest Suite (48 / 48 Passed)</div>
+            <ul class="check-list" style="margin-top: 10px;">
+              <li><code>workosAuth.test.ts</code> (5 tests) — SSO federation, account linking</li>
+              <li><code>auth.test.ts</code> &amp; <code>admin.test.ts</code> (13 tests) — Role guards &amp; escalation</li>
+              <li><code>middleware.test.ts</code> (7 tests) — JWT validation, token expiry</li>
+              <li><code>schemas.test.ts</code> (17 tests) — Zod Ethiopian phone normalizer</li>
+              <li><code>messageRouting.test.ts</code> (5 tests) — Dynamic broker re-routing</li>
+              <li><code>sanity.test.js</code> (1 test) — Environment bootstrap validation</li>
+            </ul>
+          </div>
+
+          <div class="card card-accent-blue">
+            <div class="card-title" style="color: var(--accent-blue);">Frontend Vitest Suite (40 / 40 Passed)</div>
+            <ul class="check-list" style="margin-top: 10px;">
+              <li><code>ProtectedRoute.test.tsx</code> — Unauthorized redirect enforcement</li>
+              <li><code>ProtectedAdminRoute.test.tsx</code> — Admin privilege validation</li>
+              <li><code>authStorage.test.ts</code> — JWT &amp; role session hydration</li>
+              <li><code>brokeredCategories.test.ts</code> — Bilingual regex evaluation</li>
+              <li><code>AppRoutes.test.tsx</code> — Route navigation &amp; lazy boundaries</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="grid-3">
+          <div class="stat-box">
+            <div class="stat-number" style="color: var(--brand);">88 / 88</div>
+            <div class="stat-label">Automated Tests Passed (100%)</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-number" style="color: var(--accent-blue);">0</div>
+            <div class="stat-label">ESLint Warnings / Errors</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-number" style="color: var(--accent-purple);">0</div>
+            <div class="stat-label">TypeScript Compile Errors</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 13: DevOps & CI/CD ==================== -->
+    <section class="slide" data-slide="13" data-notes="For DevOps, the project uses Docker Compose to ensure identical environments across development, testing, and deployment. Our ci.yml pipeline runs in GitHub Actions on every pull request and push to develop/main. It spins up a real MySQL 8 container with health checks, runs migrations and Prisma generation, executes the backend and frontend tests, builds both client and server bundles, and finally builds the production API Docker image.">
+      <div>
+        <div class="slide-tag">DevOps, Cloud &amp; Infrastructure</div>
+        <h2 class="slide-title">Production Cloud Infrastructure &amp; Automated CI/CD</h2>
+        <p class="slide-subtitle">Modern hybrid cloud topology orchestrated with GitHub Actions and Docker.</p>
+
+        <div class="card card-accent-blue" style="margin-bottom: 14px; padding: 14px 18px;">
+          <div class="card-title" style="font-size: 0.95rem;">🌐 Production Hybrid Cloud Architecture</div>
+          <div class="grid-4" style="margin-top: 10px;">
+            <div style="background: #111827; padding: 8px 12px; border-radius: 6px; text-align: center;">
+              <span class="pill pill-green" style="margin-bottom: 4px;">Frontend</span>
+              <div style="font-weight: 700; color: #FFF; font-size: 0.85rem;">Vercel Edge</div>
+              <div style="font-size: 0.72rem; color: var(--text-muted);">Global CDN • SPA Rewrites</div>
+            </div>
+            <div style="background: #111827; padding: 8px 12px; border-radius: 6px; text-align: center;">
+              <span class="pill pill-blue" style="margin-bottom: 4px;">Core API</span>
+              <div style="font-weight: 700; color: #FFF; font-size: 0.85rem;">Render Cloud</div>
+              <div style="font-size: 0.72rem; color: var(--text-muted);">Express 5 • Keep-Alive</div>
+            </div>
+            <div style="background: #111827; padding: 8px 12px; border-radius: 6px; text-align: center;">
+              <span class="pill pill-amber" style="margin-bottom: 4px;">Database</span>
+              <div style="font-weight: 700; color: #FFF; font-size: 0.85rem;">TiDB Cloud</div>
+              <div style="font-size: 0.72rem; color: var(--text-muted);">AWS Frankfurt • Strict SSL</div>
+            </div>
+            <div style="background: #111827; padding: 8px 12px; border-radius: 6px; text-align: center;">
+              <span class="pill pill-purple" style="margin-bottom: 4px;">Identity</span>
+              <div style="font-weight: 700; color: #FFF; font-size: 0.85rem;">WorkOS AuthKit</div>
+              <div style="font-size: 0.72rem; color: var(--text-muted);">Enterprise Google SSO</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-accent-green" style="padding: 14px 18px;">
+          <div class="card-title" style="font-size: 0.95rem;">🔄 GitHub Actions CI/CD Pipeline (.github/workflows/ci.yml)</div>
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; font-size: 0.78rem; font-family: var(--font-mono); flex-wrap: wrap;">
+            <div style="background: #111827; padding: 6px 10px; border-radius: 4px; border: 1px solid #1E293B;">1. Push / PR</div>
+            <div>→</div>
+            <div style="background: #111827; padding: 6px 10px; border-radius: 4px; border: 1px solid #1E293B;">2. MySQL Service</div>
+            <div>→</div>
+            <div style="background: #111827; padding: 6px 10px; border-radius: 4px; border: 1px solid #1E293B;">3. Prisma Migrate</div>
+            <div>→</div>
+            <div style="background: #111827; padding: 6px 10px; border-radius: 4px; border: 1px solid #1E293B;">4. Vitest (88 Tests)</div>
+            <div>→</div>
+            <div style="background: #111827; padding: 6px 10px; border-radius: 4px; border: 1px solid #1E293B;">5. Vite + API Build</div>
+            <div>→</div>
+            <div style="background: #111827; padding: 6px 10px; border-radius: 4px; border: 1px solid #10B981; color: var(--brand-light);">6. Production Ready</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 14: Accomplishments & Roadmap ==================== -->
+    <section class="slide" data-slide="14" data-notes="To summarize our internship achievements: we built a robust, verified, and culturally adapted full-stack platform. Looking forward, our roadmap includes real-time WebSocket messaging to replace polling, automated Telebirr and CBE Birr webhook integration for instant payment verification, and Progressive Web App packaging with offline caching for low-bandwidth mobile devices in rural kebeles.">
+      <div>
+        <div class="slide-tag">Project Impact &amp; Future Roadmap</div>
+        <h2 class="slide-title">Key Accomplishments &amp; Production Roadmap</h2>
+        <p class="slide-subtitle">Measurable engineering outcomes delivered and strategic future milestones.</p>
+
+        <div class="grid-4" style="margin-bottom: 16px;">
+          <div class="stat-box">
+            <div class="stat-number" style="color: var(--brand);">-78%</div>
+            <div class="stat-label">Initial JS Bundle Size</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-number" style="color: var(--accent-blue);">35ms</div>
+            <div class="stat-label">Cached API Response Time</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-number" style="color: var(--accent-purple);">17</div>
+            <div class="stat-label">Relational Tables (TiDB)</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-number" style="color: var(--accent-amber);">100%</div>
+            <div class="stat-label">Automated Test Pass Rate</div>
+          </div>
+        </div>
+
+        <div class="grid-3">
+          <div class="card card-accent-blue">
+            <div class="card-title" style="font-size: 0.95rem;">1. Payment Gateways</div>
+            <p class="card-desc">Native Telebirr and CBE Birr webhook verification for instant digital payment settlement without manual receipt checks.</p>
+          </div>
+          <div class="card card-accent-green">
+            <div class="card-title" style="font-size: 0.95rem;">2. WebSocket Real-Time Chat</div>
+            <p class="card-desc">Migrate current polling architecture to Socket.io for instantaneous buyer-seller and broker push messaging.</p>
+          </div>
+          <div class="card card-accent-purple">
+            <div class="card-title" style="font-size: 0.95rem;">3. PWA Offline Caching</div>
+            <p class="card-desc">Progressive Web App packaging with service workers caching catalog data for low-connectivity rural kebeles.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SLIDE 15: Conclusion & Demo ==================== -->
+    <section class="slide" data-slide="15" data-notes="Thank you advisors and technical team for your guidance throughout this project. I am now ready to demonstrate the live application — walking you through the customer catalog, adding a product as a seller, and showing the broker mediation workflow in the Admin Hub. I look forward to your questions and technical feedback.">
+      <div style="text-align: center; max-width: 950px; margin: 0 auto;">
+        <div class="slide-tag">Presentation Defense Conclusion</div>
+        <h2 class="slide-title" style="font-size: 2.8rem; margin-top: 8px;">Thank You!</h2>
+        <p class="slide-subtitle" style="margin: 12px auto 24px auto; font-size: 1.15rem;">
+          Injibara Market <span style="color: var(--brand);">(እንጂባራ ገበያ)</span> is live in production and ready for inspection.
+        </p>
+
+        <div style="display: inline-block; background: #0F172A; border: 1px solid #1E293B; border-radius: 8px; padding: 12px 24px; margin-bottom: 24px;">
+          <div style="font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Live Production URL</div>
+          <div style="font-family: var(--font-mono); font-size: 1.15rem; color: var(--brand-light); font-weight: 700; margin-top: 2px;">
+            https://injibara-market.vercel.app
+          </div>
+        </div>
+
+        <div class="card card-accent-green" style="text-align: left; padding: 16px 22px;">
+          <div style="font-weight: 700; color: #FFF; font-size: 1rem; margin-bottom: 8px;">🖥️ Suggested Live Demo Walkthrough:</div>
+          <div class="grid-2" style="font-size: 0.86rem; color: var(--text-secondary);">
+            <div>1. <strong>Customer Discovery:</strong> Sub-second catalog browsing and category filter pills.</div>
+            <div>2. <strong>Enterprise SSO:</strong> 1-click WorkOS AuthKit Google authentication.</div>
+            <div>3. <strong>Two-Tier Broker Test:</strong> Direct chat on retail items vs. Admin interception on Land/Bajaj.</div>
+            <div>4. <strong>Admin Broker Hub:</strong> Managing mediated inquiries and scheduling physical appointments.</div>
+          </div>
+        </div>
+
+        <div style="margin-top: 20px; font-size: 0.85rem; color: var(--text-muted);">
+          Questions &amp; Technical Defense Discussion
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Bottom Navigation & Key Hints -->
+  <footer class="bottom-bar">
+    <div>Injibara Market • Full-Stack Internship Defense</div>
+    <div class="key-hints">
+      Navigate: <span>←</span> <span>→</span> <span>Space</span> • Notes: <span>N</span> • Overview: <span>O</span> • Fullscreen: <span>F</span>
+    </div>
+  </footer>
+
+  <!-- Presenter Notes Drawer -->
+  <aside id="notes-drawer">
+    <div class="notes-header">
+      <div class="notes-title">✎ Presenter Notes (Defense Script)</div>
+      <button class="btn-icon" id="btn-close-notes" style="width: 24px; height: 24px;">✕</button>
+    </div>
+    <div class="notes-content" id="notes-content"></div>
+  </aside>
+
+  <!-- Slide Overview Modal -->
+  <div id="overview-modal">
+    <div style="display: flex; justify-content: space-between; align-items: center; max-width: 1400px; margin: 0 auto 24px auto;">
+      <h2 style="font-size: 1.5rem; color: #FFF;">Slide Overview (15 Slides)</h2>
+      <button class="btn-icon" id="btn-close-overview" style="width: 32px; height: 32px;">✕</button>
+    </div>
+    <div class="overview-grid" id="overview-grid"></div>
+  </div>
+
+  <script>
+    (function() {
+      const slides = Array.from(document.querySelectorAll('.slide'));
+      const totalSlides = slides.length;
+      let currentIndex = 0;
+
+      const progressBar = document.getElementById('progress-bar');
+      const slideCounter = document.getElementById('slide-counter');
+      const notesContent = document.getElementById('notes-content');
+      const notesDrawer = document.getElementById('notes-drawer');
+      const overviewModal = document.getElementById('overview-modal');
+      const overviewGrid = document.getElementById('overview-grid');
+
+      // Populate Overview Grid
+      slides.forEach((slide, idx) => {
+        const titleEl = slide.querySelector('.slide-title');
+        const title = titleEl ? titleEl.innerText.replace(/\(.*?\)/, '') : `Slide ${idx + 1}`;
+        const tagEl = slide.querySelector('.slide-tag');
+        const tag = tagEl ? tagEl.innerText : '';
+
+        const thumb = document.createElement('div');
+        thumb.className = `overview-thumb ${idx === 0 ? 'current' : ''}`;
+        thumb.innerHTML = `
+          <div class="overview-num">SLIDE ${String(idx + 1).padStart(2, '0')} • ${tag}</div>
+          <div class="overview-title">${title}</div>
+        `;
+        thumb.addEventListener('click', () => {
+          goToSlide(idx + 1);
+          closeOverview();
+        });
+        overviewGrid.appendChild(thumb);
+      });
+
+      function updateUI() {
+        slides.forEach((s, idx) => {
+          s.classList.toggle('active', idx === currentIndex);
+        });
+
+        const progressPercent = ((currentIndex + 1) / totalSlides) * 100;
+        progressBar.style.width = `${progressPercent}%`;
+        slideCounter.textContent = `Slide ${currentIndex + 1} / ${totalSlides}`;
+
+        const activeSlide = slides[currentIndex];
+        notesContent.textContent = activeSlide.getAttribute('data-notes') || 'No notes for this slide.';
+
+        document.querySelectorAll('.overview-thumb').forEach((th, idx) => {
+          th.classList.toggle('current', idx === currentIndex);
+        });
+      }
+
+      window.goToSlide = function(num) {
+        const target = Math.max(0, Math.min(totalSlides - 1, num - 1));
+        currentIndex = target;
+        updateUI();
+      };
+
+      function nextSlide() {
+        if (currentIndex < totalSlides - 1) {
+          currentIndex++;
+          updateUI();
+        }
+      }
+
+      function prevSlide() {
+        if (currentIndex > 0) {
+          currentIndex--;
+          updateUI();
+        }
+      }
+
+      function toggleNotes() {
+        notesDrawer.classList.toggle('open');
+        document.getElementById('btn-notes').classList.toggle('active', notesDrawer.classList.contains('open'));
+      }
+
+      function toggleOverview() {
+        overviewModal.classList.toggle('open');
+      }
+
+      function closeOverview() {
+        overviewModal.classList.remove('open');
+      }
+
+      function toggleFullscreen() {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        } else {
+          document.exitFullscreen().catch(() => {});
+        }
+      }
+
+      // Event Listeners
+      document.getElementById('btn-next').addEventListener('click', nextSlide);
+      document.getElementById('btn-prev').addEventListener('click', prevSlide);
+      document.getElementById('btn-notes').addEventListener('click', toggleNotes);
+      document.getElementById('btn-close-notes').addEventListener('click', toggleNotes);
+      document.getElementById('btn-overview').addEventListener('click', toggleOverview);
+      document.getElementById('btn-close-overview').addEventListener('click', closeOverview);
+      document.getElementById('btn-fs').addEventListener('click', toggleFullscreen);
+
+      // Keyboard Controls
+      window.addEventListener('keydown', (e) => {
+        if (overviewModal.classList.contains('open')) {
+          if (e.key === 'Escape' || e.key.toLowerCase() === 'o') {
+            closeOverview();
+          }
+          return;
+        }
+
+        switch (e.key) {
+          case 'ArrowRight':
+          case ' ':
+          case 'PageDown':
+            e.preventDefault();
+            nextSlide();
+            break;
+          case 'ArrowLeft':
+          case 'PageUp':
+            e.preventDefault();
+            prevSlide();
+            break;
+          case 'Home':
+            e.preventDefault();
+            goToSlide(1);
+            break;
+          case 'End':
+            e.preventDefault();
+            goToSlide(totalSlides);
+            break;
+          case 'n':
+          case 'N':
+            toggleNotes();
+            break;
+          case 'o':
+          case 'O':
+            toggleOverview();
+            break;
+          case 'f':
+          case 'F':
+            toggleFullscreen();
+            break;
+          case 'Escape':
+            if (notesDrawer.classList.contains('open')) {
+              notesDrawer.classList.remove('open');
+              document.getElementById('btn-notes').classList.remove('active');
+            }
+            break;
+        }
+      });
+
+      // Swipe Gestures
+      let touchStartX = 0;
+      let touchEndX = 0;
+      window.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+      }, { passive: true });
+
+      window.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        const diff = touchStartX - touchEndX;
+        if (Math.abs(diff) > 50) {
+          if (diff > 0) nextSlide();
+          else prevSlide();
+        }
+      }, { passive: true });
+
+      updateUI();
+    })();
+  </script>
+</body>
+</html>
