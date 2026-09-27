@@ -1,0 +1,25 @@
+name: Backend Keep-Alive
+
+on:
+  schedule:
+    # Run every 10 minutes to prevent free cloud instances (e.g. Render) from sleeping
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    name: Ping API Healthz
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send keep-alive ping
+        run: |
+          API_URL="${{ secrets.BACKEND_API_URL }}"
+          if [ -z "$API_URL" ]; then
+            echo "BACKEND_API_URL secret is not set yet in GitHub repository secrets."
+            echo "Add BACKEND_API_URL (e.g. https://your-api.onrender.com) to enable automated 24/7 keep-alive."
+            exit 0
+          fi
+          HEALTH_URL="${API_URL%/}/healthz"
+          echo "Pinging $HEALTH_URL..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 45 "$HEALTH_URL" || true)
+          echo "Ping response status: $STATUS"

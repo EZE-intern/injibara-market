@@ -3,12 +3,28 @@ import { Prisma } from '@prisma/client';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 import { prisma } from '../lib/prisma.js';
 import { uploadToCloudinary } from '../lib/cloudinary.js';
+import { cache } from '../utils/cache.js';
 
 // @route   GET /api/products
 // @desc    Get all products, optionally filtered by category or search (Public)
 export const getProducts = async (req: Request, res: Response): Promise<Response | void> => {
   try {
     const { category, categoryId, search, location } = req.query;
+
+    // Cache key and Cache-Control header
+    const page = Math.max(1, parseInt(String(req.query.page || '1'), 10) || 1);
+    const limitParam = req.query.limit ? parseInt(String(req.query.limit), 10) : undefined;
+    const limit = limitParam && Number.isInteger(limitParam) && limitParam > 0 ? Math.min(100, limitParam) : undefined;
+
+    const cacheKey = `products:${JSON.stringify({ category, categoryId, search, location, page, limit })}`;
+    const cached = cache.get<unknown>(cacheKey);
+
+    res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=180');
+
+    if (cached) {
+      return res.status(200).json(cached);
+    }
+
     const where: Prisma.productsWhereInput = { deleted_at: null, is_active: true };
 
     // Support filtering by category ID
@@ -63,11 +79,6 @@ export const getProducts = async (req: Request, res: Response): Promise<Response
       where.location = { contains: locStr };
     }
 
-    // Pagination parameters
-    const page = Math.max(1, parseInt(String(req.query.page || '1'), 10) || 1);
-    const limitParam = req.query.limit ? parseInt(String(req.query.limit), 10) : undefined;
-    const limit = limitParam && Number.isInteger(limitParam) && limitParam > 0 ? Math.min(100, limitParam) : undefined;
-
     const [total, products] = await Promise.all([
       prisma.products.count({ where }),
       prisma.products.findMany({
@@ -92,7 +103,7 @@ export const getProducts = async (req: Request, res: Response): Promise<Response
     const totalPages = limit ? Math.ceil(total / limit) : 1;
     const hasMore = limit ? page < totalPages : false;
     
-    return res.status(200).json({ 
+    const responsePayload = {
       success: true, 
       count: products.length,
       total,
@@ -101,7 +112,11 @@ export const getProducts = async (req: Request, res: Response): Promise<Response
       totalPages,
       hasMore,
       data: products 
-    });
+    };
+
+    cache.set(cacheKey, responsePayload, 120);
+
+    return res.status(200).json(responsePayload);
   } catch (error: unknown) {
     console.error('Error fetching products:', error);
     return res.status(500).json({ message: 'የአገልጋይ ስህተት አጋጥሟል' });
@@ -177,6 +192,14 @@ export const getProductById = async (req: Request, res: Response): Promise<Respo
       return res.status(400).json({ success: false, message: 'Invalid product ID' });
     }
 
+    res.setHeader('Cache-Control', 'public, max-age=120, stale-while-revalidate=300');
+
+    const cacheKey = `product:${id}`;
+    const cached = cache.get<unknown>(cacheKey);
+    if (cached) {
+      return res.status(200).json({ success: true, data: cached });
+    }
+
     const product = await prisma.products.findUnique({
       where: { id },
       include: {
@@ -193,6 +216,8 @@ export const getProductById = async (req: Request, res: Response): Promise<Respo
     if (!product) {
       return res.status(404).json({ success: false, message: 'ምርቱ አልተገኘም' });
     }
+
+    cache.set(cacheKey, product, 180);
 
     return res.status(200).json({ success: true, data: product });
   } catch (error: unknown) {
@@ -283,6 +308,8 @@ export const createProduct = async (req: AuthRequest, res: Response): Promise<Re
       include: { product_images: true },
     });
 
+    cache.invalidatePrefix('products:');
+
     return res.status(201).json({
       success: true,
       message: 'ምርት በተሳካ ሁኔታ ተፈጥሯል',
@@ -368,6 +395,9 @@ export const updateProduct = async (req: AuthRequest, res: Response): Promise<Re
       include: { product_images: true, categories: true },
     });
 
+    cache.invalidatePrefix('products:');
+    cache.delete(`product:${id}`);
+
     return res.status(200).json({
       success: true,
       message: 'ምርቱ በተሳካ ሁኔታ ተሻሽሏል',
@@ -411,6 +441,9 @@ export const deleteProduct = async (req: AuthRequest, res: Response): Promise<Re
         is_active: false,
       },
     });
+
+    cache.invalidatePrefix('products:');
+    cache.delete(`product:${id}`);
 
     return res.status(200).json({
       success: true,

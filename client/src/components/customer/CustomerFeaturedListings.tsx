@@ -7,7 +7,6 @@ import ProductCard from "../common/ProductCard";
 import MobileFilterSheet, { FilterState } from "./MobileFilterSheet";
 import type { Product } from "../../types/Product";
 import type { Category } from "../../api/categoryApi";
-import { serverWarmup } from "../../App";
 
 interface CustomerFeaturedListingsProps {
   initialLocation?: string;
@@ -39,7 +38,7 @@ export default function CustomerFeaturedListings({
     }
   }, [initialLocation]);
 
-  // Load categories once for filter sheet
+  // Load categories once for filter sheet (re-uses categoryApi memory cache)
   useEffect(() => {
     getCategories()
       .then((data) => setCategories(data))
@@ -51,9 +50,10 @@ export default function CustomerFeaturedListings({
     try {
       setLoading(true);
       setError(null);
-      await serverWarmup;
 
-      const queryParams: { category?: string; location?: string } = {};
+      const queryParams: { category?: string; location?: string; limit?: number } = {
+        limit: 24,
+      };
       if (filters.category && filters.category !== "All") {
         queryParams.category = filters.category;
       }

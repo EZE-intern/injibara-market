@@ -4,21 +4,11 @@ import { LayoutGrid, PlusCircle, MapPin, ChevronRight } from "lucide-react";
 import { isAuthenticated } from "../../utils/authStorage";
 import { getProducts } from "../../api/productApi";
 import type { Product } from "../../types/Product";
-import { serverWarmup } from "../../App";
+import { getProductDisplayImage } from "../../utils/imageUrl";
 
 const SLIDE_INTERVAL = 10000; // 10 seconds auto-advance
 const RESUME_DELAY = 5000; // Resume auto-advance 5s after last interaction
 const MAX_PRODUCTS = 6;
-
-/** Resolve product image URL (mirrors ProductCard logic) */
-const getProductImageUrl = (product: Product): string => {
-  const primaryImg =
-    product.product_images?.find((img) => img.is_primary)?.image_url ||
-    product.product_images?.[0]?.image_url;
-  if (primaryImg && primaryImg.startsWith("http")) return primaryImg;
-  if (product.image && product.image.startsWith("http")) return product.image;
-  return "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&q=80&w=800";
-};
 
 export default function CustomerHeroCarousel() {
   const navigate = useNavigate();
@@ -33,12 +23,11 @@ export default function CustomerHeroCarousel() {
   // Total slides = 1 welcome + N products
   const totalSlides = 1 + products.length;
 
-  // ── Fetch featured products ──────────────────────────────
+  // ── Fetch featured products (immediately at t=0) ──────────
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
       try {
-        await serverWarmup;
         const data = await getProducts({ limit: MAX_PRODUCTS });
         if (!cancelled) {
           setProducts(data.slice(0, MAX_PRODUCTS));
@@ -195,7 +184,7 @@ export default function CustomerHeroCarousel() {
 
           {/* ── Product Slides ── */}
           {products.map((product) => {
-            const imageUrl = getProductImageUrl(product);
+            const imageUrl = getProductDisplayImage(product, 800);
             const price = Number(product.price);
             const discountPrice =
               product.discount_price != null

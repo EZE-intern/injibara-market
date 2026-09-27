@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 import { getCategories } from "../../api/categoryApi";
 import type { Category } from "../../api/categoryApi";
-import { serverWarmup } from "../../App";
 
 /**
  * Maps category name/slug to an authentic outlined icon in warm brand red/orange
@@ -64,7 +63,6 @@ export default function CustomerCategoryGrid() {
     const loadCategories = async () => {
       try {
         setLoading(true);
-        await serverWarmup;
         const data = await getCategories();
         if (isMounted) {
           setCategories(data);

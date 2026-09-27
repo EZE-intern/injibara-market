@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { X, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from "lucide-react";
 import type { ProductImage } from "../../types/Product";
+import { optimizeImageUrl } from "../../utils/imageUrl";
 
 interface ImageGalleryProps {
   images: ProductImage[];
@@ -97,7 +98,7 @@ export default function ProductImageGallery({
               onClick={() => openLightbox(idx)}
             >
               <img
-                src={img.image_url}
+                src={optimizeImageUrl(img.image_url, 800)}
                 alt={`${productName} — photo ${idx + 1}`}
                 className="h-full w-full object-contain p-2 select-none"
                 draggable={false}
@@ -162,7 +163,7 @@ export default function ProductImageGallery({
               }`}
             >
               <img
-                src={img.image_url}
+                src={optimizeImageUrl(img.image_url, 200)}
                 alt={`${productName} thumbnail ${idx + 1}`}
                 className="h-full w-full object-cover"
                 loading="lazy"
@@ -439,7 +440,7 @@ function Lightbox({ images, productName, initialIndex, onClose }: LightboxProps)
           }}
         >
           <img
-            src={images[currentIndex].image_url}
+            src={optimizeImageUrl(images[currentIndex].image_url, 1400)}
             alt={`${productName} — full size photo ${currentIndex + 1}`}
             className="max-h-full max-w-full object-contain pointer-events-none"
             draggable={false}
@@ -477,7 +478,7 @@ function Lightbox({ images, productName, initialIndex, onClose }: LightboxProps)
               }`}
             >
               <img
-                src={img.image_url}
+                src={optimizeImageUrl(img.image_url, 150)}
                 alt={`Thumbnail ${idx + 1}`}
                 className="h-full w-full object-cover"
               />

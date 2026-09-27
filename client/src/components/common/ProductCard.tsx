@@ -4,24 +4,12 @@ import { Heart, MapPin } from "lucide-react";
 import toast from "react-hot-toast";
 import type { Product } from "../../types/Product";
 import { isProductSaved, toggleSaveProduct } from "../../utils/savedStorage";
+import { getProductDisplayImage } from "../../utils/imageUrl";
 
 interface ProductCardProps {
   product: Product;
   compact?: boolean;
 }
-
-/** Resolve any image URL to a full, displayable path */
-const getImageUrl = (product: Product): string => {
-  const primaryImg =
-    product.product_images?.find((img) => img.is_primary)?.image_url ||
-    product.product_images?.[0]?.image_url;
-
-  if (primaryImg && primaryImg.startsWith("http")) return primaryImg;
-  if (product.image && product.image.startsWith("http")) return product.image;
-
-  // Authentic fallback placeholder
-  return "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&q=80&w=400";
-};
 
 /** Format ISO timestamp to relative time string (e.g. '2h ago', '1d ago') */
 function formatTimeAgo(dateString?: string): string {
@@ -81,7 +69,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   const imageUrl = imgError
     ? "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&q=80&w=400"
-    : getImageUrl(product);
+    : getProductDisplayImage(product, 400);
 
   const price = Number(product.price);
   const discountPrice =

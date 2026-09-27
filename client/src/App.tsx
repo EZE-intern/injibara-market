@@ -7,10 +7,8 @@ import ScrollToTop from "./components/common/ScrollToTop";
 import AppRoutes from "./routes/AppRoutes";
 import { ThemeProvider } from "./context/ThemeContext";
 
-// Shared warm-up promise: fires a healthz ping that touches the database,
-// warming the Prisma/TiDB connection pool. Homepage data components
-// (CustomerCategoryGrid, CustomerFeaturedListings) await this promise
-// before fetching, so their queries hit a warm connection.
+// Non-blocking background warm-up: triggers health check asynchronously
+// without gating homepage component rendering in an artificial serial waterfall.
 const getHealthUrl = (): string => {
   if (import.meta.env.VITE_API_BASE_URL) {
     return import.meta.env.VITE_API_BASE_URL.replace(/\/api\/?$/, "") + "/healthz";
@@ -21,14 +19,12 @@ const getHealthUrl = (): string => {
   return "http://localhost:5000/healthz";
 };
 
-export const serverWarmup: Promise<void> = (typeof window !== "undefined"
-  ? fetch(getHealthUrl(), {
-      method: "GET",
-      mode: "cors",
-    })
-      .then(() => {})
-      .catch(() => {})
-  : Promise.resolve());
+if (typeof window !== "undefined") {
+  fetch(getHealthUrl(), { method: "GET", mode: "cors" }).catch(() => {});
+}
+
+// Export resolved promise for backward compatibility
+export const serverWarmup: Promise<void> = Promise.resolve();
 
 function App() {
   useEffect(() => {

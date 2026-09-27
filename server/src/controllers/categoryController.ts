@@ -1,9 +1,6 @@
 import { Request, Response } from 'express';
 import { prisma } from '../lib/prisma.js';
-
-
-
-
+import { cache } from '../utils/cache.js';
 
 // create new category
 // @route   POST /api/categories
@@ -37,6 +34,9 @@ export const createCategory = async (req: Request, res: Response): Promise<Respo
       },
     });
 
+    // Invalidate categories cache
+    cache.invalidatePrefix('categories:');
+
     return res.status(201).json({
       message: 'ምድቡ በተሳካ ሁኔታ ተፈጥሯል',
       data: newCategory,
@@ -60,6 +60,26 @@ export const getCategories = async (req: Request, res: Response): Promise<Respon
     const limitParam = req.query.limit ? parseInt(String(req.query.limit), 10) : undefined;
     const limit = limitParam && Number.isInteger(limitParam) && limitParam > 0 ? Math.min(100, limitParam) : undefined;
 
+    // Cache key based on pagination
+    const cacheKey = `categories:${page}:${limit || 'all'}`;
+    const cached = cache.get<{
+      success: boolean;
+      count: number;
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+      hasMore: boolean;
+      data: unknown[];
+    }>(cacheKey);
+
+    // Set standard cache control header for clients & edge caches
+    res.setHeader('Cache-Control', 'public, max-age=120, stale-while-revalidate=300');
+
+    if (cached) {
+      return res.status(200).json(cached);
+    }
+
     const where = { deleted_at: null };
 
     const [total, categories] = await Promise.all([
@@ -81,7 +101,7 @@ export const getCategories = async (req: Request, res: Response): Promise<Respon
     const totalPages = limit ? Math.ceil(total / limit) : 1;
     const hasMore = limit ? page < totalPages : false;
 
-    return res.status(200).json({
+    const responsePayload = {
       success: true,
       count: categories.length,
       total,
@@ -90,7 +110,12 @@ export const getCategories = async (req: Request, res: Response): Promise<Respon
       totalPages,
       hasMore,
       data: categories,
-    });
+    };
+
+    // Store in server cache for 5 minutes (300 seconds)
+    cache.set(cacheKey, responsePayload, 300);
+
+    return res.status(200).json(responsePayload);
   } catch (error: unknown) {
     const errorMessage = (error as Error).message;
 
@@ -166,6 +191,8 @@ export const updateCategory = async (req: Request, res: Response): Promise<Respo
       },
     });
 
+    cache.invalidatePrefix('categories:');
+
     return res.status(200).json({
       message: 'ምድቡ በተሳካ ሁኔታ ተሻሽሏል',
       data: updatedCategory,
@@ -201,6 +228,8 @@ export const deleteCategory = async (req: Request, res: Response): Promise<Respo
         deleted_at: new Date(),
       },
     });
+
+    cache.invalidatePrefix('categories:');
 
     return res.status(200).json({
       message: 'ምድቡ በተሳካ ሁኔታ ተሰርዟል',

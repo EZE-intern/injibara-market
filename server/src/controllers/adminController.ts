@@ -4,6 +4,7 @@ import { prisma } from '../lib/prisma.js';
 import { AuthRequest } from '../middleware/authMiddleware.js';
 import { isBrokeredCategory } from '../utils/brokeredCategories.js';
 import { products_status } from '@prisma/client';
+import { cache } from '../utils/cache.js';
 
 interface BrokerInquiryMeta {
   status?: string;
@@ -765,6 +766,9 @@ export const adminController = {
         },
       });
 
+      cache.invalidatePrefix('products:');
+      cache.delete(`product:${id}`);
+
       return res.json({
         success: true,
         message: 'Product status updated.',
@@ -795,6 +799,9 @@ export const adminController = {
           is_active: false,
         },
       });
+
+      cache.invalidatePrefix('products:');
+      cache.delete(`product:${id}`);
 
       return res.json({
         success: true,
