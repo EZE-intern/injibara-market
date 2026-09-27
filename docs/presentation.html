@@ -382,6 +382,10 @@
     }
 
     /* Diagrams in Slides */
+    svg path:not([fill]) {
+      fill: none;
+    }
+
     .svg-diagram-wrapper {
       width: 100%;
       display: flex;
@@ -789,7 +793,7 @@
   <text x="867" y="167" fill="#64748b" font-size="9" text-anchor="middle">Lucide React Icons</text>
 
   <!-- Connectors: Tier 1 to Tier 2 -->
-  <path d="M 500 200 L 500 240" stroke="#38bdf8" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
+  <path fill="none" d="M 500 200 L 500 240" stroke="#38bdf8" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
   <text x="515" y="224" fill="#38bdf8" font-size="10" font-weight="600">HTTPS / REST API (JSON + Multipart Form-Data)</text>
 
   <!-- TIER 2: Application / API Layer -->
@@ -844,10 +848,10 @@
   <text x="860" y="410" fill="#94a3b8" font-size="9" text-anchor="middle">Cloudinary SDK v2</text>
 
   <!-- Connectors: Tier 2 to Tier 3 -->
-  <path d="M 330 450 L 330 485" stroke="#34d399" stroke-width="2" marker-end="url(#arrowGreen)"/>
+  <path fill="none" d="M 330 450 L 330 485" stroke="#34d399" stroke-width="2" marker-end="url(#arrowGreen)"/>
   <text x="340" y="472" fill="#34d399" font-size="10" font-weight="600">MySQL Wire Protocol (TLS Encrypted / Port 4000)</text>
 
-  <path d="M 750 450 L 750 485" stroke="#fb923c" stroke-width="2" marker-end="url(#arrowOrange)"/>
+  <path fill="none" d="M 750 450 L 750 485" stroke="#fb923c" stroke-width="2" marker-end="url(#arrowOrange)"/>
   <text x="760" y="472" fill="#fb923c" font-size="10" font-weight="600">Buffer Stream Upload (HTTPS API)</text>
 
   <!-- TIER 3: Data Tier -->
@@ -1255,47 +1259,47 @@
 
   <!-- RELATIONSHIP CONNECTORS (CARDINALITY LINES) -->
   <!-- users to products (1 to Many) -->
-  <path d="M 250 140 L 340 140" stroke="#38bdf8" stroke-width="1.8"/>
+  <path fill="none" d="M 250 140 L 340 140" stroke="#38bdf8" stroke-width="1.8"/>
   <text x="295" y="133" fill="#38bdf8" font-size="9" text-anchor="middle">1 : N</text>
 
   <!-- users to stores (1 to Many) -->
-  <path d="M 145 255 L 145 290" stroke="#34d399" stroke-width="1.8"/>
+  <path fill="none" d="M 145 255 L 145 290" stroke="#34d399" stroke-width="1.8"/>
   <text x="155" y="275" fill="#34d399" font-size="9">1 : N</text>
 
   <!-- stores to products (1 to Many) -->
-  <path d="M 250 350 L 340 250" stroke="#34d399" stroke-width="1.8"/>
+  <path fill="none" d="M 250 350 L 340 250" stroke="#34d399" stroke-width="1.8"/>
   <text x="290" y="295" fill="#34d399" font-size="9">1 : N</text>
 
   <!-- categories to products (1 to Many) -->
-  <path d="M 250 510 L 340 330" stroke="#a78bfa" stroke-width="1.8"/>
+  <path fill="none" d="M 250 510 L 340 330" stroke="#a78bfa" stroke-width="1.8"/>
   <text x="300" y="425" fill="#a78bfa" font-size="9">1 : N</text>
 
   <!-- products to product_images (1 to Many) -->
-  <path d="M 460 370 L 460 410" stroke="#e2e8f0" stroke-width="1.8"/>
+  <path fill="none" d="M 460 370 L 460 410" stroke="#e2e8f0" stroke-width="1.8"/>
   <text x="470" y="395" fill="#e2e8f0" font-size="9">1 : N</text>
 
   <!-- products to broker_inquiries (1 to Many) -->
-  <path d="M 460 520 L 460 560" stroke="#fbbf24" stroke-width="1.8"/>
+  <path fill="none" d="M 460 520 L 460 560" stroke="#fbbf24" stroke-width="1.8"/>
   <text x="470" y="545" fill="#fbbf24" font-size="9">1 : N</text>
 
   <!-- users to broker_inquiries (buyer_id) -->
-  <path d="M 160 255 L 160 760 L 400 760 L 400 705" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="4 2"/>
+  <path fill="none" d="M 160 255 L 160 760 L 400 760 L 400 705" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="4 2"/>
   <text x="270" y="755" fill="#fbbf24" font-size="9">1 : N (Buyer)</text>
 
   <!-- products to messages -->
-  <path d="M 580 150 L 640 150" stroke="#38bdf8" stroke-width="1.8"/>
+  <path fill="none" d="M 580 150 L 640 150" stroke="#38bdf8" stroke-width="1.8"/>
   <text x="610" y="142" fill="#38bdf8" font-size="9" text-anchor="middle">1 : N</text>
 
   <!-- users to orders -->
-  <path d="M 250 180 L 310 180 L 310 30 L 745 30 L 745 265" stroke="#10b981" stroke-width="1.5"/>
+  <path fill="none" d="M 250 180 L 310 180 L 310 30 L 745 30 L 745 265" stroke="#10b981" stroke-width="1.5"/>
   <text x="500" y="25" fill="#10b981" font-size="9" text-anchor="middle">1 : N (User places Orders)</text>
 
   <!-- orders to order_items -->
-  <path d="M 745 460 L 745 485" stroke="#10b981" stroke-width="1.8"/>
+  <path fill="none" d="M 745 460 L 745 485" stroke="#10b981" stroke-width="1.8"/>
   <text x="755" y="475" fill="#10b981" font-size="9">1 : N</text>
 
   <!-- products to order_items -->
-  <path d="M 580 320 L 620 320 L 620 540 L 640 540" stroke="#f59e0b" stroke-width="1.5"/>
+  <path fill="none" d="M 580 320 L 620 320 L 620 540 L 640 540" stroke="#f59e0b" stroke-width="1.5"/>
   <text x="615" y="450" fill="#f59e0b" font-size="9">1 : N</text>
 </svg>
         </div>
@@ -1478,7 +1482,7 @@
     <text x="0" y="55" fill="#34d399" font-size="12" font-weight="700" text-anchor="middle">Seller</text>
     <text x="0" y="70" fill="#94a3b8" font-size="10" text-anchor="middle">(Merchant Actor)</text>
     <!-- Generalization arrow: Seller inherits Customer capabilities -->
-    <path d="M 0 -45 L 0 -225" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3 3"/>
+    <path fill="none" d="M 0 -45 L 0 -225" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3 3"/>
     <polygon points="0,-235 -6,-223 6,-223" fill="#94a3b8"/>
     <text x="-15" y="-130" fill="#94a3b8" font-size="9" transform="rotate(-90 -15 -130)">inherits (auto-promoted)</text>
   </g>
@@ -1857,17 +1861,7 @@
           </div>
         </div>
 
-        <div class="card card-accent-green" style="text-align: left; padding: 16px 22px;">
-          <div style="font-weight: 700; color: #FFF; font-size: 1rem; margin-bottom: 8px;">🖥️ Suggested Live Demo Walkthrough:</div>
-          <div class="grid-2" style="font-size: 0.86rem; color: var(--text-secondary);">
-            <div>1. <strong>Customer Discovery:</strong> Sub-second catalog browsing and category filter pills.</div>
-            <div>2. <strong>Enterprise SSO:</strong> 1-click WorkOS AuthKit Google authentication.</div>
-            <div>3. <strong>Two-Tier Broker Test:</strong> Direct chat on retail items vs. Admin interception on Land/Bajaj.</div>
-            <div>4. <strong>Admin Broker Hub:</strong> Managing mediated inquiries and scheduling physical appointments.</div>
-          </div>
-        </div>
-
-        <div style="margin-top: 20px; font-size: 0.85rem; color: var(--text-muted);">
+        <div style="margin-top: 28px; font-size: 0.85rem; color: var(--text-muted);">
           Questions &amp; Technical Defense Discussion
         </div>
       </div>
