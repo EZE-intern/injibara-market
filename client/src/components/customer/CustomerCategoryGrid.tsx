@@ -13,6 +13,7 @@ import {
   Briefcase,
   Activity,
   Layers,
+  ChevronDown,
 } from "lucide-react";
 import { getCategories } from "../../api/categoryApi";
 import type { Category } from "../../api/categoryApi";
@@ -50,9 +51,12 @@ export const getCategoryIconNode = (slugOrName: string): ReactNode => {
   return <Layers className="h-6 w-6 text-red-600 dark:text-red-500" strokeWidth={1.8} />;
 };
 
+const DESKTOP_LIMIT = 6;
+
 export default function CustomerCategoryGrid() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -105,29 +109,65 @@ export default function CustomerCategoryGrid() {
     return null;
   }
 
+  // On desktop (sm+), limit visible categories; on mobile, show all in horizontal scroll
+  const hasMore = categories.length > DESKTOP_LIMIT;
+  const visibleCategories = expanded ? categories : categories.slice(0, DESKTOP_LIMIT);
+
   return (
     <section className="py-4 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
-        {/* Horizontal Category Scroller on Mobile, Grid on Tablet/Desktop */}
-        <div className="flex gap-3 overflow-x-auto no-scrollbar py-1 sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+        {/* Mobile: horizontal scroll — always show all categories */}
+        <div className="flex gap-3 overflow-x-auto no-scrollbar py-1 sm:hidden">
           {categories.map((cat) => (
             <Link
               key={cat.id}
               to={`/products?category=${encodeURIComponent(cat.name)}`}
-              className="group flex flex-col items-center justify-center rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 w-20 sm:w-auto shrink-0 shadow-xs hover:border-red-600 dark:hover:border-red-500 hover:shadow-sm transition-all"
+              className="group flex flex-col items-center justify-center rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 w-20 shrink-0 shadow-xs hover:border-red-600 dark:hover:border-red-500 hover:shadow-sm transition-all"
             >
-              {/* Icon Container */}
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-50 dark:bg-red-950/40 transition-transform group-hover:scale-110">
                 {getCategoryIconNode(cat.slug || cat.name)}
               </div>
-
-              {/* Category Name */}
               <span className="mt-2 text-xs font-semibold text-gray-800 dark:text-gray-200 group-hover:text-red-600 dark:group-hover:text-red-400 truncate max-w-full text-center">
                 {cat.name}
               </span>
             </Link>
           ))}
         </div>
+
+        {/* Desktop: grid — limited to 6, expandable */}
+        <div className="hidden sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          {visibleCategories.map((cat) => (
+            <Link
+              key={cat.id}
+              to={`/products?category=${encodeURIComponent(cat.name)}`}
+              className="group flex flex-col items-center justify-center rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 shadow-xs hover:border-red-600 dark:hover:border-red-500 hover:shadow-sm transition-all"
+            >
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-50 dark:bg-red-950/40 transition-transform group-hover:scale-110">
+                {getCategoryIconNode(cat.slug || cat.name)}
+              </div>
+              <span className="mt-2 text-xs font-semibold text-gray-800 dark:text-gray-200 group-hover:text-red-600 dark:group-hover:text-red-400 truncate max-w-full text-center">
+                {cat.name}
+              </span>
+            </Link>
+          ))}
+        </div>
+
+        {/* Expand / Collapse toggle — desktop only, when more than 6 categories */}
+        {hasMore && (
+          <div className="hidden sm:flex justify-center mt-2">
+            <button
+              type="button"
+              onClick={() => setExpanded((prev) => !prev)}
+              className="flex items-center gap-1 rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1 text-xs font-semibold text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:border-red-300 dark:hover:border-red-800 transition cursor-pointer shadow-xs"
+            >
+              <span>{expanded ? "Show less" : `+${categories.length - DESKTOP_LIMIT} more`}</span>
+              <ChevronDown
+                size={14}
+                className={`transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
+              />
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );
