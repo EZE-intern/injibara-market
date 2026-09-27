@@ -1,5 +1,5 @@
-import { lazy, Suspense } from "react";
-import { Routes, Route } from "react-router-dom";
+import { lazy, Suspense, useEffect } from "react";
+import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
 import ProtectedAdminRoute from "./ProtectedAdminRoute";
 
@@ -55,6 +55,20 @@ function RouteLoadingFallback() {
 }
 
 export default function AppRoutes() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Safeguard: If WorkOS or an OAuth provider redirects to root or any path with ?code= or ?error=,
+  // automatically forward to /auth/callback so authentication completes smoothly.
+  useEffect(() => {
+    if (
+      location.pathname !== "/auth/callback" &&
+      (location.search.includes("code=") || location.search.includes("error="))
+    ) {
+      navigate(`/auth/callback${location.search}`, { replace: true });
+    }
+  }, [location, navigate]);
+
   return (
     <Suspense fallback={<RouteLoadingFallback />}>
       <Routes>
