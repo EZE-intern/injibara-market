@@ -10,6 +10,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import ProductImageGallery from "../components/product/ProductImageGallery";
+import VerifiedBadge from "../components/common/VerifiedBadge";
 import CustomerNavbar from "../components/customer/CustomerNavbar";
 import CustomerFooter from "../components/customer/CustomerFooter";
 import { getProductById } from "../api/productApi";
@@ -339,8 +340,11 @@ function ProductDetailPage() {
                   )}
 
                   {/* Product name */}
-                  <h1 className="mt-2 text-xl font-bold text-gray-900 dark:text-white sm:text-2xl lg:text-3xl tracking-tight leading-snug">
-                    {product.name}
+                  <h1 className="mt-2 text-xl font-bold text-gray-900 dark:text-white sm:text-2xl lg:text-3xl tracking-tight leading-snug flex items-center gap-2">
+                    <span>{product.name}</span>
+                    {product.status === "approved" && (
+                      <VerifiedBadge size="md" className="sm:scale-125 origin-left" />
+                    )}
                   </h1>
 
                   {/* Price */}
