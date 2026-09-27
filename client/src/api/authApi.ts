@@ -46,3 +46,23 @@ export const loginUser = async (
   );
   return response.data;
 };
+
+export interface WorkOSUrlResponse {
+  success: boolean;
+  url: string;
+}
+
+export const getWorkOSUrl = async (redirectUri?: string): Promise<string> => {
+  const params = redirectUri ? { redirectUri } : undefined;
+  const response = await axiosClient.get<WorkOSUrlResponse>("/auth/workos/url", {
+    params,
+  });
+  return response.data.url;
+};
+
+export const exchangeWorkOSCode = async (code: string): Promise<AuthResponse> => {
+  const response = await axiosClient.post<AuthResponse>("/auth/workos/callback", {
+    code,
+  });
+  return response.data;
+};

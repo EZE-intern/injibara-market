@@ -2,6 +2,7 @@ import { FormEvent, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { loginUser } from "../api/authApi";
 import { saveAuth } from "../utils/authStorage";
+import WorkOSAuthButton from "../components/auth/WorkOSAuthButton";
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -12,6 +13,17 @@ function LoginPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Extract return path if coming from a protected route
+  const state = location.state as {
+    from?: { pathname?: string; search?: string } | string;
+  } | null;
+  let fromPath: string | undefined;
+  if (typeof state?.from === "string" && state.from.startsWith("/")) {
+    fromPath = state.from;
+  } else if (state?.from && typeof state.from === "object" && state.from.pathname) {
+    fromPath = `${state.from.pathname}${state.from.search || ""}`;
+  }
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -27,22 +39,6 @@ function LoginPage() {
 
       // Save authentication session
       saveAuth(response.token, response.user);
-
-      // Route to previous requested page or role default dashboard
-      // Accept Location-like { pathname } or a plain path string
-      const state = location.state as {
-        from?: { pathname?: string; search?: string } | string;
-      } | null;
-      let fromPath: string | null = null;
-      if (typeof state?.from === "string" && state.from.startsWith("/")) {
-        fromPath = state.from;
-      } else if (
-        state?.from &&
-        typeof state.from === "object" &&
-        state.from.pathname
-      ) {
-        fromPath = `${state.from.pathname}${state.from.search || ""}`;
-      }
 
       const role = response.user.role?.toLowerCase();
 
@@ -90,6 +86,24 @@ function LoginPage() {
 
         {/* Login card */}
         <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
+          {/* WorkOS / Google Authentication Button */}
+          <WorkOSAuthButton
+            label="Continue with Google or WorkOS"
+            redirectTo={fromPath}
+          />
+
+          {/* Divider */}
+          <div className="relative my-5">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-3 text-gray-400 font-semibold tracking-wider">
+                Or continue with password
+              </span>
+            </div>
+          </div>
+
           <form onSubmit={handleSubmit}>
             {/* Error */}
             {error && (

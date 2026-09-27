@@ -1,6 +1,7 @@
 import { FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { registerUser } from "../api/authApi";
+import WorkOSAuthButton from "../components/auth/WorkOSAuthButton";
 
 function RegisterPage() {
   const navigate = useNavigate();
@@ -111,6 +112,23 @@ function RegisterPage() {
 
         {/* Register card */}
         <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
+          {/* WorkOS / Google Authentication Button */}
+          <WorkOSAuthButton
+            label="Sign up with Google or WorkOS"
+          />
+
+          {/* Divider */}
+          <div className="relative my-5">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-3 text-gray-400 font-semibold tracking-wider">
+                Or sign up with email
+              </span>
+            </div>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Error Message */}
             {error && (
