@@ -2,7 +2,7 @@ import axios from "axios";
 import { notify } from "../utils/notify";
 import { clearAuth } from "../utils/authStorage";
 
-const API_TIMEOUT_MS = 60000; // 60 seconds — allows cloud host cold-starts without premature timeout
+const API_TIMEOUT_MS = 15000; // 15 seconds — enough for cloud cold-starts without excessive wait on failures
 
 let lastToastTime = 0;
 let lastToastMsg = "";
