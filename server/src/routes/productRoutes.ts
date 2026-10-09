@@ -1,32 +1,24 @@
-import express, { Router } from 'express';
+import { Hono } from 'hono';
+import type { AppContext } from '../types/context.js';
 import {
-  getProducts,
-  getMyProducts,
-  getProductById,
   createProduct,
+  getProducts,
+  getProductById,
   updateProduct,
   deleteProduct,
+  getMyProducts,
 } from '../controllers/productController.js';
 import { protect } from '../middleware/authMiddleware.js';
-import { upload } from '../middleware/uploadMiddleware.js';
-import { validate } from '../middleware/validate.js';
 import { creationLimiter } from '../middleware/rateLimiter.js';
-import { createProductSchema, updateProductSchema } from '../schemas/index.js';
 
-const router: Router = express.Router();
+const app = new Hono<AppContext>();
 
-// Public routes: Anyone can view products
-router.get('/', getProducts);
+app.get('/my-products', protect, getMyProducts);
+app.get('/:id', getProductById);
+app.get('/', getProducts);
 
-// Seller-specific: Get logged in user's products (Must be before /:id to avoid path conflict)
-router.get('/my-products', protect, getMyProducts);
+app.post('/', protect, creationLimiter, createProduct);
+app.put('/:id', protect, updateProduct);
+app.delete('/:id', protect, deleteProduct);
 
-router.get('/:id', getProductById);
-
-// Protected routes with validation & upload rate limiting
-// Note: validate() runs AFTER multer (upload) since multer parses multipart form data into req.body
-router.post('/', protect, creationLimiter, upload.array('images', 6), validate(createProductSchema), createProduct);
-router.put('/:id', protect, upload.array('images', 6), validate(updateProductSchema), updateProduct);
-router.delete('/:id', protect, deleteProduct);
-
-export default router;
+export default app;

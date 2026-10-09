@@ -1,28 +1,18 @@
-import express, { Router } from 'express';
+import { Hono } from 'hono';
+import type { AppContext } from '../types/context.js';
 import { registerUser, loginUser, updateUserRole } from '../controllers/authController.js';
 import { getWorkOSAuthorizationUrl, handleWorkOSCallback } from '../controllers/workosAuthController.js';
 import { protect, authorizeRoles } from '../middleware/authMiddleware.js';
-import { validate } from '../middleware/validate.js';
 import { authLimiter } from '../middleware/rateLimiter.js';
+import { validate } from '../middleware/validate.js';
 import { registerSchema, loginSchema, updateUserRoleSchema } from '../schemas/index.js';
 
-const router: Router = express.Router();
+const app = new Hono<AppContext>();
 
-// Public auth routes — with strict rate limiting & input validation
-router.post('/register', authLimiter, validate(registerSchema), registerUser);
-router.post('/login', authLimiter, validate(loginSchema), loginUser);
+app.post('/register', authLimiter, validate('json', registerSchema), registerUser);
+app.post('/login', authLimiter, validate('json', loginSchema), loginUser);
+app.get('/workos/url', getWorkOSAuthorizationUrl);
+app.post('/workos/callback', handleWorkOSCallback);
+app.patch('/users/:id/role', protect, authorizeRoles('admin'), validate('json', updateUserRoleSchema), updateUserRole);
 
-// WorkOS AuthKit routes
-router.get('/workos/url', authLimiter, getWorkOSAuthorizationUrl);
-router.post('/workos/callback', authLimiter, handleWorkOSCallback);
-
-// Admin-only: change a user's role (promote to admin, demote to customer, etc.)
-router.patch(
-  '/users/:id/role',
-  protect,
-  authorizeRoles('admin', 'super_admin'),
-  validate(updateUserRoleSchema),
-  updateUserRole
-);
-
-export default router;
+export default app;

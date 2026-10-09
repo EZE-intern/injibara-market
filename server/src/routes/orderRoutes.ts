@@ -1,15 +1,18 @@
-import { Router } from 'express';
+import { Hono } from 'hono';
+import type { AppContext } from '../types/context.js';
+import {
+  getMyOrders,
+  createOrder,
+  getOrderById,
+  getSellerOrders,
+} from '../controllers/orderController.js';
 import { protect } from '../middleware/authMiddleware.js';
-import { getMyOrders, getSellerOrders, createOrder, getOrderById } from '../controllers/orderController.js';
-import { validate } from '../middleware/validate.js';
-import { createOrderSchema } from '../schemas/index.js';
 
-const router = Router();
+const app = new Hono<AppContext>();
 
-router.get('/my-orders', protect, getMyOrders);
-router.get('/seller-orders', protect, getSellerOrders);
-router.get('/', protect, getMyOrders);
-router.post('/', protect, validate(createOrderSchema), createOrder);
-router.get('/:id', protect, getOrderById);
+app.get('/seller-orders', protect, getSellerOrders);
+app.get('/:id', protect, getOrderById);
+app.get('/', protect, getMyOrders);
+app.post('/', protect, createOrder);
 
-export default router;
+export default app;

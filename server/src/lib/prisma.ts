@@ -1,10 +1,14 @@
-import 'dotenv/config';
-import pkg from '@prisma/client';
-const { PrismaClient } = pkg;
-import { PrismaMariaDb } from '@prisma/adapter-mariadb';
+import { PrismaTiDBCloud } from '@tidbcloud/prisma-adapter';
+import { PrismaClient } from '@prisma/client';
 
-// Create the Prisma 7 MariaDB/MySQL adapter using the DATABASE_URL string
-const adapter = new PrismaMariaDb(process.env.DATABASE_URL as string);
+let cachedPrisma: PrismaClient | null = null;
+let cachedUrl: string | null = null;
 
-// Export the client
-export const prisma = new PrismaClient({ adapter });
+export function getPrisma(databaseUrl: string): PrismaClient {
+  if (!cachedPrisma || cachedUrl !== databaseUrl) {
+    const adapter = new PrismaTiDBCloud({ url: databaseUrl });
+    cachedPrisma = new PrismaClient({ adapter });
+    cachedUrl = databaseUrl;
+  }
+  return cachedPrisma;
+}

@@ -1,20 +1,21 @@
-import { Response } from 'express';
-import { AuthRequest } from '../middleware/authMiddleware.js';
-import { prisma } from '../lib/prisma.js';
+import type { Context } from 'hono';
+import type { AppContext } from '../types/context.js';
 
 // 1. Get logged in user's orders (with optional pagination)
-export const getMyOrders = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getMyOrders = async (c: Context<AppContext>) => {
   try {
-    const userId = Number(req.user?.id);
+    const prisma = c.get('prisma');
+    const user = c.get('user');
+    const userId = Number(user?.id);
+
     if (!userId) {
-      res.status(401).json({ message: 'User not authenticated' });
-      return;
+      return c.json({ message: 'User not authenticated' }, 401);
     }
 
     const where = { user_id: userId };
 
-    const page = Math.max(1, parseInt(String(req.query.page || '1'), 10) || 1);
-    const limitParam = req.query.limit ? parseInt(String(req.query.limit), 10) : undefined;
+    const page = Math.max(1, parseInt(String(c.req.query('page') || '1'), 10) || 1);
+    const limitParam = c.req.query('limit') ? parseInt(String(c.req.query('limit')), 10) : undefined;
     const limit = limitParam && Number.isInteger(limitParam) && limitParam > 0 ? Math.min(100, limitParam) : undefined;
 
     const [total, ordersList] = await Promise.all([
@@ -50,36 +51,38 @@ export const getMyOrders = async (req: AuthRequest, res: Response): Promise<void
     const totalPages = limit ? Math.ceil(total / limit) : 1;
     const hasMore = limit ? page < totalPages : false;
 
-    res.status(200).json({
-      success: true,
-      count: ordersList.length,
-      total,
-      page,
-      limit: limit || total,
-      totalPages,
-      hasMore,
-      data: ordersList,
-    });
+    return c.json(
+      {
+        success: true,
+        count: ordersList.length,
+        total,
+        page,
+        limit: limit || total,
+        totalPages,
+        hasMore,
+        data: ordersList,
+      },
+      200
+    );
   } catch (error) {
-    console.error('Error fetching user orders:', error);
-    res.status(500).json({ message: 'Failed to fetch user orders' });
+    console.error('Error fetching my orders:', error);
+    return c.json({ message: 'Failed to fetch orders' }, 500);
   }
 };
 
-// 2. Create a new order
-export const createOrder = async (req: AuthRequest, res: Response): Promise<void> => {
+// 2. Create order
+export const createOrder = async (c: Context<AppContext>) => {
   try {
-    const userId = Number(req.user?.id);
-    if (!userId) {
-      res.status(401).json({ message: 'User not authenticated' });
-      return;
-    }
-    // req.body is validated by validate(createOrderSchema):
-    // - items is a non-empty array with positive product_id and quantity >= 1
-    // - shipping_address, payment_method, and note are sanitized
-    const { items, shipping_address, payment_method, note } = req.body;
+    const prisma = c.get('prisma');
+    const user = c.get('user');
+    const userId = Number(user?.id);
 
-    // Calculate total amount and validate inventory
+    if (!userId) {
+      return c.json({ message: 'User not authenticated' }, 401);
+    }
+
+    const { items, shipping_address, payment_method, note } = await c.req.json();
+
     let totalAmount = 0;
     const orderItemsData: {
       product_id: number;
@@ -95,18 +98,19 @@ export const createOrder = async (req: AuthRequest, res: Response): Promise<void
       });
 
       if (!product || product.deleted_at || !product.is_active) {
-        res.status(404).json({ message: `Product with ID ${item.product_id} not found or unavailable` });
-        return;
+        return c.json({ message: `Product with ID ${item.product_id} not found or unavailable` }, 404);
       }
 
       const quantity = Number(item.quantity) || 1;
       const currentStock = product.stock ?? 0;
 
       if (currentStock < quantity) {
-        res.status(400).json({
-          message: `Insufficient stock for product "${product.name}". Available: ${currentStock}, requested: ${quantity}`,
-        });
-        return;
+        return c.json(
+          {
+            message: `Insufficient stock for product "${product.name}". Available: ${currentStock}, requested: ${quantity}`,
+          },
+          400
+        );
       }
 
       const itemPrice = Number(product.price);
@@ -153,7 +157,6 @@ export const createOrder = async (req: AuthRequest, res: Response): Promise<void
         },
       });
 
-      // Deduct product stock
       for (const p of productsToUpdate) {
         await tx.products.update({
           where: { id: p.id },
@@ -164,25 +167,30 @@ export const createOrder = async (req: AuthRequest, res: Response): Promise<void
       return created;
     });
 
-    res.status(201).json({
-      success: true,
-      message: 'Order created successfully',
-      data: newOrder,
-    });
+    return c.json(
+      {
+        success: true,
+        message: 'Order created successfully',
+        data: newOrder,
+      },
+      201
+    );
   } catch (error) {
     console.error('Error creating order:', error);
-    res.status(500).json({ message: 'Failed to create order' });
+    return c.json({ message: 'Failed to create order' }, 500);
   }
 };
 
 // 3. Get single order by ID
-export const getOrderById = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getOrderById = async (c: Context<AppContext>) => {
   try {
-    const userId = Number(req.user?.id);
-    const { id } = req.params;
+    const prisma = c.get('prisma');
+    const user = c.get('user');
+    const userId = Number(user?.id);
+    const id = Number(c.req.param('id'));
 
     const order = await prisma.orders.findUnique({
-      where: { id: Number(id) },
+      where: { id },
       include: {
         order_items: {
           include: {
@@ -194,33 +202,29 @@ export const getOrderById = async (req: AuthRequest, res: Response): Promise<voi
     });
 
     if (!order) {
-      res.status(404).json({ message: 'Order not found' });
-      return;
+      return c.json({ message: 'Order not found' }, 404);
     }
 
-    // Only allow owner or admin/seller to view
-    if (order.user_id !== userId && req.user?.role !== 'admin' && req.user?.role !== 'seller') {
-      res.status(403).json({ message: 'Access denied' });
-      return;
+    if (order.user_id !== userId && user?.role !== 'admin' && user?.role !== 'seller') {
+      return c.json({ message: 'Access denied' }, 403);
     }
 
-    res.status(200).json({
-      success: true,
-      data: order,
-    });
+    return c.json({ success: true, data: order }, 200);
   } catch (error) {
     console.error('Error fetching order detail:', error);
-    res.status(500).json({ message: 'Failed to fetch order detail' });
+    return c.json({ message: 'Failed to fetch order detail' }, 500);
   }
 };
 
 // 4. Get incoming orders for products belonging to the logged-in seller
-export const getSellerOrders = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getSellerOrders = async (c: Context<AppContext>) => {
   try {
-    const sellerId = Number(req.user?.id);
+    const prisma = c.get('prisma');
+    const user = c.get('user');
+    const sellerId = Number(user?.id);
+
     if (!sellerId) {
-      res.status(401).json({ message: 'User not authenticated' });
-      return;
+      return c.json({ message: 'User not authenticated' }, 401);
     }
 
     const orders = await prisma.orders.findMany({
@@ -270,14 +274,16 @@ export const getSellerOrders = async (req: AuthRequest, res: Response): Promise<
       orderBy: { created_at: 'desc' },
     });
 
-    res.status(200).json({
-      success: true,
-      count: orders.length,
-      data: orders,
-    });
+    return c.json(
+      {
+        success: true,
+        count: orders.length,
+        data: orders,
+      },
+      200
+    );
   } catch (error) {
     console.error('Error fetching seller orders:', error);
-    res.status(500).json({ message: 'Failed to fetch seller orders' });
+    return c.json({ message: 'Failed to fetch seller orders' }, 500);
   }
 };
-

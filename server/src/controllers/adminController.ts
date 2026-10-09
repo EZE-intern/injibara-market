@@ -1,7 +1,6 @@
-import { Response } from 'express';
-import bcrypt from 'bcryptjs';
-import { prisma } from '../lib/prisma.js';
-import { AuthRequest } from '../middleware/authMiddleware.js';
+import type { Context } from 'hono';
+import type { AppContext } from '../types/context.js';
+import { hashPassword } from '../utils/edgeCrypto.js';
 import { isBrokeredCategory } from '../utils/brokeredCategories.js';
 import { products_status } from '@prisma/client';
 import { cache } from '../utils/cache.js';
@@ -25,8 +24,9 @@ export const adminController = {
    * GET /api/admin/overview
    * Returns high-level metrics for active listings, pending deals, stores, and users.
    */
-  async getOverview(req: AuthRequest, res: Response): Promise<Response> {
+  async getOverview(c: Context<AppContext>) {
     try {
+      const prisma = c.get('prisma');
       const [totalActiveListings, totalStores, totalRegisteredUsers, pendingInquiries] =
         await Promise.all([
           prisma.products.count({
@@ -43,7 +43,7 @@ export const adminController = {
           }),
         ]);
 
-      return res.json({
+      return c.json({
         success: true,
         data: {
           totalActiveListings,
@@ -54,7 +54,7 @@ export const adminController = {
       });
     } catch (error) {
       console.error('Error fetching admin overview:', error);
-      return res.status(500).json({ success: false, message: 'Failed to load overview data.' });
+      return c.json({ success: false, message: 'Failed to load overview data.' }, 500);
     }
   },
 
@@ -63,8 +63,9 @@ export const adminController = {
    * Returns brokered deal requests deduplicated per (product_id, buyer_id).
    * Ensures admin replies do NOT create new inquiry rows.
    */
-  async getBrokerInquiries(req: AuthRequest, res: Response): Promise<Response> {
+  async getBrokerInquiries(c: Context<AppContext>) {
     try {
+      const prisma = c.get('prisma');
       // Find all messages linked to products in chronological order
       const messages = await prisma.messages.findMany({
         where: {
@@ -243,23 +244,24 @@ export const adminController = {
       // Sort by newest activity first
       formatted.sort((a, b) => new Date(b.latest_activity_at).getTime() - new Date(a.latest_activity_at).getTime());
 
-      return res.json({
+      return c.json({
         success: true,
         count: formatted.length,
         data: formatted,
       });
     } catch (error) {
       console.error('Error fetching broker inquiries:', error);
-      return res.status(500).json({ success: false, message: 'Failed to load inquiries.' });
+      return c.json({ success: false, message: 'Failed to load inquiries.' }, 500);
     }
   },
 
   /**
    * GET /api/admin/broker-inquiries/:id
    */
-  async getBrokerInquiryById(req: AuthRequest, res: Response): Promise<Response> {
+  async getBrokerInquiryById(c: Context<AppContext>) {
     try {
-      const id = Number(req.params.id);
+      const prisma = c.get('prisma');
+      const id = Number(c.req.param('id'));
       const item = await prisma.messages.findUnique({
         where: { id },
         include: {
@@ -276,7 +278,7 @@ export const adminController = {
       });
 
       if (!item) {
-        return res.status(404).json({ success: false, message: 'Inquiry not found.' });
+        return c.json({ success: false, message: 'Inquiry not found.' }, 404);
       }
 
       const senderIsAdmin = isUserAdmin(item.users_messages_sender_idTousers?.role);
@@ -312,7 +314,7 @@ export const adminController = {
         ? dbRecord.appointment_date.toISOString()
         : meta?.appointment_date ?? null;
 
-      return res.json({
+      return c.json({
         success: true,
         data: {
           id: item.id,
@@ -352,7 +354,7 @@ export const adminController = {
       });
     } catch (error) {
       console.error('Error fetching inquiry details:', error);
-      return res.status(500).json({ success: false, message: 'Failed to load inquiry details.' });
+      return c.json({ success: false, message: 'Failed to load inquiry details.' }, 500);
     }
   },
 
@@ -360,9 +362,10 @@ export const adminController = {
    * GET /api/admin/broker-inquiries/:id/messages
    * Returns all conversation messages between buyer and admin for this inquiry.
    */
-  async getInquiryMessages(req: AuthRequest, res: Response): Promise<Response> {
+  async getInquiryMessages(c: Context<AppContext>) {
     try {
-      const id = Number(req.params.id);
+      const prisma = c.get('prisma');
+      const id = Number(c.req.param('id'));
       const inquiry = await prisma.messages.findUnique({
         where: { id },
         include: {
@@ -376,12 +379,12 @@ export const adminController = {
       });
 
       if (!inquiry) {
-        return res.status(404).json({ success: false, message: 'Inquiry not found.' });
+        return c.json({ success: false, message: 'Inquiry not found.' }, 404);
       }
 
       const productId = inquiry.product_id;
       if (!productId) {
-        return res.status(400).json({ success: false, message: 'Inquiry has no associated product.' });
+        return c.json({ success: false, message: 'Inquiry has no associated product.' }, 400);
       }
 
       const senderIsAdmin = isUserAdmin(inquiry.users_messages_sender_idTousers?.role);
@@ -417,7 +420,7 @@ export const adminController = {
         data: { is_read: true },
       });
 
-      return res.json({
+      return c.json({
         success: true,
         count: messages.length,
         data: messages.map((m) => ({
@@ -434,7 +437,7 @@ export const adminController = {
       });
     } catch (error) {
       console.error('Error fetching inquiry messages:', error);
-      return res.status(500).json({ success: false, message: 'Failed to load conversation.' });
+      return c.json({ success: false, message: 'Failed to load conversation.' }, 500);
     }
   },
 
@@ -442,13 +445,16 @@ export const adminController = {
    * POST /api/admin/broker-inquiries/:id/messages
    * Send a reply from admin to the buyer for this brokered inquiry.
    */
-  async sendInquiryReply(req: AuthRequest, res: Response): Promise<Response> {
+  async sendInquiryReply(c: Context<AppContext>) {
     try {
-      const id = Number(req.params.id);
-      const { message_text } = req.body;
+      const prisma = c.get('prisma');
+      const user = c.get('user');
+      const id = Number(c.req.param('id'));
+      const body = await c.req.json().catch(() => ({}));
+      const { message_text } = body;
 
       if (!message_text || typeof message_text !== 'string' || !message_text.trim()) {
-        return res.status(400).json({ success: false, message: 'Message text is required.' });
+        return c.json({ success: false, message: 'Message text is required.' }, 400);
       }
 
       const inquiry = await prisma.messages.findUnique({
@@ -464,10 +470,10 @@ export const adminController = {
       });
 
       if (!inquiry || !inquiry.product_id) {
-        return res.status(404).json({ success: false, message: 'Inquiry not found.' });
+        return c.json({ success: false, message: 'Inquiry not found.' }, 404);
       }
 
-      const adminId = Number(req.user?.id);
+      const adminId = Number(user?.id);
       const senderIsAdmin = isUserAdmin(inquiry.users_messages_sender_idTousers?.role);
       const buyerId = senderIsAdmin ? inquiry.receiver_id : inquiry.sender_id;
 
@@ -522,7 +528,7 @@ export const adminController = {
           .catch((err) => console.error('Failed to persist broker status on reply:', err));
       }
 
-      return res.status(201).json({
+      return c.json({
         success: true,
         message: 'Reply sent successfully.',
         data: {
@@ -535,20 +541,22 @@ export const adminController = {
           created_at: createdMessage.created_at.toISOString(),
           sender: createdMessage.users_messages_sender_idTousers,
         },
-      });
+      }, 201);
     } catch (error) {
       console.error('Error sending inquiry reply:', error);
-      return res.status(500).json({ success: false, message: 'Failed to send reply.' });
+      return c.json({ success: false, message: 'Failed to send reply.' }, 500);
     }
   },
 
   /**
    * PUT /api/admin/broker-inquiries/:id/status
    */
-  async updateBrokerInquiryStatus(req: AuthRequest, res: Response): Promise<Response> {
+  async updateBrokerInquiryStatus(c: Context<AppContext>) {
     try {
-      const id = Number(req.params.id);
-      const { status } = req.body;
+      const prisma = c.get('prisma');
+      const id = Number(c.req.param('id'));
+      const body = await c.req.json().catch(() => ({}));
+      const { status } = body;
 
       const inquiry = await prisma.messages.findUnique({
         where: { id },
@@ -592,24 +600,26 @@ export const adminController = {
         data: { is_read: status === 'MEDIATED' || status === 'CLOSED' },
       });
 
-      return res.json({
+      return c.json({
         success: true,
         message: 'Inquiry status updated.',
         data: { id, status },
       });
     } catch (error) {
       console.error('Error updating inquiry status:', error);
-      return res.status(500).json({ success: false, message: 'Failed to update status.' });
+      return c.json({ success: false, message: 'Failed to update status.' }, 500);
     }
   },
 
   /**
    * PUT /api/admin/broker-inquiries/:id/appointment
    */
-  async setBrokerAppointment(req: AuthRequest, res: Response): Promise<Response> {
+  async setBrokerAppointment(c: Context<AppContext>) {
     try {
-      const id = Number(req.params.id);
-      const { appointment_date } = req.body;
+      const prisma = c.get('prisma');
+      const id = Number(c.req.param('id'));
+      const body = await c.req.json().catch(() => ({}));
+      const { appointment_date } = body;
 
       const inquiry = await prisma.messages.findUnique({
         where: { id },
@@ -650,14 +660,14 @@ export const adminController = {
           .catch((err) => console.error('Failed to persist broker appointment:', err));
       }
 
-      return res.json({
+      return c.json({
         success: true,
         message: 'Appointment scheduled.',
         data: { id, status: 'APPOINTMENT_SCHEDULED', appointment_date },
       });
     } catch (error) {
       console.error('Error scheduling appointment:', error);
-      return res.status(500).json({ success: false, message: 'Failed to schedule appointment.' });
+      return c.json({ success: false, message: 'Failed to schedule appointment.' }, 500);
     }
   },
 
@@ -665,10 +675,11 @@ export const adminController = {
    * GET /api/admin/products
    * Returns all products with sellers, categories, and image angles.
    */
-  async getProducts(req: AuthRequest, res: Response): Promise<Response> {
+  async getProducts(c: Context<AppContext>) {
     try {
-      const page = Math.max(1, Number(req.query.page) || 1);
-      const limit = Math.max(1, Math.min(100, Number(req.query.limit) || 10));
+      const prisma = c.get('prisma');
+      const page = Math.max(1, Number(c.req.query('page')) || 1);
+      const limit = Math.max(1, Math.min(100, Number(c.req.query('limit')) || 10));
       const skip = (page - 1) * limit;
 
       const where = { deleted_at: null };
@@ -730,7 +741,7 @@ export const adminController = {
         };
       });
 
-      return res.json({
+      return c.json({
         success: true,
         count: formatted.length,
         data: formatted,
@@ -743,17 +754,19 @@ export const adminController = {
       });
     } catch (error) {
       console.error('Error fetching admin products:', error);
-      return res.status(500).json({ success: false, message: 'Failed to load products.' });
+      return c.json({ success: false, message: 'Failed to load products.' }, 500);
     }
   },
 
   /**
    * PUT /api/admin/products/:id/status
    */
-  async updateProductStatus(req: AuthRequest, res: Response): Promise<Response> {
+  async updateProductStatus(c: Context<AppContext>) {
     try {
-      const id = Number(req.params.id);
-      const { status } = req.body;
+      const prisma = c.get('prisma');
+      const id = Number(c.req.param('id'));
+      const body = await c.req.json().catch(() => ({}));
+      const { status } = body;
 
       const normalizedStatus = (status || '').toLowerCase() as products_status;
       const isApproved = normalizedStatus === 'approved';
@@ -769,7 +782,7 @@ export const adminController = {
       cache.invalidatePrefix('products:');
       cache.delete(`product:${id}`);
 
-      return res.json({
+      return c.json({
         success: true,
         message: 'Product status updated.',
         data: {
@@ -780,17 +793,19 @@ export const adminController = {
       });
     } catch (error) {
       console.error('Error updating product status:', error);
-      return res.status(500).json({ success: false, message: 'Failed to update product status.' });
+      return c.json({ success: false, message: 'Failed to update product status.' }, 500);
     }
   },
 
   /**
    * PUT /api/admin/products/:id/reject
    */
-  async rejectProduct(req: AuthRequest, res: Response): Promise<Response> {
+  async rejectProduct(c: Context<AppContext>) {
     try {
-      const id = Number(req.params.id);
-      const { reason } = req.body;
+      const prisma = c.get('prisma');
+      const id = Number(c.req.param('id'));
+      const body = await c.req.json().catch(() => ({}));
+      const { reason } = body;
 
       const updated = await prisma.products.update({
         where: { id },
@@ -803,7 +818,7 @@ export const adminController = {
       cache.invalidatePrefix('products:');
       cache.delete(`product:${id}`);
 
-      return res.json({
+      return c.json({
         success: true,
         message: 'Product rejected.',
         data: {
@@ -815,16 +830,17 @@ export const adminController = {
       });
     } catch (error) {
       console.error('Error rejecting product:', error);
-      return res.status(500).json({ success: false, message: 'Failed to reject product.' });
+      return c.json({ success: false, message: 'Failed to reject product.' }, 500);
     }
   },
 
   /**
    * DELETE /api/admin/products/:id
    */
-  async deleteProduct(req: AuthRequest, res: Response): Promise<Response> {
+  async deleteProduct(c: Context<AppContext>) {
     try {
-      const id = Number(req.params.id);
+      const prisma = c.get('prisma');
+      const id = Number(c.req.param('id'));
 
       await prisma.products.update({
         where: { id },
@@ -834,23 +850,24 @@ export const adminController = {
         },
       });
 
-      return res.json({
+      return c.json({
         success: true,
         message: 'Product deleted successfully.',
       });
     } catch (error) {
       console.error('Error deleting product:', error);
-      return res.status(500).json({ success: false, message: 'Failed to delete product.' });
+      return c.json({ success: false, message: 'Failed to delete product.' }, 500);
     }
   },
 
   /**
    * GET /api/admin/stores
    */
-  async getStores(req: AuthRequest, res: Response): Promise<Response> {
+  async getStores(c: Context<AppContext>) {
     try {
-      const page = Math.max(1, Number(req.query.page) || 1);
-      const limit = Math.max(1, Math.min(100, Number(req.query.limit) || 10));
+      const prisma = c.get('prisma');
+      const page = Math.max(1, Number(c.req.query('page')) || 1);
+      const limit = Math.max(1, Math.min(100, Number(c.req.query('limit')) || 10));
       const skip = (page - 1) * limit;
 
       const where = { deleted_at: null };
@@ -888,7 +905,7 @@ export const adminController = {
         created_at: s.created_at.toISOString(),
       }));
 
-      return res.json({
+      return c.json({
         success: true,
         count: formatted.length,
         data: formatted,
@@ -901,17 +918,19 @@ export const adminController = {
       });
     } catch (error) {
       console.error('Error fetching admin stores:', error);
-      return res.status(500).json({ success: false, message: 'Failed to load stores.' });
+      return c.json({ success: false, message: 'Failed to load stores.' }, 500);
     }
   },
 
   /**
    * PUT /api/admin/stores/:id/status
    */
-  async updateStoreStatus(req: AuthRequest, res: Response): Promise<Response> {
+  async updateStoreStatus(c: Context<AppContext>) {
     try {
-      const id = Number(req.params.id);
-      const { status } = req.body;
+      const prisma = c.get('prisma');
+      const id = Number(c.req.param('id'));
+      const body = await c.req.json().catch(() => ({}));
+      const { status } = body;
       const isApproved = status === 'APPROVED';
 
       const updated = await prisma.stores.update({
@@ -919,7 +938,7 @@ export const adminController = {
         data: { is_active: isApproved },
       });
 
-      return res.json({
+      return c.json({
         success: true,
         message: 'Store status updated.',
         data: {
@@ -930,17 +949,18 @@ export const adminController = {
       });
     } catch (error) {
       console.error('Error updating store status:', error);
-      return res.status(500).json({ success: false, message: 'Failed to update store status.' });
+      return c.json({ success: false, message: 'Failed to update store status.' }, 500);
     }
   },
 
   /**
    * GET /api/admin/categories
    */
-  async getCategories(req: AuthRequest, res: Response): Promise<Response> {
+  async getCategories(c: Context<AppContext>) {
     try {
-      const page = Math.max(1, Number(req.query.page) || 1);
-      const limit = Math.max(1, Math.min(100, Number(req.query.limit) || 10));
+      const prisma = c.get('prisma');
+      const page = Math.max(1, Number(c.req.query('page')) || 1);
+      const limit = Math.max(1, Math.min(100, Number(c.req.query('limit')) || 10));
       const skip = (page - 1) * limit;
 
       const where = { deleted_at: null };
@@ -960,20 +980,20 @@ export const adminController = {
         prisma.categories.count({ where }),
       ]);
 
-      const formatted = categories.map((c) => ({
-        id: c.id,
-        name: c.name,
+      const formatted = categories.map((cat) => ({
+        id: cat.id,
+        name: cat.name,
         name_am: null,
-        slug: c.slug,
-        description: c.description,
+        slug: cat.slug,
+        description: cat.description,
         icon: null,
-        tier: isBrokeredCategory(c.name, c.slug) ? 'TIER_1' : 'TIER_2',
-        product_count: c._count?.products || 0,
+        tier: isBrokeredCategory(cat.name, cat.slug) ? 'TIER_1' : 'TIER_2',
+        product_count: cat._count?.products || 0,
         is_active: true,
-        created_at: c.created_at.toISOString(),
+        created_at: cat.created_at.toISOString(),
       }));
 
-      return res.json({
+      return c.json({
         success: true,
         count: formatted.length,
         data: formatted,
@@ -986,19 +1006,21 @@ export const adminController = {
       });
     } catch (error) {
       console.error('Error fetching admin categories:', error);
-      return res.status(500).json({ success: false, message: 'Failed to load categories.' });
+      return c.json({ success: false, message: 'Failed to load categories.' }, 500);
     }
   },
 
   /**
    * POST /api/admin/categories
    */
-  async createCategory(req: AuthRequest, res: Response): Promise<Response> {
+  async createCategory(c: Context<AppContext>) {
     try {
-      const { name, slug, description, tier } = req.body;
+      const prisma = c.get('prisma');
+      const body = await c.req.json().catch(() => ({}));
+      const { name, slug, description, tier } = body;
 
       if (!name || !slug) {
-        return res.status(400).json({ success: false, message: 'Name and slug are required.' });
+        return c.json({ success: false, message: 'Name and slug are required.' }, 400);
       }
 
       const newCategory = await prisma.categories.create({
@@ -1009,7 +1031,7 @@ export const adminController = {
         },
       });
 
-      return res.status(201).json({
+      return c.json({
         success: true,
         message: 'Category created successfully.',
         data: {
@@ -1024,20 +1046,22 @@ export const adminController = {
           is_active: true,
           created_at: newCategory.created_at.toISOString(),
         },
-      });
+      }, 201);
     } catch (error) {
       console.error('Error creating category:', error);
-      return res.status(500).json({ success: false, message: 'Failed to create category.' });
+      return c.json({ success: false, message: 'Failed to create category.' }, 500);
     }
   },
 
   /**
    * PUT /api/admin/categories/:id
    */
-  async updateCategory(req: AuthRequest, res: Response): Promise<Response> {
+  async updateCategory(c: Context<AppContext>) {
     try {
-      const id = Number(req.params.id);
-      const { name, slug, description, tier } = req.body;
+      const prisma = c.get('prisma');
+      const id = Number(c.req.param('id'));
+      const body = await c.req.json().catch(() => ({}));
+      const { name, slug, description, tier } = body;
 
       const updated = await prisma.categories.update({
         where: { id },
@@ -1048,7 +1072,7 @@ export const adminController = {
         },
       });
 
-      return res.json({
+      return c.json({
         success: true,
         message: 'Category updated.',
         data: {
@@ -1066,17 +1090,19 @@ export const adminController = {
       });
     } catch (error) {
       console.error('Error updating category:', error);
-      return res.status(500).json({ success: false, message: 'Failed to update category.' });
+      return c.json({ success: false, message: 'Failed to update category.' }, 500);
     }
   },
 
   /**
    * PUT /api/admin/categories/:id/status
    */
-  async updateCategoryStatus(req: AuthRequest, res: Response): Promise<Response> {
+  async updateCategoryStatus(c: Context<AppContext>) {
     try {
-      const id = Number(req.params.id);
-      const { is_active } = req.body;
+      const prisma = c.get('prisma');
+      const id = Number(c.req.param('id'));
+      const body = await c.req.json().catch(() => ({}));
+      const { is_active } = body;
 
       const updated = await prisma.categories.update({
         where: { id },
@@ -1085,7 +1111,7 @@ export const adminController = {
         },
       });
 
-      return res.json({
+      return c.json({
         success: true,
         message: 'Category status updated.',
         data: {
@@ -1096,17 +1122,18 @@ export const adminController = {
       });
     } catch (error) {
       console.error('Error updating category status:', error);
-      return res.status(500).json({ success: false, message: 'Failed to update category status.' });
+      return c.json({ success: false, message: 'Failed to update category status.' }, 500);
     }
   },
 
   /**
    * GET /api/admin/users
    */
-  async getUsers(req: AuthRequest, res: Response): Promise<Response> {
+  async getUsers(c: Context<AppContext>) {
     try {
-      const page = Math.max(1, Number(req.query.page) || 1);
-      const limit = Math.max(1, Math.min(100, Number(req.query.limit) || 10));
+      const prisma = c.get('prisma');
+      const page = Math.max(1, Number(c.req.query('page')) || 1);
+      const limit = Math.max(1, Math.min(100, Number(c.req.query('limit')) || 10));
       const skip = (page - 1) * limit;
 
       const [users, total] = await Promise.all([
@@ -1128,7 +1155,7 @@ export const adminController = {
         created_at: u.created_at.toISOString(),
       }));
 
-      return res.json({
+      return c.json({
         success: true,
         count: formatted.length,
         data: formatted,
@@ -1141,17 +1168,19 @@ export const adminController = {
       });
     } catch (error) {
       console.error('Error fetching admin users:', error);
-      return res.status(500).json({ success: false, message: 'Failed to load users.' });
+      return c.json({ success: false, message: 'Failed to load users.' }, 500);
     }
   },
 
   /**
    * PUT /api/admin/users/:id/status
    */
-  async updateUserStatus(req: AuthRequest, res: Response): Promise<Response> {
+  async updateUserStatus(c: Context<AppContext>) {
     try {
-      const id = Number(req.params.id);
-      const { status } = req.body;
+      const prisma = c.get('prisma');
+      const id = Number(c.req.param('id'));
+      const body = await c.req.json().catch(() => ({}));
+      const { status } = body;
 
       const isSuspended = status === 'SUSPENDED';
 
@@ -1162,7 +1191,7 @@ export const adminController = {
         },
       });
 
-      return res.json({
+      return c.json({
         success: true,
         message: 'User status updated.',
         data: {
@@ -1172,15 +1201,16 @@ export const adminController = {
       });
     } catch (error) {
       console.error('Error updating user status:', error);
-      return res.status(500).json({ success: false, message: 'Failed to update user status.' });
+      return c.json({ success: false, message: 'Failed to update user status.' }, 500);
     }
   },
 
   /**
    * GET /api/admin/management/admins
    */
-  async getStaffAdmins(req: AuthRequest, res: Response): Promise<Response> {
+  async getStaffAdmins(c: Context<AppContext>) {
     try {
+      const prisma = c.get('prisma');
       const admins = await prisma.users.findMany({
         where: { role: 'admin' },
         orderBy: { created_at: 'desc' },
@@ -1196,26 +1226,28 @@ export const adminController = {
         created_at: a.created_at.toISOString(),
       }));
 
-      return res.json({
+      return c.json({
         success: true,
         count: formatted.length,
         data: formatted,
       });
     } catch (error) {
       console.error('Error fetching staff admins:', error);
-      return res.status(500).json({ success: false, message: 'Failed to load administrators.' });
+      return c.json({ success: false, message: 'Failed to load administrators.' }, 500);
     }
   },
 
   /**
    * POST /api/admin/management/admins
    */
-  async createStaffAdmin(req: AuthRequest, res: Response): Promise<Response> {
+  async createStaffAdmin(c: Context<AppContext>) {
     try {
-      const { full_name, email, password, phone } = req.body;
+      const prisma = c.get('prisma');
+      const body = await c.req.json().catch(() => ({}));
+      const { full_name, email, password, phone, permissions } = body;
 
       if (!full_name || !email || !password) {
-        return res.status(400).json({ success: false, message: 'Name, email and password are required.' });
+        return c.json({ success: false, message: 'Name, email and password are required.' }, 400);
       }
 
       const existing = await prisma.users.findUnique({
@@ -1223,11 +1255,10 @@ export const adminController = {
       });
 
       if (existing) {
-        return res.status(400).json({ success: false, message: 'An account with this email already exists.' });
+        return c.json({ success: false, message: 'An account with this email already exists.' }, 400);
       }
 
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(password, salt);
+      const hashedPassword = await hashPassword(password);
 
       const created = await prisma.users.create({
         data: {
@@ -1240,7 +1271,6 @@ export const adminController = {
       });
 
       // Store permissions if provided
-      const { permissions } = req.body;
       let savedPermissions: string[] = [];
       if (Array.isArray(permissions) && permissions.length > 0) {
         const validPermissions = [
@@ -1260,7 +1290,7 @@ export const adminController = {
         }
       }
 
-      return res.status(201).json({
+      return c.json({
         success: true,
         message: 'Administrator created successfully.',
         data: {
@@ -1273,20 +1303,22 @@ export const adminController = {
           permissions: savedPermissions,
           created_at: created.created_at.toISOString(),
         },
-      });
+      }, 201);
     } catch (error) {
       console.error('Error creating administrator:', error);
-      return res.status(500).json({ success: false, message: 'Failed to create administrator.' });
+      return c.json({ success: false, message: 'Failed to create administrator.' }, 500);
     }
   },
 
   /**
    * PUT /api/admin/management/admins/:id/status
    */
-  async updateStaffAdminStatus(req: AuthRequest, res: Response): Promise<Response> {
+  async updateStaffAdminStatus(c: Context<AppContext>) {
     try {
-      const id = Number(req.params.id);
-      const { status } = req.body;
+      const prisma = c.get('prisma');
+      const id = Number(c.req.param('id'));
+      const body = await c.req.json().catch(() => ({}));
+      const { status } = body;
 
       const isSuspended = status === 'SUSPENDED';
 
@@ -1297,7 +1329,7 @@ export const adminController = {
         },
       });
 
-      return res.json({
+      return c.json({
         success: true,
         message: 'Admin status updated.',
         data: {
@@ -1307,7 +1339,7 @@ export const adminController = {
       });
     } catch (error) {
       console.error('Error updating admin status:', error);
-      return res.status(500).json({ success: false, message: 'Failed to update admin status.' });
+      return c.json({ success: false, message: 'Failed to update admin status.' }, 500);
     }
   },
 
@@ -1315,17 +1347,18 @@ export const adminController = {
    * GET /api/admin/permissions/:userId
    * Get permissions for a specific admin user.
    */
-  async getAdminPermissions(req: AuthRequest, res: Response): Promise<Response> {
+  async getAdminPermissions(c: Context<AppContext>) {
     try {
-      const userId = Number(req.params.userId);
+      const prisma = c.get('prisma');
+      const userId = Number(c.req.param('userId'));
       const records = await prisma.admin_permissions.findMany({
         where: { user_id: userId },
       });
       const permissions = records.map((r) => r.permission);
-      return res.json({ success: true, permissions });
+      return c.json({ success: true, permissions });
     } catch (error) {
       console.error('Error fetching admin permissions:', error);
-      return res.status(500).json({ success: false, message: 'Failed to load permissions.' });
+      return c.json({ success: false, message: 'Failed to load permissions.' }, 500);
     }
   },
 
@@ -1333,13 +1366,15 @@ export const adminController = {
    * PUT /api/admin/permissions/:userId
    * Set permissions for an admin user. Replaces all existing permissions.
    */
-  async setAdminPermissions(req: AuthRequest, res: Response): Promise<Response> {
+  async setAdminPermissions(c: Context<AppContext>) {
     try {
-      const userId = Number(req.params.userId);
-      const { permissions } = req.body;
+      const prisma = c.get('prisma');
+      const userId = Number(c.req.param('userId'));
+      const body = await c.req.json().catch(() => ({}));
+      const { permissions } = body;
 
       if (!Array.isArray(permissions)) {
-        return res.status(400).json({ success: false, message: 'Permissions must be an array.' });
+        return c.json({ success: false, message: 'Permissions must be an array.' }, 400);
       }
 
       const validPermissions = [
@@ -1359,10 +1394,10 @@ export const adminController = {
         ),
       ]);
 
-      return res.json({ success: true, permissions: filtered });
+      return c.json({ success: true, permissions: filtered });
     } catch (error) {
       console.error('Error setting admin permissions:', error);
-      return res.status(500).json({ success: false, message: 'Failed to update permissions.' });
+      return c.json({ success: false, message: 'Failed to update permissions.' }, 500);
     }
   },
 
@@ -1370,9 +1405,11 @@ export const adminController = {
    * GET /api/admin/my-permissions
    * Get the logged-in admin's own permissions.
    */
-  async getMyPermissions(req: AuthRequest, res: Response): Promise<Response> {
+  async getMyPermissions(c: Context<AppContext>) {
     try {
-      const userId = Number(req.user?.id);
+      const prisma = c.get('prisma');
+      const user = c.get('user');
+      const userId = Number(user?.id);
       const records = await prisma.admin_permissions.findMany({
         where: { user_id: userId },
       });
@@ -1380,11 +1417,12 @@ export const adminController = {
       // If no permissions are set, it means the admin has NO explicit permissions stored.
       // We return an empty array; the frontend treats empty as 'no restrictions' for backward compatibility
       // with existing admins who were created before the permissions system.
-      return res.json({ success: true, permissions });
+      return c.json({ success: true, permissions });
     } catch (error) {
       console.error('Error fetching own permissions:', error);
-      return res.status(500).json({ success: false, message: 'Failed to load permissions.' });
+      return c.json({ success: false, message: 'Failed to load permissions.' }, 500);
     }
   },
 };
 
+export default adminController;

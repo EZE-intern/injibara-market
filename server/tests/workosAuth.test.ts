@@ -1,59 +1,70 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { Request, Response } from 'express';
+import { Hono } from 'hono';
+import type { AppContext } from '../src/types/context.js';
 import { getWorkOSAuthorizationUrl, handleWorkOSCallback } from '../src/controllers/workosAuthController.js';
-import { prisma } from '../src/lib/prisma.js';
-import { workos } from '../src/lib/workos.js';
-import jwt from 'jsonwebtoken';
-import { JWT_SECRET } from '../src/utils/generateToken.js';
-
-// Mock express response helper
-const createMockRes = () => {
-  const res: Partial<Response> = {};
-  res.statusCode = 200;
-  res.status = vi.fn().mockImplementation((code: number) => {
-    res.statusCode = code;
-    return res;
-  });
-  res.json = vi.fn().mockImplementation((data: unknown) => {
-    (res as { _data?: unknown })._data = data;
-    return res;
-  });
-  return res as Response & { statusCode: number; _data?: unknown };
-};
+import * as workosLib from '../src/lib/workos.js';
+import { verifyToken } from '../src/utils/generateToken.js';
 
 describe('WorkOS Authentication Controller', () => {
+  let mockPrisma: any;
+  let mockWorkOS: any;
+  let app: Hono<AppContext>;
+
   beforeEach(() => {
     vi.clearAllMocks();
+
+    mockWorkOS = {
+      userManagement: {
+        getAuthorizationUrl: vi.fn(),
+        authenticateWithCode: vi.fn(),
+      },
+    };
+
+    vi.spyOn(workosLib, 'getWorkOS').mockReturnValue({
+      workos: mockWorkOS as any,
+      workosClientId: 'test_client_id',
+      defaultRedirectUri: 'https://injibara-market.vercel.app/auth/callback',
+      isWorkOSConfigured: () => true,
+    });
+
+    mockPrisma = {
+      users: {
+        findUnique: vi.fn(),
+        update: vi.fn(),
+        create: vi.fn(),
+      },
+    };
+
+    app = new Hono<AppContext>();
+    app.use('*', async (c, next) => {
+      c.set('prisma', mockPrisma);
+      await next();
+    });
+    app.get('/workos/url', getWorkOSAuthorizationUrl);
+    app.post('/workos/callback', handleWorkOSCallback);
   });
 
   describe('getWorkOSAuthorizationUrl', () => {
     it('should generate an AuthKit authorization URL with default redirect', async () => {
       const mockUrl = 'https://auth.workos.com/authorize?client_id=test&provider=authkit';
-      vi.spyOn(workos.userManagement, 'getAuthorizationUrl').mockReturnValue(mockUrl);
+      mockWorkOS.userManagement.getAuthorizationUrl.mockReturnValue(mockUrl);
 
-      const req = { query: {} } as unknown as Request;
-      const res = createMockRes();
+      const res = await app.request('/workos/url');
+      const body = (await res.json()) as any;
 
-      await getWorkOSAuthorizationUrl(req, res);
-
-      expect(res.statusCode).toBe(200);
-      expect((res as { _data?: { success: boolean; url: string } })._data).toEqual({
+      expect(res.status).toBe(200);
+      expect(body).toEqual({
         success: true,
         url: mockUrl,
       });
     });
 
     it('should accept custom redirectUri parameter', async () => {
-      const spy = vi.spyOn(workos.userManagement, 'getAuthorizationUrl').mockReturnValue('https://auth.workos.com/url');
+      mockWorkOS.userManagement.getAuthorizationUrl.mockReturnValue('https://auth.workos.com/url');
 
-      const req = {
-        query: { redirectUri: 'http://localhost:5173/auth/callback' },
-      } as unknown as Request;
-      const res = createMockRes();
+      const res = await app.request('/workos/url?redirectUri=http://localhost:5173/auth/callback');
 
-      await getWorkOSAuthorizationUrl(req, res);
-
-      expect(spy).toHaveBeenCalledWith(
+      expect(mockWorkOS.userManagement.getAuthorizationUrl).toHaveBeenCalledWith(
         expect.objectContaining({
           redirectUri: 'http://localhost:5173/auth/callback',
         })
@@ -63,13 +74,15 @@ describe('WorkOS Authentication Controller', () => {
 
   describe('handleWorkOSCallback', () => {
     it('should reject missing code with 400', async () => {
-      const req = { body: {} } as Request;
-      const res = createMockRes();
+      const res = await app.request('/workos/callback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
 
-      await handleWorkOSCallback(req, res);
-
-      expect(res.statusCode).toBe(400);
-      expect((res as { _data?: { message: string } })._data?.message).toContain('Authorization code is required');
+      const body = (await res.json()) as any;
+      expect(res.status).toBe(400);
+      expect(body.message).toContain('Authorization code is required');
     });
 
     it('should link an existing user by email without breaking their ID or data', async () => {
@@ -80,12 +93,12 @@ describe('WorkOS Authentication Controller', () => {
         lastName: 'Bikila',
       };
 
-      vi.spyOn(workos.userManagement, 'authenticateWithCode').mockResolvedValue({
+      mockWorkOS.userManagement.authenticateWithCode.mockResolvedValue({
         user: mockWorkOSUser as never,
-      } as never);
+      });
 
       // 1. Not linked by workos_user_id yet
-      vi.spyOn(prisma.users, 'findUnique')
+      mockPrisma.users.findUnique
         .mockResolvedValueOnce(null) // by workos_user_id
         .mockResolvedValueOnce({
           id: 55,
@@ -93,29 +106,30 @@ describe('WorkOS Authentication Controller', () => {
           email: 'seller@injibaramarket.com',
           full_name: 'Abebe Bikila',
           role: 'seller',
-        } as never); // by email
+        }); // by email
 
-      vi.spyOn(prisma.users, 'update').mockResolvedValue({
+      mockPrisma.users.update.mockResolvedValue({
         id: 55,
         workos_user_id: 'workos_user_abc123',
         email: 'seller@injibaramarket.com',
         full_name: 'Abebe Bikila',
         role: 'seller',
-      } as never);
+      });
 
-      const req = { body: { code: 'valid_auth_code_123' } } as Request;
-      const res = createMockRes();
+      const res = await app.request('/workos/callback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: 'valid_auth_code_123' }),
+      });
 
-      await handleWorkOSCallback(req, res);
-
-      expect(res.statusCode).toBe(200);
-      const data = (res as { _data?: { success: boolean; user: { id: number; role: string }; token: string } })._data;
+      const data = (await res.json()) as any;
+      expect(res.status).toBe(200);
       expect(data?.success).toBe(true);
       expect(data?.user.id).toBe(55); // Preserves existing integer user ID
       expect(data?.user.role).toBe('seller'); // Preserves existing seller role
 
       // Verify JWT decoded
-      const decoded = jwt.verify(data!.token, JWT_SECRET) as { id: number; role: string };
+      const decoded = await verifyToken(data!.token, 'MIKAEL_ARTETA_ARSENAL');
       expect(decoded.id).toBe(55);
       expect(decoded.role).toBe('seller');
     });
@@ -128,30 +142,31 @@ describe('WorkOS Authentication Controller', () => {
         lastName: 'Kebede',
       };
 
-      vi.spyOn(workos.userManagement, 'authenticateWithCode').mockResolvedValue({
+      mockWorkOS.userManagement.authenticateWithCode.mockResolvedValue({
         user: mockWorkOSUser as never,
-      } as never);
+      });
 
       // Neither workos_user_id nor email exists
-      vi.spyOn(prisma.users, 'findUnique')
+      mockPrisma.users.findUnique
         .mockResolvedValueOnce(null)
         .mockResolvedValueOnce(null);
 
-      vi.spyOn(prisma.users, 'create').mockResolvedValue({
+      mockPrisma.users.create.mockResolvedValue({
         id: 101,
         workos_user_id: 'workos_user_new999',
         email: 'newbuyer@gmail.com',
         full_name: 'Chala Kebede',
         role: 'customer',
-      } as never);
+      });
 
-      const req = { body: { code: 'new_user_code' } } as Request;
-      const res = createMockRes();
+      const res = await app.request('/workos/callback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: 'new_user_code' }),
+      });
 
-      await handleWorkOSCallback(req, res);
-
-      expect(res.statusCode).toBe(200);
-      const data = (res as { _data?: { user: { id: number; role: string; full_name: string } } })._data;
+      const data = (await res.json()) as any;
+      expect(res.status).toBe(200);
       expect(data?.user.id).toBe(101);
       expect(data?.user.role).toBe('customer');
       expect(data?.user.full_name).toBe('Chala Kebede');

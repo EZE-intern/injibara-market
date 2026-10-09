@@ -1,12 +1,5 @@
-import { v2 as cloudinary } from 'cloudinary';
-import streamifier from 'streamifier';
-
-// Configure Cloudinary from .env variables
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+import crypto from 'node:crypto';
+import type { Env } from '../types/env.js';
 
 export interface CloudinaryUploadResult {
   secure_url: string;
@@ -18,52 +11,84 @@ export interface CloudinaryUploadResult {
 }
 
 /**
- * Uploads a file buffer directly to Cloudinary using upload_stream.
- * No temp files are written to disk.
- *
- * @param buffer  - The file buffer from Multer's memoryStorage
- * @param folder  - Cloudinary folder to organize assets (e.g. 'stores', 'products')
- * @returns       - The Cloudinary upload result with secure_url
+ * Uploads a file buffer, Blob, or File directly to Cloudinary using the REST API.
+ * Edge-compatible: uses fetch() and node:crypto without legacy Node streams.
  */
-export const uploadToCloudinary = (
-  buffer: Buffer,
-  folder: string
-): Promise<CloudinaryUploadResult> => {
-  return new Promise((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream(
-      {
-        folder: `injibara-market/${folder}`,
-        resource_type: 'image',
-        transformation: [
-          { quality: 'auto', fetch_format: 'auto' }, // auto WebP/AVIF + quality
-        ],
-      },
-      (error, result) => {
-        if (error || !result) {
-          return reject(error || new Error('Cloudinary upload returned no result'));
-        }
-        resolve({
-          secure_url: result.secure_url,
-          public_id: result.public_id,
-          width: result.width,
-          height: result.height,
-          format: result.format,
-          bytes: result.bytes,
-        });
-      }
-    );
+export async function uploadToCloudinary(
+  file: File | Blob | ArrayBuffer | Uint8Array,
+  folder: string,
+  env: Env
+): Promise<CloudinaryUploadResult> {
+  const cloudName = env.CLOUDINARY_CLOUD_NAME || process.env.CLOUDINARY_CLOUD_NAME;
+  const apiKey = env.CLOUDINARY_API_KEY || process.env.CLOUDINARY_API_KEY;
+  const apiSecret = env.CLOUDINARY_API_SECRET || process.env.CLOUDINARY_API_SECRET;
 
-    // Pipe the buffer into the Cloudinary upload stream
-    streamifier.createReadStream(buffer).pipe(uploadStream);
+  if (!cloudName || !apiKey || !apiSecret) {
+    throw new Error('Cloudinary credentials are not configured in environment variables.');
+  }
+
+  const timestamp = Math.round(Date.now() / 1000);
+  const targetFolder = `injibara-market/${folder}`;
+  const paramsToSign = `folder=${targetFolder}&timestamp=${timestamp}`;
+  const signature = crypto
+    .createHmac('sha1', apiSecret)
+    .update(paramsToSign)
+    .digest('hex');
+
+  const formData = new FormData();
+  if (file instanceof File || file instanceof Blob) {
+    formData.append('file', file);
+  } else {
+    // ArrayBuffer / Uint8Array
+    formData.append('file', new Blob([file as any]));
+  }
+
+  formData.append('timestamp', String(timestamp));
+  formData.append('signature', signature);
+  formData.append('api_key', apiKey);
+  formData.append('folder', targetFolder);
+
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+    method: 'POST',
+    body: formData,
   });
-};
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(`Cloudinary upload failed: ${errorText}`);
+  }
+
+  const data = (await res.json()) as CloudinaryUploadResult;
+  return data;
+}
 
 /**
  * Deletes an image from Cloudinary by its public_id.
- * Useful when updating a store logo or product image.
  */
-export const deleteFromCloudinary = async (publicId: string): Promise<void> => {
-  await cloudinary.uploader.destroy(publicId);
-};
+export async function deleteFromCloudinary(publicId: string, env: Env): Promise<void> {
+  const cloudName = env.CLOUDINARY_CLOUD_NAME || process.env.CLOUDINARY_CLOUD_NAME;
+  const apiKey = env.CLOUDINARY_API_KEY || process.env.CLOUDINARY_API_KEY;
+  const apiSecret = env.CLOUDINARY_API_SECRET || process.env.CLOUDINARY_API_SECRET;
 
-export default cloudinary;
+  if (!cloudName || !apiKey || !apiSecret) {
+    return;
+  }
+
+  const timestamp = Math.round(Date.now() / 1000);
+  const paramsToSign = `public_id=${publicId}&timestamp=${timestamp}`;
+  const signature = crypto
+    .createHmac('sha1', apiSecret)
+    .update(paramsToSign)
+    .digest('hex');
+
+  const formData = new FormData();
+  formData.append('public_id', publicId);
+  formData.append('timestamp', String(timestamp));
+  formData.append('signature', signature);
+  formData.append('api_key', apiKey);
+
+  await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/destroy`, {
+    method: 'POST',
+    body: formData,
+  });
+}

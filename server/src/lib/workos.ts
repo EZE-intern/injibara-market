@@ -1,14 +1,26 @@
 import { WorkOS } from '@workos-inc/node';
+import type { Env } from '../types/env.js';
 
-const apiKey = process.env.WORKOS_API_KEY || '';
-export const workosClientId = process.env.WORKOS_CLIENT_ID || '';
-export const defaultRedirectUri =
-  process.env.WORKOS_REDIRECT_URI || 'https://injibara-market.vercel.app/auth/callback';
+export function getWorkOS(env?: Env) {
+  const apiKey = env?.WORKOS_API_KEY || process.env.WORKOS_API_KEY || '';
+  const workosClientId = env?.WORKOS_CLIENT_ID || process.env.WORKOS_CLIENT_ID || '';
+  const defaultRedirectUri =
+    env?.WORKOS_REDIRECT_URI ||
+    process.env.WORKOS_REDIRECT_URI ||
+    'https://injibara-market.vercel.app/auth/callback';
 
-export const workos = new WorkOS(apiKey, {
-  clientId: workosClientId,
-});
+  const workos = new WorkOS(apiKey, {
+    clientId: workosClientId,
+  });
 
-export const isWorkOSConfigured = (): boolean => {
-  return Boolean(apiKey && workosClientId);
-};
+  const isWorkOSConfigured = (): boolean => {
+    return Boolean(apiKey && workosClientId);
+  };
+
+  return {
+    workos,
+    workosClientId,
+    defaultRedirectUri,
+    isWorkOSConfigured,
+  };
+}

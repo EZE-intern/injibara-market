@@ -1,45 +1,61 @@
-import { Response } from 'express';
-import { AuthRequest } from '../middleware/authMiddleware.js';
-import { prisma } from '../lib/prisma.js';
+import type { Context } from 'hono';
+import type { AppContext } from '../types/context.js';
 import { uploadToCloudinary } from '../lib/cloudinary.js';
 
 // @route   POST /api/stores
 // @desc    Create a new store profile with optional logo upload
 // @access  Private (Seller only)
-export const createStore = async (req: AuthRequest, res: Response): Promise<Response | void> => {
+export const createStore = async (c: Context<AppContext>) => {
   try {
-    const sellerId = req.user?.id;
+    const prisma = c.get('prisma');
+    const user = c.get('user');
+    const sellerId = user?.id;
+
     if (!sellerId) {
-      return res.status(401).json({ message: 'ያልተፈቀደ መዳረሻ' });
+      return c.json({ message: 'ያልተፈቀደ መዳረሻ' }, 401);
     }
 
-    const { store_name, description, phone, address } = req.body;
-
-    if (!store_name) {
-      return res.status(400).json({ message: 'የመደብር ስም ያስፈልጋል' });
-    }
-
-    // Generate slug from store name
-    const slug = store_name
-      .toLowerCase()
-      .replace(/[^a-z0-9\u1200-\u137F]+/g, '-') // support Amharic chars in slug
-      .replace(/^-|-$/g, '');
-
-    // Check for duplicate slug
-    const existingStore = await prisma.stores.findUnique({ where: { slug } });
-    if (existingStore) {
-      return res.status(400).json({ message: 'ይህ የመደብር ስም ቀድሞ ተይዟል' });
-    }
-
-    // Handle logo upload if a file was provided
+    let store_name = '';
+    let description: string | null = null;
+    let phone: string | null = null;
+    let address: string | null = null;
     let logoUrl: string | null = null;
 
-    if (req.file) {
-      const result = await uploadToCloudinary(req.file.buffer, 'stores');
-      logoUrl = result.secure_url;
+    const contentType = c.req.header('content-type') || '';
+    if (contentType.includes('multipart/form-data')) {
+      const body = await c.req.parseBody();
+      store_name = String(body['store_name'] || '').trim();
+      description = body['description'] ? String(body['description']).trim() : null;
+      phone = body['phone'] ? String(body['phone']).trim() : null;
+      address = body['address'] ? String(body['address']).trim() : null;
+
+      if (body['logo'] instanceof File) {
+        const result = await uploadToCloudinary(body['logo'], 'stores', c.env);
+        logoUrl = result.secure_url;
+      }
+    } else {
+      const json = await c.req.json();
+      store_name = String(json.store_name || '').trim();
+      description = json.description ? String(json.description).trim() : null;
+      phone = json.phone ? String(json.phone).trim() : null;
+      address = json.address ? String(json.address).trim() : null;
+      logoUrl = json.logo || null;
     }
 
-    // Save to database
+    if (!store_name) {
+      return c.json({ message: 'የመደብር ስም ያስፈልጋል' }, 400);
+    }
+
+    const slug = store_name
+      .toLowerCase()
+      .replace(/[^a-z0-9\u1200-\u137F]+/g, '-')
+      .replace(/^-|-$/g, '');
+
+    const existingStore = await prisma.stores.findUnique({ where: { slug } });
+    if (existingStore) {
+      return c.json({ message: 'ይህ የመደብር ስም ቀድሞ ተይዟል' }, 400);
+    }
+
     const store = await prisma.stores.create({
       data: {
         seller_id: Number(sellerId),
@@ -52,52 +68,59 @@ export const createStore = async (req: AuthRequest, res: Response): Promise<Resp
       },
     });
 
-    return res.status(201).json({
-      message: 'መደብር በተሳካ ሁኔታ ተፈጥሯል',
-      data: store,
-    });
+    return c.json(
+      {
+        message: 'መደብር በተሳካ ሁኔታ ተፈጥሯል',
+        data: store,
+      },
+      201
+    );
   } catch (error: unknown) {
     console.error('Error in createStore:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    return res.status(500).json({ message: 'የአገልጋይ ስህተት አጋጥሟል', error: errorMessage });
+    return c.json({ message: 'የአገልጋይ ስህተት አጋጥሟል', error: errorMessage }, 500);
   }
 };
 
 // @route   GET /api/stores
 // @desc    Get all active stores
 // @access  Public
-export const getStores = async (_req: AuthRequest, res: Response): Promise<Response | void> => {
+export const getStores = async (c: Context<AppContext>) => {
   try {
+    const prisma = c.get('prisma');
     const stores = await prisma.stores.findMany({
       where: { deleted_at: null, is_active: true },
       orderBy: { created_at: 'desc' },
     });
 
-    return res.json({ success: true, count: stores.length, data: stores });
+    return c.json({ success: true, count: stores.length, data: stores }, 200);
   } catch (error: unknown) {
     console.error('Error in getStores:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    return res.status(500).json({ message: 'የአገልጋይ ስህተት አጋጥሟል', error: errorMessage });
+    return c.json({ message: 'የአገልጋይ ስህተት አጋጥሟል', error: errorMessage }, 500);
   }
 };
 
 // @route   GET /api/stores/:id
 // @desc    Get a store by ID
 // @access  Public
-export const getStoreById = async (req: AuthRequest, res: Response): Promise<Response | void> => {
+export const getStoreById = async (c: Context<AppContext>) => {
   try {
+    const prisma = c.get('prisma');
+    const id = Number(c.req.param('id'));
+
     const store = await prisma.stores.findFirst({
-      where: { id: Number(req.params.id), deleted_at: null },
+      where: { id, deleted_at: null },
     });
 
     if (!store) {
-      return res.status(404).json({ message: 'መደብር አልተገኘም' });
+      return c.json({ message: 'መደብር አልተገኘም' }, 404);
     }
 
-    return res.json({ success: true, data: store });
+    return c.json({ success: true, data: store }, 200);
   } catch (error: unknown) {
     console.error('Error in getStoreById:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    return res.status(500).json({ message: 'የአገልጋይ ስህተት አጋጥሟል', error: errorMessage });
+    return c.json({ message: 'የአገልጋይ ስህተት አጋጥሟል', error: errorMessage }, 500);
   }
 };

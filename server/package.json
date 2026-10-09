@@ -2,21 +2,24 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/index.js",
+  "main": "dist/worker.js",
   "scripts": {
     "test": "vitest run",
     "lint": "eslint",
-    "start": "node dist/index.js",
     "build": "prisma generate && tsc",
-    "dev": "nodemon --watch src -e ts --exec \"npx tsc && node dist/index.js\""
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "@hono/zod-validator": "^0.9.1",
     "@prisma/adapter-mariadb": "^7.9.1",
     "@prisma/client": "^7.9.1",
+    "@tidbcloud/prisma-adapter": "^6.17.0",
+    "@tidbcloud/serverless": "^0.3.0",
     "@workos-inc/node": "^10.14.0",
     "axios": "^1.19.0",
     "bcryptjs": "^3.0.3",
@@ -25,6 +28,8 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-rate-limit": "^8.7.0",
+    "hono": "^4.13.13",
+    "jose": "^6.2.12",
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.2.0",
     "mysql2": "^3.23.2",
@@ -32,6 +37,7 @@
     "zod": "^4.5.4"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261009.1",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
@@ -43,6 +49,7 @@
     "nodemon": "^3.1.14",
     "prisma": "^7.9.1",
     "supertest": "^7.2.2",
-    "vitest": "^4.1.11"
+    "vitest": "^4.1.11",
+    "wrangler": "^4.149.0"
   }
 }

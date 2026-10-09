@@ -1,26 +1,30 @@
-import express from 'express';
+import { Hono } from 'hono';
+import type { AppContext } from '../types/context.js';
+import {
+  sendMessage,
+  getConversationsList,
+  getConversation,
+  getConversationByProduct,
+  getUnreadBadgeCount,
+} from '../controllers/messageController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { creationLimiter } from '../middleware/rateLimiter.js';
-import messageController from '../controllers/messageController.js';
 
-const router = express.Router();
-
-// All message routes require authentication
-router.use(protect);
+const app = new Hono<AppContext>();
 
 // Inbox — list all conversations for the authenticated user
-router.get('/inbox', messageController.getConversationsList);
+app.get('/inbox', protect, getConversationsList);
 
 // Unread count — for notification badges
-router.get('/unread-count', messageController.getUnreadBadgeCount);
+app.get('/unread-count', protect, getUnreadBadgeCount);
 
 // Buyer chat — get messages for a specific product
-router.get('/chat/:productId', messageController.getConversationByProduct);
+app.get('/chat/:productId', protect, getConversationByProduct);
 
 // Thread — get full conversation with a specific contact
-router.get('/thread/:contactId', messageController.getConversation);
+app.get('/thread/:contactId', protect, getConversation);
 
 // Send message — rate-limited to prevent spam
-router.post('/send', creationLimiter, messageController.sendMessage);
+app.post('/send', protect, creationLimiter, sendMessage);
 
-export default router;
+export default app;

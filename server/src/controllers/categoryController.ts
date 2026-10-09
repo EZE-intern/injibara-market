@@ -1,28 +1,27 @@
-import { Request, Response } from 'express';
-import { prisma } from '../lib/prisma.js';
+import type { Context } from 'hono';
+import type { AppContext } from '../types/context.js';
 import { cache } from '../utils/cache.js';
 
 // create new category
 // @route   POST /api/categories
-export const createCategory = async (req: Request, res: Response): Promise<Response | void> => {
+export const createCategory = async (c: Context<AppContext>) => {
   try {
-    const body = req.body || {};
+    const prisma = c.get('prisma');
+    const body = (await c.req.json().catch(() => ({}))) || {};
     const { name, description, image } = body;
 
     if (!name) {
-      return res.status(400).json({ message: 'እባክዎ የምድብ ስም (name) ያስገቡ' });
+      return c.json({ message: 'እባክዎ የምድብ ስም (name) ያስገቡ' }, 400);
     }
 
-    // Slug ማዘጋጀት (ለምሳሌ: "Men Shoes" -> "men-shoes")
     const slug = name.toLowerCase().trim().replace(/\s+/g, '-');
 
-    // Slug ከዚህ ቀደም መኖሩን ማረጋገጥ
     const existingCategory = await prisma.categories.findUnique({
       where: { slug },
     });
 
     if (existingCategory) {
-      return res.status(400).json({ message: 'በዚህ ስም የተመዘገበ ምድብ ከዚህ ቀደም አለ' });
+      return c.json({ message: 'በዚህ ስም የተመዘገበ ምድብ ከዚህ ቀደም አለ' }, 400);
     }
 
     const newCategory = await prisma.categories.create({
@@ -37,27 +36,27 @@ export const createCategory = async (req: Request, res: Response): Promise<Respo
     // Invalidate categories cache
     cache.invalidatePrefix('categories:');
 
-    return res.status(201).json({
-      message: 'ምድቡ በተሳካ ሁኔታ ተፈጥሯል',
-      data: newCategory,
-    });
+    return c.json(
+      {
+        message: 'ምድቡ በተሳካ ሁኔታ ተፈጥሯል',
+        data: newCategory,
+      },
+      201
+    );
   } catch (error: unknown) {
-      const errorMessage = (error as Error).message;
-
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('Category creation error:', error);
-    return res.status(500).json({
-      message: 'ምድብ መፍጠር አልተቻለም',
-      error: errorMessage,
-    });
+    return c.json({ message: 'ምድብ መፍጠር አልተቻለም', error: errorMessage }, 500);
   }
 };
 
 // get all categories, optionally limited / paginated
 // @route   GET /api/categories
-export const getCategories = async (req: Request, res: Response): Promise<Response | void> => {
+export const getCategories = async (c: Context<AppContext>) => {
   try {
-    const page = Math.max(1, parseInt(String(req.query.page || '1'), 10) || 1);
-    const limitParam = req.query.limit ? parseInt(String(req.query.limit), 10) : undefined;
+    const prisma = c.get('prisma');
+    const page = Math.max(1, parseInt(String(c.req.query('page') || '1'), 10) || 1);
+    const limitParam = c.req.query('limit') ? parseInt(String(c.req.query('limit')), 10) : undefined;
     const limit = limitParam && Number.isInteger(limitParam) && limitParam > 0 ? Math.min(100, limitParam) : undefined;
 
     // Cache key based on pagination
@@ -73,11 +72,10 @@ export const getCategories = async (req: Request, res: Response): Promise<Respon
       data: unknown[];
     }>(cacheKey);
 
-    // Set standard cache control header for clients & edge caches
-    res.setHeader('Cache-Control', 'public, max-age=120, stale-while-revalidate=300');
+    c.header('Cache-Control', 'public, max-age=120, stale-while-revalidate=300');
 
     if (cached) {
-      return res.status(200).json(cached);
+      return c.json(cached, 200);
     }
 
     const where = { deleted_at: null };
@@ -112,68 +110,57 @@ export const getCategories = async (req: Request, res: Response): Promise<Respon
       data: categories,
     };
 
-    // Store in server cache for 5 minutes (300 seconds)
     cache.set(cacheKey, responsePayload, 300);
 
-    return res.status(200).json(responsePayload);
+    return c.json(responsePayload, 200);
   } catch (error: unknown) {
-    const errorMessage = (error as Error).message;
-
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('Error fetching categories:', error);
-    return res.status(500).json({
-      message: 'የምድብ መረጃዎችን ማምጣት አልተቻለም',
-      error: errorMessage,
-    });
+    return c.json({ message: 'የምድብ መረጃዎችን ማምጣት አልተቻለም', error: errorMessage }, 500);
   }
 };
 
-// get one category  Category by ID
+// get one category Category by ID
 // @route   GET /api/categories/:id
-export const getCategoryById = async (req: Request, res: Response): Promise<Response | void> => {
+export const getCategoryById = async (c: Context<AppContext>) => {
   try {
-    const { id } = req.params;
+    const prisma = c.get('prisma');
+    const id = Number(c.req.param('id'));
 
     const category = await prisma.categories.findFirst({
       where: {
-        id: Number(id),
+        id,
         deleted_at: null,
       },
     });
 
     if (!category) {
-      return res.status(404).json({ message: 'ምድቡ አልተገኘም' });
+      return c.json({ message: 'ምድቡ አልተገኘም' }, 404);
     }
 
-    return res.status(200).json({
-      success: true,
-      data: category,
-    });
+    return c.json({ success: true, data: category }, 200);
   } catch (error: unknown) {
-      const errorMessage = (error as Error).message;
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('Error fetching category:', error);
-    return res.status(500).json({
-      message: 'የአገልጋይ ስህተት አጋጥሟል',
-      error: errorMessage,
-    });
+    return c.json({ message: 'የአገልጋይ ስህተት አጋጥሟል', error: errorMessage }, 500);
   }
 };
 
-
-
-// update  Category
+// update Category
 // @route   PUT /api/categories/:id
-export const updateCategory = async (req: Request, res: Response): Promise<Response | void> => {
+export const updateCategory = async (c: Context<AppContext>) => {
   try {
-    const { id } = req.params;
-    const body = req.body || {};
+    const prisma = c.get('prisma');
+    const id = Number(c.req.param('id'));
+    const body = (await c.req.json().catch(() => ({}))) || {};
     const { name, description, image } = body;
 
     const category = await prisma.categories.findFirst({
-      where: { id: Number(id), deleted_at: null },
+      where: { id, deleted_at: null },
     });
 
     if (!category) {
-      return res.status(404).json({ message: 'ሊሻሻል የተፈለገው ምድብ አልተገኘም' });
+      return c.json({ message: 'ሊሻሻል የተፈለገው ምድብ አልተገኘም' }, 404);
     }
 
     let slug = category.slug;
@@ -182,7 +169,7 @@ export const updateCategory = async (req: Request, res: Response): Promise<Respo
     }
 
     const updatedCategory = await prisma.categories.update({
-      where: { id: Number(id) },
+      where: { id },
       data: {
         name: name || category.name,
         slug,
@@ -193,37 +180,37 @@ export const updateCategory = async (req: Request, res: Response): Promise<Respo
 
     cache.invalidatePrefix('categories:');
 
-    return res.status(200).json({
-      message: 'ምድቡ በተሳካ ሁኔታ ተሻሽሏል',
-      data: updatedCategory,
-    });
+    return c.json(
+      {
+        message: 'ምድቡ በተሳካ ሁኔታ ተሻሽሏል',
+        data: updatedCategory,
+      },
+      200
+    );
   } catch (error: unknown) {
-      const errorMessage = (error as Error).message;
-
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('Error updating category:', error);
-    return res.status(500).json({
-      message: 'ምድቡን ማሻሻል አልተቻለም',
-      error: errorMessage,
-    });
+    return c.json({ message: 'ምድቡን ማሻሻል አልተቻለም', error: errorMessage }, 500);
   }
 };
 
-// delet category temopererly
+// delete category temporarily
 // @route   DELETE /api/categories/:id
-export const deleteCategory = async (req: Request, res: Response): Promise<Response | void> => {
+export const deleteCategory = async (c: Context<AppContext>) => {
   try {
-    const { id } = req.params;
+    const prisma = c.get('prisma');
+    const id = Number(c.req.param('id'));
 
     const category = await prisma.categories.findFirst({
-      where: { id: Number(id), deleted_at: null },
+      where: { id, deleted_at: null },
     });
 
     if (!category) {
-      return res.status(404).json({ message: 'የተፈለገው ምድብ አልተገኘም ወይም አስቀድሞ ተሰርዟል' });
+      return c.json({ message: 'የተፈለገው ምድብ አልተገኘም ወይም አስቀድሞ ተሰርዟል' }, 404);
     }
 
     await prisma.categories.update({
-      where: { id: Number(id) },
+      where: { id },
       data: {
         deleted_at: new Date(),
       },
@@ -231,16 +218,10 @@ export const deleteCategory = async (req: Request, res: Response): Promise<Respo
 
     cache.invalidatePrefix('categories:');
 
-    return res.status(200).json({
-      message: 'ምድቡ በተሳካ ሁኔታ ተሰርዟል',
-    });
+    return c.json({ message: 'ምድቡ በተሳካ ሁኔታ ተሰርዟል' }, 200);
   } catch (error: unknown) {
-      const errorMessage = (error as Error).message;
-
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('Error deleting category:', error);
-    return res.status(500).json({
-      message: 'ምድቡን መሰረዝ አልተቻለም',
-      error: errorMessage,
-    });
+    return c.json({ message: 'ምድቡን መሰረዝ አልተቻለም', error: errorMessage }, 500);
   }
 };

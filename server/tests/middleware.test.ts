@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import express, { Request, Response } from 'express';
-import request from 'supertest';
+import { Hono } from 'hono';
+import type { AppContext } from '../src/types/context.js';
 import { validate } from '../src/middleware/validate.js';
-import { protect, authorizeRoles, AuthRequest } from '../src/middleware/authMiddleware.js';
+import { protect, authorizeRoles } from '../src/middleware/authMiddleware.js';
 import generateToken from '../src/utils/generateToken.js';
 import { z } from 'zod';
 
@@ -14,101 +14,103 @@ describe('Middleware Security & Validation Tests', () => {
       price: z.coerce.number().positive(),
     });
 
-    const app = express();
-    app.use(express.json());
-    app.post('/test-validate', validate(testSchema), (req: Request, res: Response) => {
-      res.status(200).json({ success: true, data: req.body });
+    const app = new Hono<AppContext>();
+    app.post('/test-validate', validate('json', testSchema), (c) => {
+      return c.json({ success: true, data: c.req.valid('json') });
     });
 
     it('should allow valid request data through with coerced types', async () => {
-      const res = await request(app)
-        .post('/test-validate')
-        .send({ name: 'Valid Product', price: '99.99' });
+      const res = await app.request('/test-validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: 'Valid Product', price: '99.99' }),
+      });
 
+      const body = (await res.json()) as any;
       expect(res.status).toBe(200);
-      expect(res.body.success).toBe(true);
-      expect(res.body.data.price).toBe(99.99);
+      expect(body.success).toBe(true);
+      expect(body.data.price).toBe(99.99);
     });
 
     it('should intercept invalid data and return structured 400 error', async () => {
-      const res = await request(app)
-        .post('/test-validate')
-        .send({ name: 'ab', price: -10 }); // name too short, price negative
+      const res = await app.request('/test-validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: 'ab', price: -10 }), // name too short, price negative
+      });
 
+      const body = (await res.json()) as any;
       expect(res.status).toBe(400);
-      expect(res.body.success).toBe(false);
-      expect(res.body.errors).toBeDefined();
-      expect(res.body.errors.length).toBeGreaterThanOrEqual(1);
+      expect(body.success).toBe(false);
+      expect(body.errors).toBeDefined();
+      expect(body.errors.length).toBeGreaterThanOrEqual(1);
     });
   });
 
   // ─── 2. Auth & RBAC Middleware ──────────────────────────────────────
   describe('protect and authorizeRoles middleware', () => {
-    const app = express();
-    app.use(express.json());
+    const app = new Hono<AppContext>();
 
     // Protected route
-    app.get('/test-protected', protect, (req: AuthRequest, res: Response) => {
-      res.status(200).json({ success: true, user: req.user });
+    app.get('/test-protected', protect, (c) => {
+      return c.json({ success: true, user: c.get('user') });
     });
 
     // Admin-only route
-    app.get(
-      '/test-admin-only',
-      protect,
-      authorizeRoles('admin'),
-      (req: AuthRequest, res: Response) => {
-        res.status(200).json({ success: true, message: 'Admin access granted' });
-      }
-    );
+    app.get('/test-admin-only', protect, authorizeRoles('admin'), (c) => {
+      return c.json({ success: true, message: 'Admin access granted' });
+    });
 
     it('should reject unauthenticated requests with 401 Unauthorized', async () => {
-      const res = await request(app).get('/test-protected');
+      const res = await app.request('/test-protected');
+      const body = (await res.json()) as any;
       expect(res.status).toBe(401);
-      expect(res.body.message).toBeDefined();
+      expect(body.message).toBeDefined();
     });
 
     it('should reject invalid or malformed tokens with 401', async () => {
-      const res = await request(app)
-        .get('/test-protected')
-        .set('Authorization', 'Bearer invalid.fake.token');
-
+      const res = await app.request('/test-protected', {
+        headers: { Authorization: 'Bearer invalid.fake.token' },
+      });
       expect(res.status).toBe(401);
     });
 
-    it('should authenticate valid JWT token and attach user to request', async () => {
-      const token = generateToken(100, 'customer', 'customer@test.com');
+    it('should authenticate valid JWT token and attach user to context', async () => {
+      const token = await generateToken(100, 'customer', 'cust@example.com');
 
-      const res = await request(app)
-        .get('/test-protected')
-        .set('Authorization', `Bearer ${token}`);
+      const res = await app.request('/test-protected', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
+      const body = (await res.json()) as any;
       expect(res.status).toBe(200);
-      expect(res.body.success).toBe(true);
-      expect(res.body.user.id).toBe(100);
-      expect(res.body.user.role).toBe('customer');
+      expect(body.success).toBe(true);
+      expect(body.user.id).toBe(100);
+      expect(body.user.role).toBe('customer');
     });
 
     it('PERMISSION SECURITY: should block customer from accessing admin-only endpoint with 403 Forbidden', async () => {
-      const customerToken = generateToken(101, 'customer', 'customer@test.com');
+      const customerToken = await generateToken(101, 'customer', 'customer@example.com');
 
-      const res = await request(app)
-        .get('/test-admin-only')
-        .set('Authorization', `Bearer ${customerToken}`);
+      const res = await app.request('/test-admin-only', {
+        headers: { Authorization: `Bearer ${customerToken}` },
+      });
 
+      const body = (await res.json()) as any;
       expect(res.status).toBe(403);
-      expect(res.body.message).toBeDefined();
+      expect(body.message).toBeDefined();
     });
 
     it('should allow admin to access admin-only endpoint', async () => {
-      const adminToken = generateToken(1, 'admin', 'admin@injibaramarket.com');
+      const adminToken = await generateToken(1, 'admin', 'admin@example.com');
 
-      const res = await request(app)
-        .get('/test-admin-only')
-        .set('Authorization', `Bearer ${adminToken}`);
+      const res = await app.request('/test-admin-only', {
+        headers: { Authorization: `Bearer ${adminToken}` },
+      });
 
+      const body = (await res.json()) as any;
       expect(res.status).toBe(200);
-      expect(res.body.message).toBe('Admin access granted');
+      expect(body.message).toBe('Admin access granted');
     });
   });
 });

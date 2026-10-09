@@ -1,4 +1,4 @@
-import { prisma } from '../lib/prisma.js';
+import type { PrismaClient } from '@prisma/client';
 
 export interface CreateMessageParams {
   sender_id: number;
@@ -22,7 +22,7 @@ const MessageModel = {
   /**
    * Create a new message between two users.
    */
-  async create(params: CreateMessageParams) {
+  async create(prisma: PrismaClient, params: CreateMessageParams) {
     return prisma.messages.create({
       data: {
         sender_id: params.sender_id,
@@ -38,7 +38,7 @@ const MessageModel = {
   /**
    * Get the full conversation thread between two users, ordered chronologically.
    */
-  async getConversation(userId: number, contactId: number) {
+  async getConversation(prisma: PrismaClient, userId: number, contactId: number) {
     return prisma.messages.findMany({
       where: {
         OR: [
@@ -53,7 +53,7 @@ const MessageModel = {
   /**
    * Get messages between two users scoped to a specific product.
    */
-  async getConversationByProduct(userId: number, contactId: number, productId: number) {
+  async getConversationByProduct(prisma: PrismaClient, userId: number, contactId: number, productId: number) {
     return prisma.messages.findMany({
       where: {
         product_id: productId,
@@ -69,7 +69,7 @@ const MessageModel = {
   /**
    * Mark all messages from a contact as read (when the user opens the thread).
    */
-  async markAsRead(userId: number, contactId: number) {
+  async markAsRead(prisma: PrismaClient, userId: number, contactId: number) {
     await prisma.messages.updateMany({
       where: {
         receiver_id: userId,
@@ -83,7 +83,7 @@ const MessageModel = {
   /**
    * Build the inbox: one entry per unique contact, showing the latest message.
    */
-  async getUserConversations(userId: number): Promise<ConversationSummary[]> {
+  async getUserConversations(prisma: PrismaClient, userId: number): Promise<ConversationSummary[]> {
     const messages = await prisma.messages.findMany({
       where: {
         OR: [{ receiver_id: userId }, { sender_id: userId }],
@@ -144,7 +144,7 @@ const MessageModel = {
   /**
    * Get the total count of unread messages for a user.
    */
-  async getUnreadCount(userId: number): Promise<number> {
+  async getUnreadCount(prisma: PrismaClient, userId: number): Promise<number> {
     return prisma.messages.count({
       where: {
         receiver_id: userId,
