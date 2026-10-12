@@ -6,17 +6,12 @@ import ErrorBoundary from "./components/common/ErrorBoundary";
 import ScrollToTop from "./components/common/ScrollToTop";
 import AppRoutes from "./routes/AppRoutes";
 import { ThemeProvider } from "./context/ThemeContext";
+import { getBaseApiUrl } from "./api/axiosClient";
 
 // Non-blocking background warm-up: triggers health check asynchronously
 // without gating homepage component rendering in an artificial serial waterfall.
 const getHealthUrl = (): string => {
-  if (import.meta.env.VITE_API_BASE_URL) {
-    return import.meta.env.VITE_API_BASE_URL.replace(/\/api\/?$/, "") + "/healthz";
-  }
-  if (typeof window !== "undefined" && window.location.hostname) {
-    return `http://${window.location.hostname}:5000/healthz`;
-  }
-  return "http://localhost:5000/healthz";
+  return getBaseApiUrl().replace(/\/api\/?$/, "") + "/healthz";
 };
 
 if (typeof window !== "undefined") {

@@ -21,13 +21,36 @@ function notifyThrottled(type: "warning" | "error", message: string, cooldown = 
   }
 }
 
-const getBaseApiUrl = (): string => {
-  if (import.meta.env.VITE_API_BASE_URL) {
-    return import.meta.env.VITE_API_BASE_URL;
+export const CLOUDFLARE_WORKER_API_URL =
+  "https://injibara-market-api.inji-mark.workers.dev/api";
+
+export const getBaseApiUrl = (): string => {
+  const envUrl = (import.meta.env.VITE_API_BASE_URL || "").trim();
+
+  // If envUrl is set and does NOT point to deprecated Render backend, use it
+  if (
+    envUrl &&
+    !envUrl.includes("onrender.com") &&
+    !envUrl.includes("render.com")
+  ) {
+    return envUrl;
   }
-  if (typeof window !== "undefined" && window.location.hostname) {
-    return `http://${window.location.hostname}:5000/api`;
+
+  // In production builds (e.g. Vercel deployment), always route to Cloudflare Worker
+  if (import.meta.env.PROD) {
+    return CLOUDFLARE_WORKER_API_URL;
   }
+
+  // If running in browser outside localhost, route to Cloudflare Worker
+  if (
+    typeof window !== "undefined" &&
+    window.location.hostname &&
+    window.location.hostname !== "localhost" &&
+    window.location.hostname !== "127.0.0.1"
+  ) {
+    return CLOUDFLARE_WORKER_API_URL;
+  }
+
   return "http://localhost:5000/api";
 };
 
