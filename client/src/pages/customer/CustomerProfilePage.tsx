@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getUser, clearAuth } from "../../utils/authStorage";
 import type { AuthUser } from "../../api/authApi";
+import CustomerBottomNav from "../../components/customer/CustomerBottomNav";
 
 function CustomerProfilePage() {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -21,7 +22,7 @@ function CustomerProfilePage() {
     : "U";
 
   return (
-    <main className="min-h-screen bg-gray-50 px-4 py-12">
+    <main className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pt-12 pb-28">
       <div className="mx-auto max-w-3xl">
         <Link
           to="/customer"
@@ -115,6 +116,7 @@ function CustomerProfilePage() {
           </div>
         </div>
       </div>
+      <CustomerBottomNav />
     </main>
   );
 }

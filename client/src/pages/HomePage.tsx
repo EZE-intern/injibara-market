@@ -18,7 +18,7 @@ function HomePage() {
           onLocationChange={setSelectedLocation}
         />
 
-        <main className="pb-20 md:pb-0">
+        <main className="pb-28 md:pb-0">
           <CustomerHeroCarousel />
           <CustomerCategoryGrid />
           <CustomerFeaturedListings initialLocation={selectedLocation} />

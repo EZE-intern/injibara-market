@@ -111,11 +111,11 @@ function AdminDashboardPage() {
       ===================================== */}
 
       <section>
-        <h1 className="text-2xl font-bold text-slate-900">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
           Dashboard Overview
         </h1>
 
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           Monitor marketplace activity, brokered
           deals, sellers, and platform operations.
         </p>
@@ -127,12 +127,12 @@ function AdminDashboardPage() {
       ===================================== */}
 
       {error && (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-4">
-          <p className="text-sm font-medium text-red-700">
+        <div className="rounded-xl border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/30 px-5 py-4">
+          <p className="text-sm font-medium text-red-700 dark:text-red-400">
             {error}
           </p>
 
-          <p className="mt-1 text-xs text-red-500">
+          <p className="mt-1 text-xs text-red-500 dark:text-red-400/80">
             Make sure the backend server is running
             and the admin overview API is available.
           </p>
@@ -151,7 +151,7 @@ function AdminDashboardPage() {
           return (
             <div
               key={stat.title}
-              className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"
+              className="rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs"
             >
 
               <div className="flex items-start justify-between">
@@ -159,11 +159,11 @@ function AdminDashboardPage() {
                 {/* Text */}
                 <div>
 
-                  <p className="text-sm font-medium text-gray-500">
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
                     {stat.title}
                   </p>
 
-                  <p className="mt-3 text-3xl font-bold text-slate-900">
+                  <p className="mt-3 text-3xl font-bold text-slate-900 dark:text-white">
                     {loading ? "—" : stat.value}
                   </p>
 
@@ -171,14 +171,14 @@ function AdminDashboardPage() {
 
 
                 {/* Icon */}
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gray-100 text-slate-600">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gray-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                   <Icon className="h-5 w-5" />
                 </div>
 
               </div>
 
 
-              <p className="mt-4 text-xs text-gray-400">
+              <p className="mt-4 text-xs text-gray-400 dark:text-gray-500">
                 {stat.description}
               </p>
 
@@ -197,11 +197,11 @@ function AdminDashboardPage() {
 
         <div className="mb-4">
 
-          <h2 className="text-base font-bold text-slate-900">
+          <h2 className="text-base font-bold text-slate-900 dark:text-white">
             Quick Actions
           </h2>
 
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Common administrative tasks.
           </p>
 
@@ -214,22 +214,22 @@ function AdminDashboardPage() {
           {/* Review Inquiries */}
           <Link
             to="/admin/broker-hub"
-            className="group rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+            className="group rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs transition hover:-translate-y-0.5 hover:shadow-md"
           >
 
             <div className="flex items-center gap-4">
 
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400">
                 <Briefcase className="h-5 w-5" />
               </div>
 
               <div>
 
-                <h3 className="text-sm font-bold text-slate-900">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                   Review Inquiries
                 </h3>
 
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                   Review brokered deal requests.
                 </p>
 
@@ -245,22 +245,22 @@ function AdminDashboardPage() {
           {/* Approve Listings */}
           <Link
             to="/admin/products"
-            className="group rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+            className="group rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs transition hover:-translate-y-0.5 hover:shadow-md"
           >
 
             <div className="flex items-center gap-4">
 
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400">
                 <CheckCircle2 className="h-5 w-5" />
               </div>
 
               <div>
 
-                <h3 className="text-sm font-bold text-slate-900">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                   Approve Listings
                 </h3>
 
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                   Review pending marketplace listings.
                 </p>
 
@@ -276,22 +276,22 @@ function AdminDashboardPage() {
           {/* Add Category */}
           <Link
             to="/admin/categories"
-            className="group rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+            className="group rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs transition hover:-translate-y-0.5 hover:shadow-md"
           >
 
             <div className="flex items-center gap-4">
 
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400">
                 <PlusCircle className="h-5 w-5" />
               </div>
 
               <div>
 
-                <h3 className="text-sm font-bold text-slate-900">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                   Add New Category
                 </h3>
 
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                   Create a marketplace category.
                 </p>
 
@@ -316,11 +316,11 @@ function AdminDashboardPage() {
 
         <div className="mb-4">
 
-          <h2 className="text-base font-bold text-slate-900">
+          <h2 className="text-base font-bold text-slate-900 dark:text-white">
             Recent Activity
           </h2>
 
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Latest administrative activity across
             the platform.
           </p>
@@ -328,21 +328,21 @@ function AdminDashboardPage() {
         </div>
 
 
-        <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <div className="rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
 
           <div className="flex min-h-[220px] items-center justify-center px-6 text-center">
 
             <div>
 
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-400">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-gray-500">
                 <Clock className="h-6 w-6" />
               </div>
 
-              <h3 className="mt-4 text-sm font-semibold text-slate-800">
+              <h3 className="mt-4 text-sm font-semibold text-slate-800 dark:text-slate-200">
                 No recent activity
               </h3>
 
-              <p className="mt-1 max-w-md text-xs text-gray-400">
+              <p className="mt-1 max-w-md text-xs text-gray-400 dark:text-gray-500">
                 Recent administrative actions will
                 appear here once the activity API is
                 connected.
