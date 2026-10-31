@@ -1,3 +1,5 @@
+import bcrypt from 'bcryptjs';
+
 const ITERATIONS = 100_000;
 const SALT_BYTES = 16;
 const KEY_BYTES = 32;
@@ -22,9 +24,21 @@ export async function hashPassword(password: string): Promise<string> {
 }
 
 export async function verifyPassword(password: string, storedHash: string): Promise<boolean> {
-  // Gracefully reject legacy bcrypt hashes ($2a$) without throwing Error 1102
-  if (storedHash.startsWith('$2a$') || storedHash.startsWith('$2b$')) {
+  if (!storedHash || typeof storedHash !== 'string' || !password || typeof password !== 'string') {
     return false;
+  }
+
+  // Support legacy bcrypt hashes ($2a$, $2b$, $2y$)
+  if (storedHash.startsWith('$2a$') || storedHash.startsWith('$2b$') || storedHash.startsWith('$2y$')) {
+    try {
+      const compareFn = (bcrypt as unknown as { compare?: typeof bcrypt.compare; default?: { compare: typeof bcrypt.compare } }).compare ||
+        (bcrypt as unknown as { default?: { compare: typeof bcrypt.compare } }).default?.compare ||
+        bcrypt.compare;
+      return await compareFn(password, storedHash);
+    } catch (err) {
+      console.error('Error verifying legacy bcrypt password:', err);
+      return false;
+    }
   }
 
   const parts = storedHash.split(':');

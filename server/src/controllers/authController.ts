@@ -95,18 +95,37 @@ export const loginUser = async (c: Context<AppContext>) => {
     const prisma = c.get('prisma');
     const { email, password } = await c.req.json();
 
+    const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : email;
+
     const user = await prisma.users.findUnique({
-      where: { email },
+      where: { email: normalizedEmail },
     });
 
     if (!user || !user.password) {
       return c.json({ message: 'Invalid email or password.' }, 400);
     }
 
-    // Verify password using native WebCrypto PBKDF2
+    // Verify password using native WebCrypto PBKDF2 or legacy bcrypt
     const isMatch = await verifyPassword(password, user.password);
     if (!isMatch) {
       return c.json({ message: 'Invalid email or password.' }, 400);
+    }
+
+    // Auto-migrate legacy bcrypt passwords ($2a$, $2b$, $2y$) to modern WebCrypto PBKDF2
+    if (
+      user.password.startsWith('$2a$') ||
+      user.password.startsWith('$2b$') ||
+      user.password.startsWith('$2y$')
+    ) {
+      try {
+        const upgradedPassword = await hashPassword(password);
+        await prisma.users.update({
+          where: { id: user.id },
+          data: { password: upgradedPassword },
+        });
+      } catch (upgradeErr) {
+        console.error('Failed to auto-upgrade legacy bcrypt password hash:', upgradeErr);
+      }
     }
 
     // Generate JWT token

@@ -31,15 +31,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       // Fallback if localStorage access is denied
     }
 
-    // 2. Check system preference
-    if (
-      typeof window !== "undefined" &&
-      window.matchMedia &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches
-    ) {
-      return "dark";
-    }
-
+    // 2. Default to light mode
     return "light";
   });
 

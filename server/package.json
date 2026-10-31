@@ -8,7 +8,8 @@
     "lint": "eslint",
     "build": "prisma generate && tsc",
     "dev": "wrangler dev",
-    "deploy": "wrangler deploy"
+    "deploy": "wrangler deploy",
+    "reset-password": "node scripts/reset-admin-password.mjs"
   },
   "keywords": [],
   "author": "",
