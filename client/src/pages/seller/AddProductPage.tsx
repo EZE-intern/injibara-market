@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createProduct } from "../../api/productApi";
 import { getCategories, createCategory, type Category } from "../../api/categoryApi";
+import { compressImage, formatFileSize } from "../../utils/imageCompressor";
 
 const SIDES = [
   { key: "front", label: "Front Angle (ፊት ለፊት)", required: true },
@@ -55,6 +56,24 @@ export default function AddProductPage() {
     bottom: null,
   });
 
+  const [compressing, setCompressing] = useState<Record<SideKey, boolean>>({
+    front: false,
+    back: false,
+    left: false,
+    right: false,
+    top: false,
+    bottom: false,
+  });
+
+  const [imageSizes, setImageSizes] = useState<Record<SideKey, string | null>>({
+    front: null,
+    back: null,
+    left: null,
+    right: null,
+    top: null,
+    bottom: null,
+  });
+
   const loadCategories = async () => {
     try {
       setLoadingCategories(true);
@@ -93,20 +112,46 @@ export default function AddProductPage() {
     }
   };
 
-  const handleFileChange = (
+  const handleFileChange = async (
     e: React.ChangeEvent<HTMLInputElement>,
     side: SideKey
   ) => {
     const file = e.target.files?.[0];
-    if (file) {
+    if (!file) return;
+
+    // Show preview immediately for instant UI responsiveness
+    const previewUrl = URL.createObjectURL(file);
+    setPreviews((prev) => ({ ...prev, [side]: previewUrl }));
+
+    setCompressing((prev) => ({ ...prev, [side]: true }));
+    try {
+      // Compress and downscale modern camera photos for rapid mobile upload
+      const res = await compressImage(file, {
+        maxWidth: 1400,
+        maxHeight: 1400,
+        quality: 0.82,
+      });
+      setImages((prev) => ({ ...prev, [side]: res.file }));
+      setImageSizes((prev) => ({
+        ...prev,
+        [side]: formatFileSize(res.compressedSize),
+      }));
+    } catch (err) {
+      console.warn("Client-side image compression fallback to original file:", err);
       setImages((prev) => ({ ...prev, [side]: file }));
-      const previewUrl = URL.createObjectURL(file);
-      setPreviews((prev) => ({ ...prev, [side]: previewUrl }));
+      setImageSizes((prev) => ({
+        ...prev,
+        [side]: formatFileSize(file.size),
+      }));
+    } finally {
+      setCompressing((prev) => ({ ...prev, [side]: false }));
     }
   };
 
   const handleRemoveImage = (side: SideKey) => {
     setImages((prev) => ({ ...prev, [side]: null }));
+    setImageSizes((prev) => ({ ...prev, [side]: null }));
+    setCompressing((prev) => ({ ...prev, [side]: false }));
     setPreviews((prev) => {
       if (prev[side]) URL.revokeObjectURL(prev[side]!);
       return { ...prev, [side]: null };
@@ -169,6 +214,12 @@ export default function AddProductPage() {
       }
     }
 
+    const isStillCompressing = Object.values(compressing).some(Boolean);
+    if (isStillCompressing) {
+      alert("ፎቶዎቹ እየተዘጋጁ ነው፣ እባክዎ ጥቂት ሰከንድ ይጠብቁ... (Photos are optimizing, please wait a moment...)");
+      return;
+    }
+
     if (!images.front) {
       setError("የፊተኛው ፎቶ (Front Image) ማስገባት ግዴታ ነው");
       setSubmitting(false);
@@ -208,7 +259,14 @@ export default function AddProductPage() {
     } catch (err: unknown) {
       console.error("Product submission failed:", err);
       let errMsg = "ምርቱን መመዝገብ አልተቻለም። እባክዎ እንደገና ይሞክሩ።";
-      if (err && typeof err === "object" && "response" in err) {
+      if (
+        err &&
+        typeof err === "object" &&
+        "code" in err &&
+        (err as { code?: string }).code === "ECONNABORTED"
+      ) {
+        errMsg = "የጥያቄው ጊዜ አልቋል (Request timed out). እባክዎ የኢንተርኔት ግንኙነትዎን ፈትሸው እንደገና ይሞክሩ።";
+      } else if (err && typeof err === "object" && "response" in err) {
         const axErr = err as { response?: { data?: { message?: string } } };
         if (axErr.response?.data?.message) {
           errMsg = axErr.response.data.message;
@@ -452,6 +510,15 @@ export default function AddProductPage() {
                           alt={`${key} preview`}
                           className="h-full w-full object-cover"
                         />
+                        {compressing[key] && (
+                          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 p-2 text-center text-white">
+                            <svg className="h-6 w-6 animate-spin text-brand-400 mb-1" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                            </svg>
+                            <span className="text-[10px] font-medium">እየተዘጋጀ ነው...</span>
+                          </div>
+                        )}
                         <button
                           type="button"
                           onClick={() => handleRemoveImage(key)}
@@ -462,8 +529,9 @@ export default function AddProductPage() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                           </svg>
                         </button>
-                        <span className="absolute bottom-1 left-1 rounded bg-black/60 px-2 py-0.5 text-[10px] font-medium text-white">
-                          {key.toUpperCase()}
+                        <span className="absolute bottom-1 left-1 rounded bg-black/60 px-2 py-0.5 text-[10px] font-medium text-white flex items-center gap-1">
+                          <span>{key.toUpperCase()}</span>
+                          {imageSizes[key] && <span className="text-emerald-300 font-bold">✓ {imageSizes[key]}</span>}
                         </span>
                       </div>
                     ) : (

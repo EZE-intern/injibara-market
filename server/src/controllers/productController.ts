@@ -297,7 +297,20 @@ export const createProduct = async (c: Context<AppContext>) => {
       '-' +
       Date.now();
 
-    // 1. Create the product first
+    // 1. Handle Image Uploads first so that if Cloudinary upload fails,
+    // we never leave an orphaned, empty product record in the database.
+    if (imageFiles.length > 0) {
+      try {
+        const uploadPromises = imageFiles.map((file) => uploadToCloudinary(file, 'products', c.env));
+        const uploadResults = await Promise.all(uploadPromises);
+        imageUrls = uploadResults.map((r) => r.secure_url);
+      } catch (uploadErr) {
+        console.error('Failed to upload product images to Cloudinary:', uploadErr);
+        return c.json({ message: 'ምስሎችን መጫን አልተቻለም (Failed to upload product images)' }, 502);
+      }
+    }
+
+    // 2. Create the product with primary image already set
     const product = await prisma.products.create({
       data: {
         name,
@@ -310,6 +323,7 @@ export const createProduct = async (c: Context<AppContext>) => {
         seller_id: Number(sellerId),
         category_id: category_id ?? null,
         store_id: store_id ?? null,
+        image: imageUrls.length > 0 ? imageUrls[0] : null,
       },
     });
 
@@ -323,13 +337,6 @@ export const createProduct = async (c: Context<AppContext>) => {
         .catch((err) => console.error('Failed to update user role to seller:', err));
     }
 
-    // 2. Handle Image Uploads if any files sent
-    if (imageFiles.length > 0) {
-      const uploadPromises = imageFiles.map((file) => uploadToCloudinary(file, 'products', c.env));
-      const uploadResults = await Promise.all(uploadPromises);
-      imageUrls = uploadResults.map((r) => r.secure_url);
-    }
-
     // 3. Save images to product_images table
     if (imageUrls.length > 0) {
       const imageRecords = imageUrls.map((url, index) => ({
@@ -341,11 +348,6 @@ export const createProduct = async (c: Context<AppContext>) => {
 
       await prisma.product_images.createMany({
         data: imageRecords,
-      });
-
-      await prisma.products.update({
-        where: { id: product.id },
-        data: { image: imageUrls[0] },
       });
     }
 
@@ -454,9 +456,14 @@ export const updateProduct = async (c: Context<AppContext>) => {
     });
 
     if (imageFiles.length > 0) {
-      const uploadPromises = imageFiles.map((file) => uploadToCloudinary(file, 'products', c.env));
-      const uploadResults = await Promise.all(uploadPromises);
-      imageUrls = [...imageUrls, ...uploadResults.map((r) => r.secure_url)];
+      try {
+        const uploadPromises = imageFiles.map((file) => uploadToCloudinary(file, 'products', c.env));
+        const uploadResults = await Promise.all(uploadPromises);
+        imageUrls = [...imageUrls, ...uploadResults.map((r) => r.secure_url)];
+      } catch (uploadErr) {
+        console.error('Failed to upload images in updateProduct:', uploadErr);
+        return c.json({ message: 'ምስሎችን መጫን አልተቻለም (Failed to upload product images)' }, 502);
+      }
     }
 
     if (imageUrls.length > 0) {

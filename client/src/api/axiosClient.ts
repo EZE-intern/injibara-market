@@ -2,7 +2,7 @@ import axios from "axios";
 import { notify } from "../utils/notify";
 import { clearAuth } from "../utils/authStorage";
 
-const API_TIMEOUT_MS = 15000; // 15 seconds — enough for cloud cold-starts without excessive wait on failures
+const API_TIMEOUT_MS = 30000; // 30 seconds default for cloud API calls
 
 let lastToastTime = 0;
 let lastToastMsg = "";
@@ -63,7 +63,7 @@ const axiosClient = axios.create({
 });
 
 // ── Request Interceptor ─────────────────────────────────────────────
-// Automatically inject JWT authorization token if present
+// Automatically inject JWT authorization token and optimize file uploads
 axiosClient.interceptors.request.use((config) => {
   const token =
     localStorage.getItem("injibara_market_token") ||
@@ -71,6 +71,19 @@ axiosClient.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
+  // Handle FormData / file uploads:
+  // 1. Give file uploads extended timeout (120s / 2 minutes)
+  // 2. Remove manual 'Content-Type' so the browser automatically appends
+  //    the correct multipart boundary delimiter.
+  if (config.data instanceof FormData) {
+    config.timeout = Math.max(config.timeout || 0, 120000);
+    if (config.headers) {
+      delete (config.headers as Record<string, unknown>)["Content-Type"];
+      delete (config.headers as Record<string, unknown>)["content-type"];
+    }
+  }
+
   return config;
 });
 

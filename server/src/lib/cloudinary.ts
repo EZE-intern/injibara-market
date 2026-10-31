@@ -31,8 +31,8 @@ export async function uploadToCloudinary(
   const targetFolder = `injibara-market/${folder}`;
   const paramsToSign = `folder=${targetFolder}&timestamp=${timestamp}`;
   const signature = crypto
-    .createHmac('sha1', apiSecret)
-    .update(paramsToSign)
+    .createHash('sha1')
+    .update(paramsToSign + apiSecret)
     .digest('hex');
 
   const formData = new FormData();
@@ -77,8 +77,8 @@ export async function deleteFromCloudinary(publicId: string, env: Env): Promise<
   const timestamp = Math.round(Date.now() / 1000);
   const paramsToSign = `public_id=${publicId}&timestamp=${timestamp}`;
   const signature = crypto
-    .createHmac('sha1', apiSecret)
-    .update(paramsToSign)
+    .createHash('sha1')
+    .update(paramsToSign + apiSecret)
     .digest('hex');
 
   const formData = new FormData();

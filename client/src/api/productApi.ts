@@ -148,9 +148,7 @@ export const createProduct = async (
   formData: FormData,
   token?: string
 ): Promise<SingleProductResponse> => {
-  const headers: Record<string, string> = {
-    "Content-Type": "multipart/form-data",
-  };
+  const headers: Record<string, string> = {};
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
@@ -158,7 +156,10 @@ export const createProduct = async (
   const response = await axiosClient.post<SingleProductResponse>(
     "/products",
     formData,
-    { headers }
+    {
+      headers,
+      timeout: 120000,
+    }
   );
   clearProductCache();
   return response.data;
@@ -172,9 +173,7 @@ export const updateProduct = async (
   formData: FormData,
   token?: string
 ): Promise<SingleProductResponse> => {
-  const headers: Record<string, string> = {
-    "Content-Type": "multipart/form-data",
-  };
+  const headers: Record<string, string> = {};
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
@@ -182,7 +181,10 @@ export const updateProduct = async (
   const response = await axiosClient.put<SingleProductResponse>(
     `/products/${id}`,
     formData,
-    { headers }
+    {
+      headers,
+      timeout: 120000,
+    }
   );
   clearProductCache();
   return response.data;
