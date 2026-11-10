@@ -26,7 +26,7 @@ function CustomerCartPage() {
           </h2>
 
           <p className="mt-2 text-sm text-gray-500 max-w-md mx-auto">
-            Browse products from local sellers in Injibara and add items to your cart.
+            Browse products from verified sellers across Ethiopia and add items to your cart.
           </p>
 
           <Link

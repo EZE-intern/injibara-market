@@ -26,7 +26,7 @@ function AdminHeader() {
           {/* Server status */}
           <div className="hidden items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-medium text-emerald-700 md:flex">
             <span className="h-2 w-2 rounded-full bg-emerald-500" />
-            Injibara Node: Connected
+            Adey Core: Connected
           </div>
 
           {/* Search */}

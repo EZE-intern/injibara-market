@@ -116,10 +116,10 @@ function AdminSidebar({ isOpen = false, onClose }: AdminSidebarProps) {
             to="/"
             onClick={onClose}
             className="group block"
-            title="Go to Injibara Market Homepage"
+            title="Go to Adey Market Homepage"
           >
             <h1 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white group-hover:text-purple-600 transition tracking-tight">
-              INJIBARA MARKET
+              ADEY MARKET
             </h1>
 
             <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-wider text-purple-600 dark:text-purple-400">

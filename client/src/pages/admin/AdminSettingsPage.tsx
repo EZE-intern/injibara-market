@@ -104,7 +104,7 @@ function AdminSettingsPage() {
           </h2>
 
           <p className="mt-1 text-sm text-gray-500">
-            Configuration options for Injibara Market.
+            Configuration options for Adey Market (አደይ ገበያ).
           </p>
         </div>
 

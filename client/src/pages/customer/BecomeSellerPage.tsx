@@ -94,7 +94,7 @@ function BecomeSellerPage() {
             Become a Seller
           </h1>
           <p className="mt-2 text-gray-600">
-            Start selling your products on Injibara Market.
+            Start selling your products on Adey Market (አደይ ገበያ).
           </p>
         </div>
 

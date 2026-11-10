@@ -118,7 +118,7 @@ export default function SellerDashboardPage() {
             <p className="mt-3 text-3xl font-extrabold text-gray-900">
               {productCount}
             </p>
-            <p className="mt-1 text-xs text-gray-500">Listed across Injibara</p>
+            <p className="mt-1 text-xs text-gray-500">Listed across Ethiopia</p>
           </div>
 
           <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
@@ -237,7 +237,7 @@ export default function SellerDashboardPage() {
                   ዋና ገጽ (Marketplace Home)
                 </h3>
                 <p className="mt-1 text-xs text-gray-500">
-                  Return to the Injibara Market landing page.
+                  Return to the Adey Market landing page.
                 </p>
               </Link>
 
@@ -254,7 +254,7 @@ export default function SellerDashboardPage() {
                   ገበያ (Browse Marketplace)
                 </h3>
                 <p className="mt-1 text-xs text-gray-500">
-                  See how your products appear to buyers across Injibara.
+                  See how your products appear to buyers across Ethiopia.
                 </p>
               </Link>
             </div>
@@ -275,7 +275,7 @@ export default function SellerDashboardPage() {
                   </div>
                   <div>
                     <p className="text-sm font-bold text-green-900">Active Merchant</p>
-                    <p className="text-xs text-green-700">Verified Injibara seller</p>
+                    <p className="text-xs text-green-700">Verified Ethiopian seller</p>
                   </div>
                 </div>
               </div>
@@ -283,7 +283,7 @@ export default function SellerDashboardPage() {
               <div className="mt-6 space-y-3 border-t border-gray-100 pt-4 text-xs text-gray-600">
                 <div className="flex justify-between">
                   <span className="text-gray-500">Location</span>
-                  <span className="font-semibold text-gray-800">Injibara, Awi Zone</span>
+                  <span className="font-semibold text-gray-800">Addis Ababa, Ethiopia</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Multi-Angle Photos</span>

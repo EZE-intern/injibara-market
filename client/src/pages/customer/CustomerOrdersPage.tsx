@@ -91,7 +91,7 @@ function CustomerOrdersPage() {
                 My Orders
               </h1>
               <p className="mt-1 text-sm text-gray-500">
-                Track and manage your marketplace purchases in Injibara.
+                Track and manage your marketplace purchases across Ethiopia.
               </p>
             </div>
 
@@ -136,7 +136,7 @@ function CustomerOrdersPage() {
               </h2>
 
               <p className="mt-2 text-sm text-gray-500 max-w-md mx-auto leading-relaxed">
-                You have not placed any orders yet. When you buy items from local sellers in Injibara, your order history and tracking will appear here.
+                You have not placed any orders yet. When you buy items from verified sellers on Adey Market, your order history and tracking will appear here.
               </p>
 
               <div className="mt-6">

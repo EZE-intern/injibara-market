@@ -81,7 +81,7 @@ export default function SellerProductsPage() {
               የእኔ ምርቶች (My Listed Products)
             </h1>
             <p className="mt-1 text-sm text-gray-600">
-              Manage your active product listings on Injibara Market.
+              Manage your active product listings on Adey Market.
             </p>
           </div>
 
@@ -214,7 +214,7 @@ export default function SellerProductsPage() {
                 ምንም የተመዘገበ ምርት የለም (No Products Listed Yet)
               </h3>
               <p className="mt-1 text-sm text-gray-500 max-w-md mx-auto">
-                You haven't listed any products yet. Click below to add your first item to Injibara Market.
+                You haven't listed any products yet. Click below to add your first item to Adey Market.
               </p>
               <Link
                 to="/seller/products/new"

@@ -85,7 +85,7 @@ function CustomerProfilePage() {
                 Location
               </p>
               <p className="mt-1 font-medium text-gray-900">
-                Injibara, Awi Zone, Ethiopia
+                Addis Ababa, Ethiopia
               </p>
             </div>
           </div>
