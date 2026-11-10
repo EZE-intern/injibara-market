@@ -19,35 +19,35 @@ import { getCategories } from "../../api/categoryApi";
 import type { Category } from "../../api/categoryApi";
 
 /**
- * Maps category name/slug to an authentic outlined icon in warm brand red/orange
+ * Maps category name/slug to an authentic outlined icon in Adey Gold (#F59E0B / #D97706)
  */
 export const getCategoryIconNode = (slugOrName: string): ReactNode => {
   const clean = slugOrName.toLowerCase().trim().replace(/\s+/g, "-");
 
   if (clean.includes("elect") || clean.includes("phone") || clean.includes("tech"))
-    return <Smartphone className="h-6 w-6 text-red-600 dark:text-red-500" strokeWidth={1.8} />;
+    return <Smartphone className="h-6 w-6 text-amber-600 dark:text-amber-400" strokeWidth={1.8} />;
   if (clean.includes("fash") || clean.includes("cloth") || clean.includes("shoe"))
-    return <Shirt className="h-6 w-6 text-red-600 dark:text-red-500" strokeWidth={1.8} />;
+    return <Shirt className="h-6 w-6 text-amber-600 dark:text-amber-400" strokeWidth={1.8} />;
   if (clean.includes("agri") || clean.includes("teff") || clean.includes("crop") || clean.includes("grain"))
-    return <Sprout className="h-6 w-6 text-red-600 dark:text-red-500" strokeWidth={1.8} />;
+    return <Sprout className="h-6 w-6 text-amber-600 dark:text-amber-400" strokeWidth={1.8} />;
   if (clean.includes("food") || clean.includes("drink") || clean.includes("grocery") || clean.includes("bever"))
-    return <ShoppingBasket className="h-6 w-6 text-red-600 dark:text-red-500" strokeWidth={1.8} />;
+    return <ShoppingBasket className="h-6 w-6 text-amber-600 dark:text-amber-400" strokeWidth={1.8} />;
   if (clean.includes("home") || clean.includes("prop") || clean.includes("land") || clean.includes("house"))
-    return <Home className="h-6 w-6 text-red-600 dark:text-red-500" strokeWidth={1.8} />;
+    return <Home className="h-6 w-6 text-amber-600 dark:text-amber-400" strokeWidth={1.8} />;
   if (clean.includes("beaut") || clean.includes("cosm") || clean.includes("care"))
-    return <Sparkles className="h-6 w-6 text-red-600 dark:text-red-500" strokeWidth={1.8} />;
+    return <Sparkles className="h-6 w-6 text-amber-600 dark:text-amber-400" strokeWidth={1.8} />;
   if (clean.includes("vehic") || clean.includes("bajaj") || clean.includes("car") || clean.includes("motor"))
-    return <Car className="h-6 w-6 text-red-600 dark:text-red-500" strokeWidth={1.8} />;
+    return <Car className="h-6 w-6 text-amber-600 dark:text-amber-400" strokeWidth={1.8} />;
   if (clean.includes("live") || clean.includes("cow") || clean.includes("sheep") || clean.includes("animal"))
-    return <Beef className="h-6 w-6 text-red-600 dark:text-red-500" strokeWidth={1.8} />;
+    return <Beef className="h-6 w-6 text-amber-600 dark:text-amber-400" strokeWidth={1.8} />;
   if (clean.includes("furn"))
-    return <Armchair className="h-6 w-6 text-red-600 dark:text-red-500" strokeWidth={1.8} />;
+    return <Armchair className="h-6 w-6 text-amber-600 dark:text-amber-400" strokeWidth={1.8} />;
   if (clean.includes("serv"))
-    return <Briefcase className="h-6 w-6 text-red-600 dark:text-red-500" strokeWidth={1.8} />;
+    return <Briefcase className="h-6 w-6 text-amber-600 dark:text-amber-400" strokeWidth={1.8} />;
   if (clean.includes("heal") || clean.includes("med"))
-    return <Activity className="h-6 w-6 text-red-600 dark:text-red-500" strokeWidth={1.8} />;
+    return <Activity className="h-6 w-6 text-amber-600 dark:text-amber-400" strokeWidth={1.8} />;
 
-  return <Layers className="h-6 w-6 text-red-600 dark:text-red-500" strokeWidth={1.8} />;
+  return <Layers className="h-6 w-6 text-amber-600 dark:text-amber-400" strokeWidth={1.8} />;
 };
 
 const DESKTOP_LIMIT = 6;
@@ -91,10 +91,10 @@ export default function CustomerCategoryGrid() {
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div
                 key={i}
-                className="flex flex-col items-center justify-center rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 w-20 sm:w-auto shrink-0 animate-pulse"
+                className="flex flex-col items-center justify-center rounded-2xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-3.5 w-20 sm:w-auto shrink-0 animate-pulse"
               >
-                <div className="h-10 w-10 rounded-xl bg-gray-200 dark:bg-slate-800" />
-                <div className="mt-2 h-3 w-12 rounded bg-gray-200 dark:bg-slate-800" />
+                <div className="h-10 w-10 rounded-xl bg-stone-200 dark:bg-stone-800" />
+                <div className="mt-2 h-3 w-12 rounded bg-stone-200 dark:bg-stone-800" />
               </div>
             ))}
           </div>
@@ -120,12 +120,12 @@ export default function CustomerCategoryGrid() {
             <Link
               key={cat.id}
               to={`/products?category=${encodeURIComponent(cat.name)}`}
-              className="group flex flex-col items-center justify-center rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 w-20 shrink-0 shadow-xs hover:border-red-600 dark:hover:border-red-500 hover:shadow-sm transition-all"
+              className="group flex flex-col items-center justify-center rounded-2xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-3.5 w-20 shrink-0 shadow-xs hover:border-amber-500 dark:hover:border-amber-400 hover:shadow-sm transition-all"
             >
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-50 dark:bg-red-950/40 transition-transform group-hover:scale-110">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-500/10 dark:bg-amber-500/15 transition-transform group-hover:scale-110">
                 {getCategoryIconNode(cat.slug || cat.name)}
               </div>
-              <span className="mt-2 text-xs font-semibold text-gray-800 dark:text-gray-200 group-hover:text-red-600 dark:group-hover:text-red-400 truncate max-w-full text-center">
+              <span className="mt-2 text-xs font-semibold text-stone-800 dark:text-stone-200 group-hover:text-amber-600 dark:group-hover:text-amber-400 truncate max-w-full text-center">
                 {cat.name}
               </span>
             </Link>
@@ -138,12 +138,12 @@ export default function CustomerCategoryGrid() {
             <Link
               key={cat.id}
               to={`/products?category=${encodeURIComponent(cat.name)}`}
-              className="group flex flex-col items-center justify-center rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 shadow-xs hover:border-red-600 dark:hover:border-red-500 hover:shadow-sm transition-all"
+              className="group flex flex-col items-center justify-center rounded-2xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-3.5 shadow-xs hover:border-amber-500 dark:hover:border-amber-400 hover:shadow-sm transition-all"
             >
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-50 dark:bg-red-950/40 transition-transform group-hover:scale-110">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-500/10 dark:bg-amber-500/15 transition-transform group-hover:scale-110">
                 {getCategoryIconNode(cat.slug || cat.name)}
               </div>
-              <span className="mt-2 text-xs font-semibold text-gray-800 dark:text-gray-200 group-hover:text-red-600 dark:group-hover:text-red-400 truncate max-w-full text-center">
+              <span className="mt-2 text-xs font-semibold text-stone-800 dark:text-stone-200 group-hover:text-amber-600 dark:group-hover:text-amber-400 truncate max-w-full text-center">
                 {cat.name}
               </span>
             </Link>
@@ -156,7 +156,7 @@ export default function CustomerCategoryGrid() {
             <button
               type="button"
               onClick={() => setExpanded((prev) => !prev)}
-              className="flex items-center gap-1 rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1 text-xs font-semibold text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:border-red-300 dark:hover:border-red-800 transition cursor-pointer shadow-xs"
+              className="flex items-center gap-1 rounded-full border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-3 py-1 text-xs font-semibold text-stone-500 dark:text-stone-400 hover:text-amber-600 dark:hover:text-amber-400 hover:border-amber-400 dark:hover:border-amber-700 transition cursor-pointer shadow-xs"
             >
               <span>{expanded ? "Show less" : `+${categories.length - DESKTOP_LIMIT} more`}</span>
               <ChevronDown

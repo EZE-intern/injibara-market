@@ -63,7 +63,10 @@ function CustomerSidebar({
             className="text-xl font-bold text-gray-900"
             onClick={onClose}
           >
-            Injibara Market
+            <span className="flex items-center gap-2 font-black text-stone-900">
+              <span className="text-amber-500">🌼</span>
+              <span>Adey Market</span>
+            </span>
           </NavLink>
         </div>
 

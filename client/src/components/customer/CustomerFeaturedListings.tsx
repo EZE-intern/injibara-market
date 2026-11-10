@@ -145,11 +145,11 @@ export default function CustomerFeaturedListings({
         {/* Section Heading & Filter Button */}
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-black tracking-tight text-gray-900 dark:text-white sm:text-xl">
+            <h2 className="text-lg font-black tracking-tight text-stone-900 dark:text-white sm:text-xl">
               Featured Listings
             </h2>
-            <p className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
-              በእንጅባራ የተመረጡ
+            <p className="text-[11px] sm:text-xs text-stone-500 dark:text-stone-400">
+              በአደይ ገበያ የተመረጡ • Fresh Picks Across Ethiopia
             </p>
           </div>
 
@@ -159,14 +159,14 @@ export default function CustomerFeaturedListings({
               onClick={() => setIsFilterOpen(true)}
               className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold shadow-xs transition cursor-pointer ${
                 hasActiveFilters
-                  ? "border-red-600 bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-400 font-bold"
-                  : "border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-gray-700 dark:text-gray-300 hover:border-red-600"
+                  ? "border-amber-500 bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 font-bold"
+                  : "border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-300 hover:border-amber-500"
               }`}
             >
-              <SlidersHorizontal size={14} className={hasActiveFilters ? "text-red-600" : "text-gray-500"} />
+              <SlidersHorizontal size={14} className={hasActiveFilters ? "text-amber-600" : "text-stone-500"} />
               <span>Filter</span>
               {hasActiveFilters && (
-                <span className="h-1.5 w-1.5 rounded-full bg-red-600" />
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
               )}
             </button>
           </div>
@@ -249,9 +249,9 @@ export default function CustomerFeaturedListings({
         <div className="mt-6 text-center">
           <Link
             to="/products"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-red-600 dark:text-red-400 hover:text-red-700 hover:underline"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-600 dark:text-amber-400 hover:text-amber-700 hover:underline"
           >
-            <span>View all products in Injibara</span>
+            <span>View all products across Ethiopia • ሁሉንም ምርቶች ይመልከቱ</span>
             <span>&rarr;</span>
           </Link>
         </div>

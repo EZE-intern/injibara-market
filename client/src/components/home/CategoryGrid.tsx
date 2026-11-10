@@ -50,20 +50,20 @@ function getCategoryIcon(name: string) {
 
 function CategoryGrid() {
   return (
-    <section className="bg-gray-50 py-16">
+    <section className="bg-stone-50 dark:bg-stone-900/40 py-16">
       <div className="mx-auto max-w-7xl px-6 md:px-12 lg:px-16">
         {/* Section heading */}
         <div className="mb-10 text-center">
-          <p className="text-sm font-semibold uppercase tracking-wide text-brand-600">
-            Explore
+          <p className="text-xs font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400">
+            Explore Categories • ምድቦች
           </p>
 
-          <h2 className="mt-2 text-3xl font-bold text-gray-900">
-            Browse Categories
+          <h2 className="mt-2 text-3xl font-extrabold text-stone-900 dark:text-stone-100 tracking-tight">
+            Browse Across Ethiopia
           </h2>
 
-          <p className="mx-auto mt-3 max-w-2xl text-gray-600">
-            Find what you need from local sellers in Injibara.
+          <p className="mx-auto mt-3 max-w-2xl text-stone-600 dark:text-stone-400 text-sm">
+            Find what you need from verified sellers all across Ethiopia.
           </p>
         </div>
 
@@ -73,20 +73,20 @@ function CategoryGrid() {
             <Link
               key={category.id}
               to={`/products?category=${category.name.toLowerCase()}`}
-              className="group rounded-2xl border border-gray-200 bg-white p-6 text-center transition-all duration-200 hover:-translate-y-1 hover:border-brand-200 hover:shadow-lg"
+              className="group rounded-2xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 text-center transition-all duration-200 hover:-translate-y-1 hover:border-amber-400 hover:shadow-lg"
             >
               {/* Clean SVG Icon */}
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand-50 text-brand-600 transition-colors group-hover:bg-brand-100 group-hover:text-brand-700">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 transition-colors group-hover:bg-amber-500/20 group-hover:text-amber-700">
                 {getCategoryIcon(category.name)}
               </div>
 
               {/* Name */}
-              <h3 className="mt-4 font-semibold text-gray-900 transition-colors group-hover:text-brand-600">
+              <h3 className="mt-4 font-bold text-stone-900 dark:text-stone-100 transition-colors group-hover:text-amber-600">
                 {category.name}
               </h3>
 
               {/* Description */}
-              <p className="mt-2 text-xs leading-5 text-gray-500">
+              <p className="mt-2 text-xs leading-5 text-stone-500 dark:text-stone-400">
                 {category.description}
               </p>
             </Link>

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import MobileNavigation from "./MobileNavigation";
 import ThemeToggle from "../common/ThemeToggle";
+import AdeyLogo from "../common/AdeyLogo";
 
 function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -9,7 +10,7 @@ function Navbar() {
   const location = useLocation();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("adey_market_token") || localStorage.getItem("token");
     setIsLoggedIn(Boolean(token));
   }, [location]);
 
@@ -22,6 +23,8 @@ function Navbar() {
   };
 
   const handleLogout = () => {
+    localStorage.removeItem("adey_market_token");
+    localStorage.removeItem("adey_market_user");
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setIsLoggedIn(false);
@@ -30,24 +33,22 @@ function Navbar() {
 
   return (
     <>
-      <nav className="flex h-16 w-full items-center justify-between border-b border-gray-200 bg-white px-6 md:px-12">
+      <nav className="flex h-16 w-full items-center justify-between border-b border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 px-6 md:px-12">
         {/* Logo */}
-        <Link to="/" className="text-xl font-bold text-gray-900 tracking-tight">
-          Injibara Market
-        </Link>
+        <AdeyLogo size="md" to="/" />
 
         {/* Desktop navigation */}
         <div className="hidden items-center gap-8 md:flex">
           <Link
             to="/"
-            className="text-sm font-medium text-gray-700 transition-colors hover:text-brand-600"
+            className="text-sm font-medium text-stone-700 dark:text-stone-300 transition-colors hover:text-amber-600 dark:hover:text-amber-400"
           >
             Home
           </Link>
 
           <Link
             to="/products"
-            className="text-sm font-medium text-gray-700 transition-colors hover:text-brand-600"
+            className="text-sm font-medium text-stone-700 dark:text-stone-300 transition-colors hover:text-amber-600 dark:hover:text-amber-400"
           >
             Products
           </Link>
@@ -60,14 +61,14 @@ function Navbar() {
             <>
               <Link
                 to="/seller/products/new"
-                className="rounded-lg bg-brand-600 px-4 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-brand-700"
+                className="rounded-lg bg-amber-500 hover:bg-amber-600 px-4 py-2 text-xs font-bold text-stone-950 shadow-sm transition-colors"
               >
                 + Add Product
               </Link>
               <button
                 type="button"
                 onClick={handleLogout}
-                className="rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+                className="rounded-lg border border-stone-200 dark:border-stone-700 px-3 py-2 text-xs font-semibold text-stone-700 dark:text-stone-300 transition-colors hover:bg-stone-50 dark:hover:bg-stone-800 cursor-pointer"
               >
                 Logout
               </button>
@@ -75,7 +76,7 @@ function Navbar() {
           ) : (
             <Link
               to="/login"
-              className="rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
+              className="rounded-lg bg-stone-900 hover:bg-stone-800 dark:bg-stone-100 dark:hover:bg-white text-white dark:text-stone-900 px-5 py-2.5 text-sm font-bold transition-colors"
             >
               Login
             </Link>
@@ -91,7 +92,7 @@ function Navbar() {
             aria-label={
               isMobileMenuOpen ? "Close navigation menu" : "Open navigation menu"
             }
-            className="rounded-md p-2 text-gray-700 hover:bg-gray-100"
+            className="rounded-md p-2 text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800"
           >
             {isMobileMenuOpen ? (
               <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
