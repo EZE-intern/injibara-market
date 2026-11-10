@@ -318,7 +318,7 @@ export default function AddProductPage() {
               አዲስ ምርት መመዝገቢያ (Add New Product)
             </h1>
             <p className="mt-2 text-sm text-gray-600">
-              Fill in product details and upload multi-angle photos for local buyers across Injibara.
+              Fill in product details and upload multi-angle photos for buyers across Ethiopia.
             </p>
           </div>
 
@@ -464,7 +464,7 @@ export default function AddProductPage() {
                   name="location"
                   value={formData.location}
                   onChange={handleInputChange}
-                  placeholder="ምሳሌ፡ Injibara / Kossober / Chagni"
+                  placeholder="ምሳሌ፡ Addis Ababa / Bahir Dar / Hawassa"
                   required
                   className="mt-2 w-full rounded-lg border border-gray-300 p-3 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
                 />

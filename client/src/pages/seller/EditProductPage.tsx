@@ -519,7 +519,7 @@ export default function EditProductPage() {
                   name="location"
                   value={formData.location}
                   onChange={handleInputChange}
-                  placeholder="ምሳሌ፡ Injibara / Kossober / Chagni"
+                  placeholder="ምሳሌ፡ Addis Ababa / Bahir Dar / Hawassa"
                   className="mt-2 w-full rounded-lg border border-gray-300 p-3 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
                 />
               </div>

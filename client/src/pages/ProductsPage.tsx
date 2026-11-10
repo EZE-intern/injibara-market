@@ -203,9 +203,9 @@ function ProductsPage() {
         ========================== */}
         <section className="border-b border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900/60">
           <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Marketplace Catalog</h1>
-            <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-              Discover authentic products and listings from sellers around Injibara and the Awi area.
+            <h1 className="text-2xl sm:text-3xl font-black text-stone-900 dark:text-white tracking-tight">Marketplace Catalog</h1>
+            <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-stone-600 dark:text-stone-400">
+              Discover authentic products and listings from verified sellers across Ethiopia.
             </p>
           </div>
         </section>
@@ -246,14 +246,20 @@ function ProductsPage() {
                   id="location"
                   value={selectedLocation}
                   onChange={(event) => handleLocationChange(event.target.value)}
-                  className="w-full rounded-lg border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white px-4 py-2.5 text-sm outline-none transition focus:border-red-600 focus:ring-2 focus:ring-red-100 dark:focus:ring-red-950/40 cursor-pointer"
+                  className="w-full rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-white px-4 py-2.5 text-sm outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-100 dark:focus:ring-amber-950/40 cursor-pointer"
                 >
-                  <option value="">All Locations</option>
-                  <option value="injibara">Injibara</option>
-                  <option value="awi">Awi Zone</option>
-                  <option value="kossober">Kossober</option>
-                  <option value="chagni">Chagni</option>
+                  <option value="">All Ethiopia • መላ ኢትዮጵያ</option>
+                  <option value="addis-ababa">Addis Ababa</option>
                   <option value="bahirdar">Bahir Dar</option>
+                  <option value="hawassa">Hawassa</option>
+                  <option value="adama">Adama</option>
+                  <option value="dire-dawa">Dire Dawa</option>
+                  <option value="mekelle">Mekelle</option>
+                  <option value="gondar">Gondar</option>
+                  <option value="jimma">Jimma</option>
+                  <option value="dessie">Dessie</option>
+                  <option value="bishoftu">Bishoftu</option>
+                  <option value="injibara">Injibara & Awi</option>
                 </select>
               </div>
 
