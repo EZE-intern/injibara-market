@@ -4,23 +4,69 @@
 
 @theme {
   --font-sans: 'Inter', 'Noto Sans Ethiopic', sans-serif;
+  --font-display: 'Plus Jakarta Sans', 'Inter', 'Noto Sans Ethiopic', sans-serif;
 
-  --color-brand-50: #fef2f2;
-  --color-brand-100: #fee2e2;
-  --color-brand-200: #fecaca;
-  --color-brand-300: #fca5a5;
-  --color-brand-400: #f87171;
-  --color-brand-500: #ef4444;
-  --color-brand-600: #dc2626;
-  --color-brand-700: #b91c1c;
-  --color-brand-800: #991b1b;
-  --color-brand-900: #7f1d1d;
+  /* Adey Gold / Marigold Accent Scale */
+  --color-adey-50: #FFFBEB;
+  --color-adey-100: #FEF3C7;
+  --color-adey-200: #FDE68A;
+  --color-adey-300: #FCD34D;
+  --color-adey-400: #FBBF24;
+  --color-adey-500: #F59E0B; /* Signature Adey Gold */
+  --color-adey-600: #D97706; /* Primary Golden CTA / Active Border */
+  --color-adey-700: #B45309;
+  --color-adey-800: #92400E;
+  --color-adey-900: #78350F;
+  --color-adey-950: #451A03;
+
+  /* Highland Espresso / Obsidian (High Contrast & Typography) */
+  --color-obsidian-50: #F8F7F5;
+  --color-obsidian-100: #EFECE6;
+  --color-obsidian-200: #D8D2C6;
+  --color-obsidian-300: #B5ACA0;
+  --color-obsidian-400: #8C8276;
+  --color-obsidian-500: #6B6258;
+  --color-obsidian-600: #4E473E;
+  --color-obsidian-700: #38332C;
+  --color-obsidian-800: #25221D;
+  --color-obsidian-900: #181613; /* Primary dark text & high-intent button */
+  --color-obsidian-950: #0F0E0C;
+
+  /* Shemma / Warm Cotton Canvas & Surfaces */
+  --color-shemma-50: #FAF8F5; /* Main light mode canvas */
+  --color-shemma-100: #F4F0E8; /* Secondary surface / input fill */
+  --color-shemma-200: #EBE5D8; /* Divider lines */
+  --color-shemma-300: #DDD4C0;
+
+  /* Meskel Meadow Green (Trust, Verified, Stock, Guarantees) */
+  --color-meskel-50: #ECFDF5;
+  --color-meskel-100: #D1FAE5;
+  --color-meskel-500: #10B981;
+  --color-meskel-600: #059669;
+  --color-meskel-700: #047857;
+
+  /* Terracotta (Alerts, Flash Sales, Destructive) */
+  --color-terra-50: #FEF2F2;
+  --color-terra-500: #EF4444;
+  --color-terra-600: #DC2626;
+
+  /* Backward Compatibility brand-* mapping */
+  --color-brand-50: #FFFBEB;
+  --color-brand-100: #FEF3C7;
+  --color-brand-200: #FDE68A;
+  --color-brand-300: #FCD34D;
+  --color-brand-400: #FBBF24;
+  --color-brand-500: #F59E0B;
+  --color-brand-600: #D97706;
+  --color-brand-700: #B45309;
+  --color-brand-800: #92400E;
+  --color-brand-900: #78350F;
 }
 
 :root {
   font-family: 'Inter', 'Noto Sans Ethiopic', sans-serif;
-  color: #1f2937;
-  background: #ffffff;
+  color: #181613;
+  background-color: #FAF8F5; /* Shemma warm cotton */
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   color-scheme: light;
@@ -34,6 +80,7 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  background-color: #FAF8F5;
 }
 
 button,
@@ -48,44 +95,47 @@ button {
 }
 
 /* =========================================================
-   COMPREHENSIVE DARK MODE COMPATIBILITY
-   Ensures existing UI seamlessly transforms into dark mode
+   COMPREHENSIVE DARK MODE: "MESKEL NIGHT"
+   Deep warm obsidian (#121110) with luminous gold accents
 ========================================================= */
 
 html.dark {
   color-scheme: dark;
-  background-color: #0b0f19;
-  color: #f1f5f9;
+  background-color: #121110;
+  color: #FAF8F5;
 }
 
 html.dark body {
-  background-color: #0b0f19;
-  color: #f1f5f9;
+  background-color: #121110;
+  color: #FAF8F5;
 }
 
 /* Page containers and background surfaces */
 html.dark .bg-white {
-  background-color: #151d2f;
+  background-color: #1C1917;
 }
 
 html.dark .bg-gray-50,
-html.dark .bg-slate-50 {
-  background-color: #0b0f19;
+html.dark .bg-slate-50,
+html.dark .bg-shemma-50 {
+  background-color: #121110;
 }
 
 html.dark .bg-gray-100,
-html.dark .bg-slate-100 {
-  background-color: #1f293d;
+html.dark .bg-slate-100,
+html.dark .bg-shemma-100 {
+  background-color: #25221D;
 }
 
 /* Translucent surfaces */
 html.dark [class*="bg-gray-50/"],
 html.dark [class*="bg-slate-50/"] {
-  background-color: rgba(30, 41, 59, 0.7) !important;
+  background-color: rgba(28, 25, 23, 0.75) !important;
 }
 
-html.dark .bg-brand-50 {
-  background-color: rgba(239, 68, 68, 0.12);
+html.dark .bg-brand-50,
+html.dark .bg-adey-50 {
+  background-color: rgba(245, 158, 11, 0.12);
 }
 
 /* Borders & Dividers */
@@ -95,100 +145,117 @@ html.dark .border-gray-300,
 html.dark .border-slate-100,
 html.dark .border-slate-200,
 html.dark .border-gray-150,
-html.dark [class*="border-gray-150"] {
-  border-color: #243048;
+html.dark [class*="border-gray-150"],
+html.dark .border-shemma-200 {
+  border-color: #292524;
 }
 
-html.dark .border-brand-100 {
-  border-color: rgba(239, 68, 68, 0.25);
+html.dark .border-brand-100,
+html.dark .border-adey-100 {
+  border-color: rgba(245, 158, 11, 0.25);
 }
 
 html.dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]),
 html.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
-  border-color: #243048;
+  border-color: #292524;
 }
 
 /* High-contrast text elements in dark mode */
 html.dark .text-slate-900,
 html.dark .text-gray-900,
+html.dark .text-stone-900,
 html.dark .text-black {
-  color: #ffffff !important;
+  color: #FAF8F5 !important;
 }
 
 html.dark .text-slate-800,
-html.dark .text-gray-800 {
-  color: #f3f4f6 !important;
+html.dark .text-gray-800,
+html.dark .text-stone-800 {
+  color: #F4F0E8 !important;
 }
 
 html.dark .text-slate-700,
-html.dark .text-gray-700 {
-  color: #e2e8f0 !important;
+html.dark .text-gray-700,
+html.dark .text-stone-700 {
+  color: #EBE5D8 !important;
 }
 
 html.dark .text-slate-600,
-html.dark .text-gray-600 {
-  color: #cbd5e1 !important;
+html.dark .text-gray-600,
+html.dark .text-stone-600 {
+  color: #DDD4C0 !important;
 }
 
 html.dark .text-slate-500,
-html.dark .text-gray-500 {
-  color: #94a3b8 !important;
+html.dark .text-gray-500,
+html.dark .text-stone-500 {
+  color: #A8A29E !important;
 }
 
 html.dark .text-slate-400,
-html.dark .text-gray-400 {
-  color: #8292ab !important;
+html.dark .text-gray-400,
+html.dark .text-stone-400 {
+  color: #78716C !important;
 }
 
-html.dark .text-brand-700 {
-  color: #f87171 !important;
+html.dark .text-brand-700,
+html.dark .text-adey-700 {
+  color: #FBBF24 !important;
 }
 
 /* Form Inputs, Selects, and Textareas */
 html.dark input:not([type='checkbox']):not([type='radio']),
 html.dark select,
 html.dark textarea {
-  background-color: #151d2f;
-  border-color: #2d3b55;
-  color: #f8fafc;
+  background-color: #1C1917;
+  border-color: #38332C;
+  color: #FAF8F5;
 }
 
 html.dark input::placeholder,
 html.dark textarea::placeholder {
-  color: #64748b;
+  color: #78716C;
 }
 
 /* Interactive & Hover states */
 html.dark .hover\:bg-gray-50:hover,
 html.dark .hover\:bg-slate-50:hover {
-  background-color: #1b253b;
+  background-color: #25221D;
 }
 
 html.dark .hover\:bg-gray-100:hover,
 html.dark .hover\:bg-slate-100:hover {
-  background-color: #243048;
+  background-color: #2E2A24;
 }
 
 html.dark .hover\:text-slate-900:hover,
 html.dark .hover\:text-gray-900:hover {
-  color: #ffffff;
+  color: #FFFFFF;
 }
 
 /* Specific component surfaces: tables, modals, cards */
-html.dark table thead {
-  background-color: #101625;
-}
-
+html.dark table thead,
 html.dark thead.bg-gray-50,
 html.dark thead.bg-slate-50 {
-  background-color: #101625;
+  background-color: #181613;
 }
 
 html.dark .shadow-sm,
 html.dark .shadow-md,
 html.dark .shadow-lg,
 html.dark .shadow-xl {
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.65);
+}
+
+/* Cultural Tibeb micro-pattern accent */
+.adey-tibeb-border {
+  background: linear-gradient(
+    90deg,
+    #F59E0B 0%, #F59E0B 35%,
+    #059669 35%, #059669 65%,
+    #DC2626 65%, #DC2626 100%
+  );
+  height: 3px;
 }
 
 /* Scrollbar-hidden utility for carousel / horizontal scroll containers */
