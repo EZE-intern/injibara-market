@@ -63,6 +63,7 @@ describe('WorkOS Authentication Controller', () => {
       mockWorkOS.userManagement.getAuthorizationUrl.mockReturnValue('https://auth.workos.com/url');
 
       const res = await app.request('/workos/url?redirectUri=http://localhost:5173/auth/callback');
+      expect(res.status).toBe(200);
 
       expect(mockWorkOS.userManagement.getAuthorizationUrl).toHaveBeenCalledWith(
         expect.objectContaining({

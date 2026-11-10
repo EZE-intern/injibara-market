@@ -38,7 +38,7 @@ describe('Cloudinary Service', () => {
         ok: true,
         json: async () => ({
           secure_url: 'https://res.cloudinary.com/test-cloud/image/upload/v1234/test.png',
-          public_id: 'injibara-market/products/test',
+          public_id: 'adey-market/products/test',
           width: 800,
           height: 600,
           format: 'png',
@@ -55,7 +55,7 @@ describe('Cloudinary Service', () => {
       'https://res.cloudinary.com/test-cloud/image/upload/v1234/test.png'
     );
     expect(capturedBody).toBeInstanceOf(FormData);
-    expect(capturedBody?.get('folder')).toBe('injibara-market/products');
+    expect(capturedBody?.get('folder')).toBe('adey-market/products');
     expect(capturedBody?.get('api_key')).toBe('test-key');
 
     // Verify signature format (40-character hex string from sha1)
@@ -77,10 +77,10 @@ describe('Cloudinary Service', () => {
       } as any;
     });
 
-    await deleteFromCloudinary('injibara-market/products/test', mockEnv);
+    await deleteFromCloudinary('adey-market/products/test', mockEnv);
 
     expect(capturedUrl).toBe('https://api.cloudinary.com/v1_1/test-cloud/image/destroy');
-    expect(capturedBody?.get('public_id')).toBe('injibara-market/products/test');
+    expect(capturedBody?.get('public_id')).toBe('adey-market/products/test');
     expect(capturedBody?.get('api_key')).toBe('test-key');
 
     const signature = capturedBody?.get('signature');

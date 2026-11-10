@@ -28,7 +28,7 @@ export async function uploadToCloudinary(
   }
 
   const timestamp = Math.round(Date.now() / 1000);
-  const targetFolder = `injibara-market/${folder}`;
+  const targetFolder = `adey-market/${folder}`;
   const paramsToSign = `folder=${targetFolder}&timestamp=${timestamp}`;
   const signature = crypto
     .createHash('sha1')
@@ -40,7 +40,7 @@ export async function uploadToCloudinary(
     formData.append('file', file);
   } else {
     // ArrayBuffer / Uint8Array
-    formData.append('file', new Blob([file as any]));
+    formData.append('file', new Blob([file as unknown as BlobPart]));
   }
 
   formData.append('timestamp', String(timestamp));

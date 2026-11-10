@@ -1,6 +1,6 @@
 /**
- * Tier 1 High-Value Brokered Categories (Injibara Market Business Model):
- * Injibara Market acts as a broker for high-value capital assets to ensure trust,
+ * Tier 1 High-Value Brokered Categories (Adey Market Business Model):
+ * Adey Market acts as a broker for high-value capital assets to ensure trust,
  * legal compliance, and safe payment escrow:
  *   1. Property & Land (Real estate, farmland, commercial plots, residential houses)
  *   2. Vehicles & Transport (Cars, Bajaj, trucks, commercial vehicles, motorcycles)

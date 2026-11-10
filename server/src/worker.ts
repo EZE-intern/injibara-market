@@ -31,7 +31,7 @@ app.use('/api/*', globalLimiter);
 app.get('/', (c) => {
   return c.json({
     status: 'success',
-    message: 'Injibara Market API is running smoothly',
+    message: 'Adey Market API is running smoothly',
   });
 });
 

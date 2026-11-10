@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 import { Hono } from 'hono';
 import type { AppContext } from '../src/types/context.js';
