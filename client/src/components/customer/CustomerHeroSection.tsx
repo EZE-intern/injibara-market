@@ -21,10 +21,10 @@ export default function CustomerHeroSection() {
   return (
     <section className="px-4 py-2 sm:px-6 lg:px-8">
       <div className="relative mx-auto max-w-7xl overflow-hidden rounded-3xl shadow-md min-h-[220px] sm:min-h-[280px] lg:min-h-[320px] flex items-end">
-        {/* Background Image: Lake Zengena */}
+        {/* Background Image: Scenic Ethiopian Highlands */}
         <img
           src="/images/lake_zengena.jpg"
-          alt="Scenic Lake Zengena in Injibara, Awi Zone"
+          alt="Adey Market Ethiopian Marketplace"
           className="absolute inset-0 h-full w-full object-cover object-[center_35%]"
           loading="eager"
         />
@@ -39,12 +39,12 @@ export default function CustomerHeroSection() {
         <div className="relative z-10 w-full p-5 sm:p-8 lg:p-10 flex flex-col items-start">
           {/* Main Headline */}
           <h1 className="text-2xl font-black tracking-tight text-white sm:text-3xl lg:text-4xl drop-shadow-sm">
-            Find what you need nearby
+            Where Ethiopia shops
           </h1>
 
           {/* Amharic Subtitle */}
           <p className="mt-1 text-sm font-semibold text-white/90 sm:text-base drop-shadow-sm">
-            በእንጅባራ የሚፈልጉትን ያግኙ
+            መላው ኢትዮጵያ የሚገበይበት ታማኝ የንግድ መድረክ
           </p>
 
           {/* Action Buttons Row */}
@@ -53,17 +53,17 @@ export default function CustomerHeroSection() {
             <button
               type="button"
               onClick={handleBrowseClick}
-              className="hidden sm:inline-flex items-center gap-2 rounded-full bg-red-600 px-4 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md hover:bg-red-700 active:scale-95 transition cursor-pointer"
+              className="hidden sm:inline-flex items-center gap-2 rounded-full bg-stone-900 hover:bg-stone-800 text-white px-4 py-2.5 text-xs sm:text-sm font-bold shadow-md active:scale-95 transition cursor-pointer"
             >
               <LayoutGrid size={16} strokeWidth={2.5} />
               <span>Browse listings</span>
             </button>
 
-            {/* 2. Sell item (White Pill) */}
+            {/* 2. Sell item (Gold Pill) */}
             <button
               type="button"
               onClick={handleSellClick}
-              className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2.5 text-xs sm:text-sm font-bold text-red-600 shadow-md hover:bg-gray-100 active:scale-95 transition cursor-pointer"
+              className="inline-flex items-center gap-2 rounded-full bg-amber-500 hover:bg-amber-600 px-4 py-2.5 text-xs sm:text-sm font-bold text-stone-950 shadow-md active:scale-95 transition cursor-pointer"
             >
               <PlusCircle size={16} strokeWidth={2.5} />
               <span>Sell item</span>

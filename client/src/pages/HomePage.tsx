@@ -1,7 +1,7 @@
 import { useState } from "react";
 import CustomerNavbar from "../components/customer/CustomerNavbar";
 import CustomerFooter from "../components/customer/CustomerFooter";
-import CustomerHeroCarousel from "../components/customer/CustomerHeroCarousel";
+import CustomerHeroBento from "../components/customer/CustomerHeroBento";
 import CustomerCategoryGrid from "../components/customer/CustomerCategoryGrid";
 import CustomerFeaturedListings from "../components/customer/CustomerFeaturedListings";
 import CustomerTrustBanner from "../components/customer/CustomerTrustBanner";
@@ -11,7 +11,7 @@ function HomePage() {
   const [selectedLocation, setSelectedLocation] = useState("");
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 flex flex-col justify-between">
+    <div className="min-h-screen bg-shemma-50 dark:bg-stone-950 flex flex-col justify-between">
       <div>
         <CustomerNavbar
           selectedLocation={selectedLocation}
@@ -19,7 +19,7 @@ function HomePage() {
         />
 
         <main className="pb-28 md:pb-0">
-          <CustomerHeroCarousel />
+          <CustomerHeroBento />
           <CustomerCategoryGrid />
           <CustomerFeaturedListings initialLocation={selectedLocation} />
           <CustomerTrustBanner />

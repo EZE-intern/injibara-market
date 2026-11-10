@@ -142,30 +142,30 @@ export default function CustomerHeroCarousel() {
             resumeTimerRef.current = setTimeout(() => setIsPaused(false), RESUME_DELAY);
           }}
         >
-          {/* ── Welcome Slide (Lake Zengena) ── */}
+          {/* ── Welcome Slide ── */}
           <div className="snap-start shrink-0 w-full relative min-h-[220px] sm:min-h-[280px] lg:min-h-[320px] flex items-end">
             <img
               src="/images/lake_zengena.jpg"
-              alt="Scenic Lake Zengena in Injibara, Awi Zone"
+              alt="Adey Market — Ethiopian Marketplace"
               className="absolute inset-0 h-full w-full object-cover object-[center_35%]"
               loading="eager"
             />
             <div
-              className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/20"
+              className="absolute inset-0 bg-gradient-to-t from-stone-950/90 via-stone-950/50 to-stone-950/20"
               aria-hidden="true"
             />
             <div className="relative z-10 w-full p-5 sm:p-8 lg:p-10 flex flex-col items-start">
-              <h1 className="text-2xl font-black tracking-tight text-white sm:text-3xl lg:text-4xl drop-shadow-sm">
-                Find what you need nearby
+              <h1 className="text-2xl font-black tracking-tight text-white sm:text-3xl lg:text-4xl drop-shadow-sm font-heading">
+                Where Ethiopia shops
               </h1>
-              <p className="mt-1 text-sm font-semibold text-white/90 sm:text-base drop-shadow-sm">
-                በእንጅባራ የሚፈልጉትን ያግኙ
+              <p className="mt-1 text-sm font-semibold text-amber-300 sm:text-base drop-shadow-sm font-ethiopic">
+                መላው ኢትዮጵያ የሚገበይበት
               </p>
               <div className="mt-4 sm:mt-6 flex items-center gap-3 flex-wrap">
                 <button
                   type="button"
                   onClick={handleBrowseClick}
-                  className="hidden sm:inline-flex items-center gap-2 rounded-full bg-red-600 px-4 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md hover:bg-red-700 active:scale-95 transition cursor-pointer"
+                  className="hidden sm:inline-flex items-center gap-2 rounded-full bg-amber-500 px-4 py-2.5 text-xs sm:text-sm font-bold text-stone-950 shadow-md hover:bg-amber-400 active:scale-95 transition cursor-pointer"
                 >
                   <LayoutGrid size={16} strokeWidth={2.5} />
                   <span>Browse listings</span>
@@ -173,7 +173,7 @@ export default function CustomerHeroCarousel() {
                 <button
                   type="button"
                   onClick={handleSellClick}
-                  className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2.5 text-xs sm:text-sm font-bold text-red-600 shadow-md hover:bg-gray-100 active:scale-95 transition cursor-pointer"
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2.5 text-xs sm:text-sm font-bold text-stone-900 shadow-md hover:bg-amber-50 active:scale-95 transition cursor-pointer"
                 >
                   <PlusCircle size={16} strokeWidth={2.5} />
                   <span>Sell item</span>
@@ -194,7 +194,7 @@ export default function CustomerHeroCarousel() {
               discountPrice !== null && discountPrice < price
                 ? discountPrice
                 : price;
-            const locationText = product.location || "Injibara";
+            const locationText = product.location || "Addis Ababa";
 
             return (
               <div
@@ -208,14 +208,14 @@ export default function CustomerHeroCarousel() {
                   loading="lazy"
                 />
                 <div
-                  className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10"
+                  className="absolute inset-0 bg-gradient-to-t from-stone-950/85 via-stone-950/45 to-stone-950/15"
                   aria-hidden="true"
                 />
                 <div className="relative z-10 w-full p-5 sm:p-8 lg:p-10 flex flex-col items-start">
-                  <h2 className="text-xl font-black tracking-tight text-white sm:text-2xl lg:text-3xl drop-shadow-sm line-clamp-1">
+                  <h2 className="text-xl font-black tracking-tight text-white sm:text-2xl lg:text-3xl drop-shadow-sm line-clamp-1 font-heading">
                     {product.name}
                   </h2>
-                  <p className="mt-1 text-lg font-bold text-red-400 sm:text-xl drop-shadow-sm">
+                  <p className="mt-1 text-lg font-bold text-amber-400 sm:text-xl drop-shadow-sm">
                     ETB {displayPrice.toLocaleString()}
                     {discountPrice !== null && discountPrice < price && (
                       <span className="ml-2 text-sm text-white/60 line-through">
@@ -224,12 +224,12 @@ export default function CustomerHeroCarousel() {
                     )}
                   </p>
                   <div className="mt-1 flex items-center gap-1 text-xs text-white/70">
-                    <MapPin size={12} className="shrink-0" />
+                    <MapPin size={12} className="shrink-0 text-amber-400" />
                     <span>{locationText}</span>
                   </div>
                   <Link
                     to={`/products/${product.id}`}
-                    className="mt-3 sm:mt-4 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2.5 text-xs sm:text-sm font-bold text-red-600 shadow-md hover:bg-gray-100 active:scale-95 transition"
+                    className="mt-3 sm:mt-4 inline-flex items-center gap-2 rounded-full bg-amber-500 px-4 py-2.5 text-xs sm:text-sm font-bold text-stone-950 shadow-md hover:bg-amber-400 active:scale-95 transition"
                   >
                     <span>View Product</span>
                     <ChevronRight size={14} strokeWidth={2.5} />
@@ -251,7 +251,7 @@ export default function CustomerHeroCarousel() {
                 aria-label={`Go to slide ${i + 1}`}
                 className={`rounded-full transition-all duration-300 cursor-pointer ${
                   i === activeIndex
-                    ? "w-6 h-2 bg-red-500 shadow-sm"
+                    ? "w-6 h-2 bg-amber-500 shadow-sm"
                     : "w-2 h-2 bg-white/50 hover:bg-white/80"
                 }`}
               />
