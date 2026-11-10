@@ -67,7 +67,7 @@ export default function CategoriesPage() {
                   Marketplace Categories (የምርት ምድቦች)
                 </h1>
                 <p className="mt-2 text-sm text-gray-600 dark:text-gray-400 max-w-2xl">
-                  Explore everything sold on Injibara Market. Click any category to view all available products and listings from local sellers.
+                  Explore everything sold on Adey Market. Click any category to view all available products and listings from verified sellers across Ethiopia.
                 </p>
               </div>
 
@@ -138,7 +138,7 @@ export default function CategoriesPage() {
                       </h2>
 
                       <p className="mt-1.5 text-xs leading-relaxed text-gray-500 dark:text-gray-400 line-clamp-2">
-                        {cat.description || `Browse active ${cat.name.toLowerCase()} listings in Injibara.`}
+                        {cat.description || `Browse active ${cat.name.toLowerCase()} listings across Ethiopia.`}
                       </p>
                     </div>
 

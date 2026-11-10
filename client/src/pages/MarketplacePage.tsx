@@ -7,8 +7,9 @@ function MarketplacePage() {
       <header className="border-b border-gray-200 bg-white">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           {/* Logo */}
-          <Link to="/" className="text-xl font-bold text-gray-900">
-            Injibara Market
+          <Link to="/" className="text-xl font-black text-stone-900 flex items-center gap-2">
+            <span className="text-amber-500">🌼</span>
+            <span>Adey Market</span>
           </Link>
 
           {/* Navigation */}
@@ -55,8 +56,8 @@ function MarketplacePage() {
       <main className="mx-auto max-w-7xl px-6 py-10">
         {/* Welcome section */}
         <section className="mb-10">
-          <p className="mb-2 text-sm font-medium text-brand-600">
-            Welcome to Injibara Market
+          <p className="mb-2 text-sm font-bold text-amber-600">
+            Welcome to Adey Market • አደይ ገበያ
           </p>
 
           <h1 className="text-3xl font-bold tracking-tight text-gray-900 md:text-4xl">
@@ -64,8 +65,8 @@ function MarketplacePage() {
           </h1>
 
           <p className="mt-3 max-w-2xl text-gray-600">
-            Discover products from local sellers and shop easily through
-            Injibara Market.
+            Discover products from verified sellers and shop easily through
+            Adey Market across Ethiopia.
           </p>
         </section>
 
@@ -102,7 +103,7 @@ function MarketplacePage() {
             </h2>
 
             <p className="mt-2 text-sm leading-6 text-gray-600">
-              Explore products from sellers around Injibara.
+              Explore products from verified sellers across Ethiopia.
             </p>
           </Link>
 

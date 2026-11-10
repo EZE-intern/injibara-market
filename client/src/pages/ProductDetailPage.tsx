@@ -442,7 +442,7 @@ function ProductDetailPage() {
                 <div className="hidden sm:flex mt-8 pt-6 border-t border-gray-150 dark:border-slate-800 flex-col gap-3">
                   {isTier1 && (
                     <p className="text-xs text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 rounded-lg px-3 py-2">
-                      High-value listing: an Injibara Market admin will
+                      High-value listing: an Adey Market admin will
                       mediate this inquiry. You will not message the seller
                       directly.
                     </p>

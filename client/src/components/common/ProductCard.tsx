@@ -79,18 +79,18 @@ export default function ProductCard({ product }: ProductCardProps) {
       : null;
 
   const displayPrice = discountPrice !== null && discountPrice < price ? discountPrice : price;
-  const locationText = product.location || "Injibara";
+  const locationText = product.location || "Addis Ababa";
   const timeAgoText = formatTimeAgo(product.created_at);
 
   // Only show verified badge when admin has explicitly approved the product
   const isVerified = product.status === "approved";
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 transition-all duration-200 hover:-translate-y-1 hover:shadow-md">
+    <article className="group flex flex-col overflow-hidden rounded-2xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900 transition-all duration-200 hover:-translate-y-1 hover:shadow-md">
       {/* Product Image Box */}
       <Link
         to={`/products/${product.id}`}
-        className="aspect-square w-full overflow-hidden bg-gray-50 dark:bg-slate-800 block relative"
+        className="aspect-square w-full overflow-hidden bg-stone-100 dark:bg-stone-800 block relative"
       >
         <img
           src={imageUrl}
@@ -105,11 +105,11 @@ export default function ProductCard({ product }: ProductCardProps) {
           type="button"
           onClick={handleToggleHeart}
           aria-label={saved ? "Remove from wishlist" : "Add to wishlist"}
-          className="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-white/95 dark:bg-slate-800/95 shadow-sm text-red-600 transition-transform active:scale-90 hover:scale-110 cursor-pointer"
+          className="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-white/95 dark:bg-stone-800/95 shadow-sm text-amber-600 dark:text-amber-400 transition-transform active:scale-90 hover:scale-110 cursor-pointer"
         >
           <Heart
             size={15}
-            className={saved ? "fill-red-600 text-red-600" : "text-red-500"}
+            className={saved ? "fill-amber-500 text-amber-500" : "text-stone-400 hover:text-amber-500"}
           />
         </button>
       </Link>
@@ -119,19 +119,19 @@ export default function ProductCard({ product }: ProductCardProps) {
         <div>
           {/* Title + Verified Badge */}
           <Link to={`/products/${product.id}`} className="flex items-center gap-1.5 min-w-0">
-            <h3 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white line-clamp-1 hover:text-red-600 dark:hover:text-red-400 transition-colors">
+            <h3 className="text-xs sm:text-sm font-semibold text-stone-900 dark:text-stone-100 line-clamp-1 hover:text-amber-600 dark:hover:text-amber-400 transition-colors">
               {product.name}
             </h3>
             {isVerified && <VerifiedBadge size="sm" />}
           </Link>
 
-          {/* Price */}
+          {/* Price (Highland Espresso / Obsidian hierarchy) */}
           <div className="mt-1 flex items-baseline gap-1.5 flex-wrap">
-            <span className="text-sm sm:text-base font-bold text-red-600 dark:text-red-500 tracking-tight">
+            <span className="text-sm sm:text-base font-extrabold text-stone-950 dark:text-stone-50 tracking-tight">
               ETB {displayPrice.toLocaleString()}
             </span>
             {discountPrice !== null && discountPrice < price && (
-              <span className="text-[10px] text-gray-400 line-through">
+              <span className="text-[10px] text-stone-400 line-through">
                 ETB {price.toLocaleString()}
               </span>
             )}
@@ -139,8 +139,8 @@ export default function ProductCard({ product }: ProductCardProps) {
         </div>
 
         {/* Location & Time */}
-        <div className="mt-2 pt-1.5 flex items-center gap-1 text-[11px] text-gray-400 dark:text-gray-400 truncate">
-          <MapPin size={12} className="shrink-0 text-gray-400" />
+        <div className="mt-2 pt-1.5 flex items-center gap-1 text-[11px] text-stone-500 dark:text-stone-400 truncate border-t border-stone-100 dark:border-stone-800/70">
+          <MapPin size={12} className="shrink-0 text-amber-600 dark:text-amber-400" />
           <span className="truncate">
             {locationText} • {timeAgoText}
           </span>
