@@ -96,9 +96,10 @@ function RegisterPage() {
         <div className="mb-8 text-center">
           <Link
             to="/"
-            className="text-2xl font-bold text-gray-900 tracking-tight"
+            className="text-2xl font-black text-stone-900 dark:text-stone-100 tracking-tight flex items-center justify-center gap-2"
           >
-            Injibara Market
+            <span className="text-amber-500">🌼</span>
+            <span>Adey Market • አደይ ገበያ</span>
           </Link>
 
           <h1 className="mt-8 text-3xl font-bold text-gray-900">
@@ -106,7 +107,7 @@ function RegisterPage() {
           </h1>
 
           <p className="mt-2 text-sm text-gray-600">
-            Join Injibara Market and start shopping or selling.
+            Join Adey Market and start shopping or selling across Ethiopia.
           </p>
         </div>
 

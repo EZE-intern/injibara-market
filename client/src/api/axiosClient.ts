@@ -66,6 +66,7 @@ const axiosClient = axios.create({
 // Automatically inject JWT authorization token and optimize file uploads
 axiosClient.interceptors.request.use((config) => {
   const token =
+    localStorage.getItem("adey_market_token") ||
     localStorage.getItem("injibara_market_token") ||
     localStorage.getItem("token");
   if (token) {

@@ -22,7 +22,7 @@ export function formatFileSize(bytes: number): string {
  * before uploading to the server.
  *
  * Typically reduces a 4-12 MB phone camera photo to 100-250 KB (95%+ reduction),
- * enabling lightning-fast uploads even on 3G mobile connections in Injibara.
+ * enabling lightning-fast uploads even on mobile connections across Ethiopia.
  */
 export async function compressImage(
   file: File,

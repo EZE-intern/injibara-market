@@ -1,10 +1,13 @@
 import type { Product } from "../types/Product";
 
-const SAVED_PRODUCTS_KEY = "injibara_market_saved_products";
+const SAVED_PRODUCTS_KEY = "adey_market_saved_products";
+const LEGACY_SAVED_PRODUCTS_KEY = "injibara_market_saved_products";
 
 export function getSavedProducts(): Product[] {
   try {
-    const raw = localStorage.getItem(SAVED_PRODUCTS_KEY);
+    const raw =
+      localStorage.getItem(SAVED_PRODUCTS_KEY) ||
+      localStorage.getItem(LEGACY_SAVED_PRODUCTS_KEY);
     if (!raw) return [];
     return JSON.parse(raw);
   } catch (e) {

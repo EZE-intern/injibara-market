@@ -39,8 +39,11 @@ export default function AuthCallbackPage() {
         toast.success(`Welcome, ${response.user.full_name || "User"}!`);
 
         // Check if there was a saved redirect destination
-        const savedRedirect = sessionStorage.getItem("injibara_auth_redirect");
+        const savedRedirect =
+          sessionStorage.getItem("adey_auth_redirect") ||
+          sessionStorage.getItem("injibara_auth_redirect");
         if (savedRedirect) {
+          sessionStorage.removeItem("adey_auth_redirect");
           sessionStorage.removeItem("injibara_auth_redirect");
           navigate(savedRedirect, { replace: true });
           return;

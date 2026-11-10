@@ -19,6 +19,7 @@ export default function WorkOSAuthButton({
 
       // Save post-login destination if provided
       if (redirectTo) {
+        sessionStorage.setItem("adey_auth_redirect", redirectTo);
         sessionStorage.setItem("injibara_auth_redirect", redirectTo);
       }
 

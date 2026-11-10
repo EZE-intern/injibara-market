@@ -17,15 +17,18 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-const THEME_STORAGE_KEY = "injibara_market_theme";
+const THEME_STORAGE_KEY = "adey_market_theme";
+const LEGACY_THEME_STORAGE_KEY = "injibara_market_theme";
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(() => {
     // 1. Check localStorage first
     try {
-      const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+      const savedTheme =
+        localStorage.getItem(THEME_STORAGE_KEY) ||
+        localStorage.getItem(LEGACY_THEME_STORAGE_KEY);
       if (savedTheme === "light" || savedTheme === "dark") {
-        return savedTheme;
+        return savedTheme as Theme;
       }
     } catch {
       // Fallback if localStorage access is denied
@@ -45,6 +48,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
     try {
       localStorage.setItem(THEME_STORAGE_KEY, theme);
+      localStorage.setItem(LEGACY_THEME_STORAGE_KEY, theme);
     } catch {
       // Ignore localStorage errors
     }

@@ -1,7 +1,9 @@
 import type { AuthUser } from "../api/authApi";
 
-const TOKEN_KEY = "injibara_market_token";
-const USER_KEY = "injibara_market_user";
+const TOKEN_KEY = "adey_market_token";
+const USER_KEY = "adey_market_user";
+const LEGACY_TOKEN_KEY = "injibara_market_token";
+const LEGACY_USER_KEY = "injibara_market_user";
 
 export const saveAuth = (token: string, user: AuthUser) => {
   localStorage.setItem(TOKEN_KEY, token);
@@ -12,11 +14,18 @@ export const saveAuth = (token: string, user: AuthUser) => {
 };
 
 export const getToken = (): string | null => {
-  return localStorage.getItem(TOKEN_KEY) || localStorage.getItem("token");
+  return (
+    localStorage.getItem(TOKEN_KEY) ||
+    localStorage.getItem(LEGACY_TOKEN_KEY) ||
+    localStorage.getItem("token")
+  );
 };
 
 export const getUser = (): AuthUser | null => {
-  const user = localStorage.getItem(USER_KEY) || localStorage.getItem("user");
+  const user =
+    localStorage.getItem(USER_KEY) ||
+    localStorage.getItem(LEGACY_USER_KEY) ||
+    localStorage.getItem("user");
   if (!user) {
     return null;
   }
@@ -30,6 +39,8 @@ export const getUser = (): AuthUser | null => {
 export const clearAuth = () => {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
+  localStorage.removeItem(LEGACY_TOKEN_KEY);
+  localStorage.removeItem(LEGACY_USER_KEY);
   localStorage.removeItem("token");
   localStorage.removeItem("user");
 };
