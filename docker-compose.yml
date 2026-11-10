@@ -1,13 +1,13 @@
 services:
   mysql:
     image: mysql:8.0
-    container_name: injibara-mysql
+    container_name: adey-mysql
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword}
-      MYSQL_DATABASE: ${DB_NAME:-injibara_db}
-      MYSQL_USER: ${DB_USER:-injibara_user}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-injibara_password}
+      MYSQL_DATABASE: ${DB_NAME:-adey_db}
+      MYSQL_USER: ${DB_USER:-adey_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-adey_password}
     ports:
       - '3307:3306'
     volumes:
@@ -22,14 +22,14 @@ services:
     build:
       context: .
       dockerfile: api.Dockerfile
-    container_name: injibara-api
+    container_name: adey-api
     restart: always
     ports:
       - '3000:3000'
     env_file:
       - .env
     environment:
-      - DATABASE_URL=mysql://${DB_USER:-injibara_user}:${DB_PASSWORD:-injibara_password}@mysql:3306/${DB_NAME:-injibara_db}
+      - DATABASE_URL=mysql://${DB_USER:-adey_user}:${DB_PASSWORD:-adey_password}@mysql:3306/${DB_NAME:-adey_db}
     volumes:
       - ./server:/app
       - /app/node_modules
@@ -41,7 +41,7 @@ services:
     build:
       context: .
       dockerfile: client.Dockerfile
-    container_name: injibara-client
+    container_name: adey-client
     restart: always
     ports:
       - '5173:5173'
