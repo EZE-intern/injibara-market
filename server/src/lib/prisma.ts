@@ -1,5 +1,5 @@
 import { PrismaTiDBCloud } from '@tidbcloud/prisma-adapter';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../generated/prisma/client.js';
 
 let cachedPrisma: PrismaClient | null = null;
 let cachedUrl: string | null = null;

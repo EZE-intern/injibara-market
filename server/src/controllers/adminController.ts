@@ -2,7 +2,7 @@ import type { Context } from 'hono';
 import type { AppContext } from '../types/context.js';
 import { hashPassword } from '../utils/edgeCrypto.js';
 import { isBrokeredCategory } from '../utils/brokeredCategories.js';
-import { products_status } from '@prisma/client';
+import { products_status } from '../generated/prisma/client.js';
 import { cache } from '../utils/cache.js';
 
 interface BrokerInquiryMeta {

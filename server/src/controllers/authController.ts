@@ -2,7 +2,7 @@ import type { Context } from 'hono';
 import type { AppContext } from '../types/context.js';
 import { hashPassword, verifyPassword } from '../utils/edgeCrypto.js';
 import generateToken from '../utils/generateToken.js';
-import { users_role } from '@prisma/client';
+import { users_role } from '../generated/prisma/client.js';
 
 const getInitialAdminEmails = (envAdminEmails?: string): string[] => {
   const raw = envAdminEmails || (typeof process !== 'undefined' ? process.env?.INITIAL_ADMIN_EMAILS : '') || '';

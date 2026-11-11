@@ -9,6 +9,7 @@ node_modules/
 /client/dist/
 /server/dist/
 /server/build/
+/server/src/generated/
 .out/
 
 # Environment & Secrets

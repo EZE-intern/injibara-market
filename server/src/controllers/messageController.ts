@@ -1,5 +1,5 @@
 import type { Context } from 'hono';
-import type { PrismaClient } from '@prisma/client';
+import type { PrismaClient } from '../generated/prisma/client.js';
 import type { AppContext } from '../types/context.js';
 import MessageModel from '../models/messageModel.js';
 import { isBrokeredCategory } from '../utils/brokeredCategories.js';

@@ -1,7 +1,7 @@
 import type { Context } from 'hono';
 import type { AppContext } from '../types/context.js';
 import generateToken from '../utils/generateToken.js';
-import { users_role } from '@prisma/client';
+import { users_role } from '../generated/prisma/client.js';
 import { getWorkOS } from '../lib/workos.js';
 
 const getInitialAdminEmails = (envAdminEmails?: string): string[] => {

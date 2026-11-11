@@ -1,6 +1,6 @@
 import type { Context } from 'hono';
 import type { AppContext } from '../types/context.js';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '../generated/prisma/client.js';
 import { uploadToCloudinary } from '../lib/cloudinary.js';
 import { cache } from '../utils/cache.js';
 

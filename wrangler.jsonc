@@ -4,6 +4,9 @@
   "main": "server/src/worker.ts",
   "compatibility_date": "2026-08-04",
   "compatibility_flags": ["nodejs_compat"],
+  "build": {
+    "command": "cd server && npx prisma generate"
+  },
   "assets": {
     "directory": "./client/dist",
     "not_found_handling": "single-page-application",

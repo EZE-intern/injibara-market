@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@prisma/client';
+import type { PrismaClient } from '../generated/prisma/client.js';
 import type { Env } from './env.js';
 
 export interface AuthUser {
