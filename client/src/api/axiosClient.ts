@@ -25,6 +25,17 @@ export const CLOUDFLARE_WORKER_API_URL =
   "https://adeymarket.et/api";
 
 export const getBaseApiUrl = (): string => {
+  // When running in the browser on adeymarket.et or pages.dev, use relative /api for zero-latency same-origin routing
+  if (
+    typeof window !== "undefined" &&
+    window.location.hostname &&
+    (window.location.hostname === "adeymarket.et" ||
+      window.location.hostname.endsWith(".adeymarket.et") ||
+      window.location.hostname.endsWith(".pages.dev"))
+  ) {
+    return "/api";
+  }
+
   const envUrl = (import.meta.env.VITE_API_BASE_URL || "").trim();
 
   // If envUrl is set and does NOT point to deprecated Render backend, use it
@@ -36,7 +47,7 @@ export const getBaseApiUrl = (): string => {
     return envUrl;
   }
 
-  // In production builds (e.g. Cloudflare Pages deployment), always route to Cloudflare Worker
+  // In production builds, always route to Cloudflare Worker fallback
   if (import.meta.env.PROD) {
     return CLOUDFLARE_WORKER_API_URL;
   }

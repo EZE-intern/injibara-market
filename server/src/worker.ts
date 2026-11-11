@@ -36,6 +36,15 @@ app.use(
 app.use('*', async (c, next) => {
   if (c.env?.DATABASE_URL) {
     c.set('prisma', getPrisma(c.env.DATABASE_URL));
+  } else if (c.req.path.startsWith('/api/') && c.req.path !== '/api/health') {
+    console.error('[Worker Error] DATABASE_URL is not configured in environment bindings.');
+    return c.json(
+      {
+        success: false,
+        message: 'Database service is temporarily unavailable. Missing configuration.',
+      },
+      503
+    );
   }
   await next();
 });
@@ -61,6 +70,20 @@ app.get('/healthz', async (c) => {
   } catch (error) {
     console.error('Database ping error in /healthz:', error);
     return c.text('OK', 200);
+  }
+});
+
+app.get('/api/health', async (c) => {
+  try {
+    const prisma = c.get('prisma');
+    if (prisma) {
+      await prisma.$queryRawUnsafe('SELECT 1');
+      return c.json({ status: 'ok', database: 'connected' }, 200);
+    }
+    return c.json({ status: 'degraded', database: 'unconfigured' }, 503);
+  } catch (error) {
+    console.error('Database ping error in /api/health:', error);
+    return c.json({ status: 'error', database: 'disconnected' }, 500);
   }
 });
 
