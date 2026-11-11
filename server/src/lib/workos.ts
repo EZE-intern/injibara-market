@@ -7,7 +7,7 @@ export function getWorkOS(env?: Env) {
   const defaultRedirectUri =
     env?.WORKOS_REDIRECT_URI ||
     process.env.WORKOS_REDIRECT_URI ||
-    'https://injibara-market.vercel.app/auth/callback';
+    'https://adeymarket.et/auth/callback';
 
   const workos = new WorkOS(apiKey, {
     clientId: workosClientId,

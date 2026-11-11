@@ -9,4 +9,5 @@ export interface Env {
   CLOUDINARY_API_SECRET?: string;
   INITIAL_ADMIN_EMAILS?: string;
   ENVIRONMENT?: string;
+  FRONTEND_URL?: string;
 }

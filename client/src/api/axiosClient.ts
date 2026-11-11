@@ -22,7 +22,7 @@ function notifyThrottled(type: "warning" | "error", message: string, cooldown = 
 }
 
 export const CLOUDFLARE_WORKER_API_URL =
-  "https://injibara-market-api.inji-mark.workers.dev/api";
+  "https://adeymarket.et/api";
 
 export const getBaseApiUrl = (): string => {
   const envUrl = (import.meta.env.VITE_API_BASE_URL || "").trim();
@@ -36,7 +36,7 @@ export const getBaseApiUrl = (): string => {
     return envUrl;
   }
 
-  // In production builds (e.g. Vercel deployment), always route to Cloudflare Worker
+  // In production builds (e.g. Cloudflare Pages deployment), always route to Cloudflare Worker
   if (import.meta.env.PROD) {
     return CLOUDFLARE_WORKER_API_URL;
   }

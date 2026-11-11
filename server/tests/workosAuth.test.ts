@@ -23,7 +23,7 @@ describe('WorkOS Authentication Controller', () => {
     vi.spyOn(workosLib, 'getWorkOS').mockReturnValue({
       workos: mockWorkOS as any,
       workosClientId: 'test_client_id',
-      defaultRedirectUri: 'https://injibara-market.vercel.app/auth/callback',
+      defaultRedirectUri: 'https://adeymarket.et/auth/callback',
       isWorkOSConfigured: () => true,
     });
 

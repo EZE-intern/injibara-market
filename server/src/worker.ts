@@ -14,7 +14,23 @@ import adminRoutes from './routes/adminRoutes.js';
 const app = new Hono<AppContext>();
 
 // CORS middleware
-app.use('*', cors());
+app.use(
+  '*',
+  cors({
+    origin: (origin) => {
+      if (
+        origin === 'https://adeymarket.et' ||
+        origin === 'https://www.adeymarket.et' ||
+        origin === 'http://localhost:5173' ||
+        /^https:\/\/([a-zA-Z0-9-]+\.)*pages\.dev$/.test(origin)
+      ) {
+        return origin;
+      }
+      return null;
+    },
+    credentials: true,
+  })
+);
 
 // Attach Prisma instance to request context using DATABASE_URL from worker bindings
 app.use('*', async (c, next) => {

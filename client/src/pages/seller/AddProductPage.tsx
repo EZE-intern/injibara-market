@@ -125,11 +125,11 @@ export default function AddProductPage() {
 
     setCompressing((prev) => ({ ...prev, [side]: true }));
     try {
-      // Compress and downscale modern camera photos for rapid mobile upload
+      // Compress and downscale modern camera photos to WebP for rapid mobile upload and credit savings
       const res = await compressImage(file, {
-        maxWidth: 1400,
-        maxHeight: 1400,
-        quality: 0.82,
+        maxWidth: 1200,
+        maxHeight: 1200,
+        quality: 0.80,
       });
       setImages((prev) => ({ ...prev, [side]: res.file }));
       setImageSizes((prev) => ({

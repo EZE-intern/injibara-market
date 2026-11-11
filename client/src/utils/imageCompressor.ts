@@ -1,7 +1,7 @@
 export interface CompressionOptions {
   maxWidth?: number;
   maxHeight?: number;
-  quality?: number; // 0.1 to 1.0 (default 0.8)
+  quality?: number; // 0.1 to 1.0 (default 0.80)
 }
 
 export interface CompressionResult {
@@ -21,8 +21,8 @@ export function formatFileSize(bytes: number): string {
  * Compresses and resizes high-resolution smartphone camera photos in the browser
  * before uploading to the server.
  *
- * Typically reduces a 4-12 MB phone camera photo to 100-250 KB (95%+ reduction),
- * enabling lightning-fast uploads even on mobile connections across Ethiopia.
+ * Prefers modern WebP format for compact payloads and Cloudinary credit conservation,
+ * with graceful fallback to JPEG for browsers without WebP canvas encoding support.
  */
 export async function compressImage(
   file: File,
@@ -30,8 +30,8 @@ export async function compressImage(
 ): Promise<CompressionResult> {
   const originalSize = file.size;
   const {
-    maxWidth = 1400,
-    maxHeight = 1400,
+    maxWidth = 1200,
+    maxHeight = 1200,
     quality = 0.8,
   } = options;
 
@@ -91,18 +91,36 @@ export async function compressImage(
           ctx.imageSmoothingQuality = 'high';
           ctx.drawImage(img, 0, 0, width, height);
 
-          // Export as JPEG (universal compatibility across browsers and Cloudinary)
-          canvas.toBlob(
-            (blob) => {
+          // Check for WebP support with JPEG fallback
+          let prefersWebp = false;
+          try {
+            const probe = document.createElement('canvas');
+            probe.width = 1;
+            probe.height = 1;
+            prefersWebp = probe.toDataURL('image/webp').startsWith('data:image/webp');
+          } catch {
+            prefersWebp = false;
+          }
+
+          const targetMime = prefersWebp ? 'image/webp' : 'image/jpeg';
+          const targetExt = prefersWebp ? 'webp' : 'jpg';
+
+          const createBlobHandler = (mime: string, ext: string, fallback?: () => void) => {
+            return (blob: Blob | null) => {
+              if (!blob && fallback) {
+                fallback();
+                return;
+              }
+
               if (!blob || blob.size >= originalSize) {
                 // If compression resulted in larger or failed, keep original
                 return resolve({ file, originalSize, compressedSize: originalSize, didCompress: false });
               }
 
-              // Preserve base filename, ensure .jpg extension
+              // Preserve base filename, use WebP or JPEG extension
               const baseName = file.name.replace(/\.[^.]+$/, '');
-              const compressedFile = new File([blob], `${baseName}.jpg`, {
-                type: 'image/jpeg',
+              const compressedFile = new File([blob], `${baseName}.${ext}`, {
+                type: mime,
                 lastModified: Date.now(),
               });
 
@@ -112,10 +130,20 @@ export async function compressImage(
                 compressedSize: compressedFile.size,
                 didCompress: true,
               });
-            },
-            'image/jpeg',
-            quality
-          );
+            };
+          };
+
+          if (targetMime === 'image/webp') {
+            canvas.toBlob(
+              createBlobHandler('image/webp', 'webp', () => {
+                canvas.toBlob(createBlobHandler('image/jpeg', 'jpg'), 'image/jpeg', quality);
+              }),
+              'image/webp',
+              quality
+            );
+          } else {
+            canvas.toBlob(createBlobHandler('image/jpeg', 'jpg'), 'image/jpeg', quality);
+          }
         } catch {
           resolve({ file, originalSize, compressedSize: originalSize, didCompress: false });
         }

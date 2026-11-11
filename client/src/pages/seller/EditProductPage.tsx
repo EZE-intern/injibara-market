@@ -193,9 +193,9 @@ export default function EditProductPage() {
     setCompressing((prev) => ({ ...prev, [side]: true }));
     try {
       const res = await compressImage(file, {
-        maxWidth: 1400,
-        maxHeight: 1400,
-        quality: 0.82,
+        maxWidth: 1200,
+        maxHeight: 1200,
+        quality: 0.80,
       });
       setImages((prev) => ({ ...prev, [side]: res.file }));
       setImageSizes((prev) => ({

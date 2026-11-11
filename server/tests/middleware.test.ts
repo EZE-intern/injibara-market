@@ -4,6 +4,7 @@ import type { AppContext } from '../src/types/context.js';
 import { validate } from '../src/middleware/validate.js';
 import { protect, authorizeRoles } from '../src/middleware/authMiddleware.js';
 import generateToken from '../src/utils/generateToken.js';
+import workerApp from '../src/worker.js';
 import { z } from 'zod';
 
 describe('Middleware Security & Validation Tests', () => {
@@ -111,6 +112,74 @@ describe('Middleware Security & Validation Tests', () => {
       const body = (await res.json()) as any;
       expect(res.status).toBe(200);
       expect(body.message).toBe('Admin access granted');
+    });
+  });
+
+  // ─── 3. Cloudflare & Production CORS Policy ──────────────────────────
+  describe('CORS middleware policy', () => {
+    it('should allow adeymarket.et domain', async () => {
+      const res = await workerApp.request('/', {
+        method: 'OPTIONS',
+        headers: {
+          Origin: 'https://adeymarket.et',
+          'Access-Control-Request-Method': 'GET',
+        },
+      });
+      expect(res.headers.get('Access-Control-Allow-Origin')).toBe('https://adeymarket.et');
+      expect(res.headers.get('Access-Control-Allow-Credentials')).toBe('true');
+    });
+
+    it('should allow www.adeymarket.et domain', async () => {
+      const res = await workerApp.request('/', {
+        method: 'OPTIONS',
+        headers: {
+          Origin: 'https://www.adeymarket.et',
+          'Access-Control-Request-Method': 'GET',
+        },
+      });
+      expect(res.headers.get('Access-Control-Allow-Origin')).toBe('https://www.adeymarket.et');
+    });
+
+    it('should allow localhost:5173 for local frontend development', async () => {
+      const res = await workerApp.request('/', {
+        method: 'OPTIONS',
+        headers: {
+          Origin: 'http://localhost:5173',
+          'Access-Control-Request-Method': 'GET',
+        },
+      });
+      expect(res.headers.get('Access-Control-Allow-Origin')).toBe('http://localhost:5173');
+    });
+
+    it('should allow *.pages.dev Cloudflare Pages previews', async () => {
+      const previewRes = await workerApp.request('/', {
+        method: 'OPTIONS',
+        headers: {
+          Origin: 'https://injibara-market.pages.dev',
+          'Access-Control-Request-Method': 'GET',
+        },
+      });
+      expect(previewRes.headers.get('Access-Control-Allow-Origin')).toBe('https://injibara-market.pages.dev');
+
+      const branchRes = await workerApp.request('/', {
+        method: 'OPTIONS',
+        headers: {
+          Origin: 'https://feature-branch.injibara-market.pages.dev',
+          'Access-Control-Request-Method': 'GET',
+        },
+      });
+      expect(branchRes.headers.get('Access-Control-Allow-Origin')).toBe('https://feature-branch.injibara-market.pages.dev');
+    });
+
+    it('should disallow untrusted third-party origins', async () => {
+      const res = await workerApp.request('/', {
+        method: 'OPTIONS',
+        headers: {
+          Origin: 'https://malicious-site.com',
+          'Access-Control-Request-Method': 'GET',
+        },
+      });
+      expect(res.headers.get('Access-Control-Allow-Origin')).toBeNull();
     });
   });
 });
